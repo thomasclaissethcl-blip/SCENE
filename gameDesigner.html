@@ -1,0 +1,3772 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game builder narratif</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --bg2:#151c35;
+      --panel:#171d36;
+      --panel2:#202847;
+      --panel3:#263059;
+      --text:#eef2ff;
+      --muted:#b8c2df;
+      --accent:#7cc8ff;
+      --good:#74d5a3;
+      --warn:#f3ca70;
+      --bad:#ff8080;
+      --border:rgba(255,255,255,.10);
+      --shadow:0 12px 30px rgba(0,0,0,.35);
+      --radius:16px;
+      --radiusSm:12px;
+      --max:1600px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top, #243066 0%, #11152a 42%, #090c16 100%);
+      color:var(--text);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height:1.45;
+      padding:14px;
+    }
+
+    .app{
+      max-width:var(--max);
+      margin:0 auto;
+      display:grid;
+      gap:12px;
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .topbar{
+      padding:16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+    }
+
+    .topbar h1{
+      margin:0;
+      font-size:1.25rem;
+      line-height:1.15;
+    }
+
+    .topbar p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+
+    .toolbar{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    button,
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:10px 12px;
+      background:#273158;
+      color:var(--text);
+      border:1px solid var(--border);
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    button:hover,
+    button:focus{
+      outline:none;
+      background:#314071;
+    }
+
+    button.secondary{
+      background:#202847;
+    }
+
+    button.good{
+      background:#1e4a3b;
+    }
+
+    button.warn{
+      background:#5a4720;
+    }
+
+    button.bad{
+      background:#5a2424;
+    }
+
+    input,
+    textarea,
+    select{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px 12px;
+      background:#11182f;
+      color:var(--text);
+      font:inherit;
+    }
+
+    textarea{
+      min-height:90px;
+      resize:vertical;
+    }
+
+    label{
+      display:block;
+      font-size:.88rem;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .layout{
+      display:grid;
+      gap:12px;
+    }
+
+    .mainGrid{
+      display:grid;
+      gap:12px;
+    }
+
+    .leftCol,
+    .centerCol,
+    .rightCol{
+      display:grid;
+      gap:12px;
+      align-content:start;
+    }
+
+    .section{
+      padding:14px;
+    }
+
+    .section h2,
+    .section h3{
+      margin:0 0 10px;
+      font-size:1rem;
+    }
+
+    .muted{color:var(--muted)}
+    .small{font-size:.85rem}
+
+    .fieldGrid{
+      display:grid;
+      gap:10px;
+    }
+
+    .fieldGrid.two{
+      grid-template-columns:1fr 1fr;
+    }
+
+    .fieldGrid.three{
+      grid-template-columns:1fr 1fr 1fr;
+    }
+
+    .stack{
+      display:grid;
+      gap:10px;
+    }
+
+    .list{
+      display:grid;
+      gap:10px;
+    }
+
+    .itemCard{
+      background:#1a2343;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+    }
+
+    .itemCard.active{
+      border-color:rgba(124,200,255,.55);
+      box-shadow:inset 0 0 0 1px rgba(124,200,255,.2);
+    }
+
+    .itemHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      margin-bottom:8px;
+    }
+
+    .itemHead strong{
+      display:block;
+      font-size:.95rem;
+    }
+
+    .itemActions{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+
+    .itemActions button{
+      padding:7px 9px;
+      font-size:.84rem;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:5px 8px;
+      border-radius:999px;
+      font-size:.76rem;
+      border:1px solid var(--border);
+      background:#222c50;
+      color:#dfe7ff;
+    }
+
+    .tabs{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      padding:12px 14px 0;
+    }
+
+    .tabBtn.active{
+      background:#3b4c86;
+    }
+
+    .panel{
+      padding:14px;
+      border-top:1px solid var(--border);
+    }
+
+    .kv{
+      display:grid;
+      gap:8px;
+    }
+
+    .kv .row{
+      background:#1a2343;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px;
+    }
+
+    .help{
+      padding:0 14px 14px;
+      color:var(--muted);
+      font-size:.88rem;
+    }
+
+    .choiceBlock,
+    .ruleBlock,
+    .diagBlock,
+    .varBlock{
+      background:#182241;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+    }
+
+    .choiceBlock h4,
+    .ruleBlock h4,
+    .diagBlock h4,
+    .varBlock h4{
+      margin:0 0 8px;
+      font-size:.95rem;
+    }
+
+    .jsonPreview{
+      background:#0d1429;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+      overflow:auto;
+      max-height:420px;
+      white-space:pre-wrap;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size:.82rem;
+      color:#dce6ff;
+    }
+
+    .iframeWrap{
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:hidden;
+      background:#0d1429;
+      min-height:620px;
+    }
+
+    iframe{
+      width:100%;
+      min-height:620px;
+      border:none;
+      background:white;
+    }
+
+    .notice{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#1a2343;
+      color:#dfe7ff;
+      font-size:.88rem;
+    }
+
+    .notice.warn{
+      background:rgba(255, 128, 128, 0.06);
+      border-color:rgba(255, 128, 128, 0.25);
+    }
+
+    .inlineBtns{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    details{
+      background:#182241;
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:hidden;
+    }
+
+    summary{
+      list-style:none;
+      cursor:pointer;
+      padding:12px;
+      font-weight:700;
+    }
+
+    summary::-webkit-details-marker{display:none}
+
+    .detailsBody{
+      padding:0 12px 12px;
+    }
+
+    @media (min-width: 1100px){
+      .mainGrid{
+        grid-template-columns:320px 1fr 420px;
+      }
+    }
+
+    @media (max-width: 720px){
+      .fieldGrid.two,
+      .fieldGrid.three{
+        grid-template-columns:1fr;
+      }
+      .topbar{
+        flex-direction:column;
+      }
+      .toolbar{
+        width:100%;
+        justify-content:flex-start;
+      }
+    }
+    
+    .fieldLabel{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:6px;
+  position:relative;
+}
+
+.fieldLabel label{
+  margin-bottom:0;
+}
+
+.helpIcon{
+  flex:0 0 auto;
+  width:20px;
+  height:20px;
+  border:none;
+  border-radius:999px;
+  background:#273158;
+  color:var(--text);
+  border:1px solid var(--border);
+  font-size:.78rem;
+  font-weight:700;
+  line-height:1;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+}
+
+.helpIcon:hover,
+.helpIcon:focus{
+  outline:none;
+  background:#45380a;
+}
+
+.helpBubble{
+  display:none;
+  margin-top:8px;
+  padding:10px 12px;
+  border-radius:10px;
+  background:#45380a;
+  border:1px solid rgba(124,200,255,.25);
+  color:#dfe7ff;
+  font-size:.82rem;
+  line-height:1.4;
+  box-shadow:0 8px 18px rgba(0,0,0,.25);
+}
+
+.helpBubble.open{
+  display:block;
+}
+
+.helpBubble strong{
+  display:block;
+  margin-bottom:4px;
+  color:#eef2ff;
+}
+
+.editorSection{
+  background:transparent;
+  border:none;
+  border-radius:0;
+}
+
+.editorSectionSummary{
+  list-style:none;
+  cursor:pointer;
+  padding:14px 16px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  user-select:none;
+  border-bottom:1px solid var(--border);
+}
+
+.editorSectionSummary::-webkit-details-marker{
+  display:none;
+}
+
+.editorSectionSummary::after{
+  content:"▾";
+  font-size:1rem;
+  line-height:1;
+  color:var(--muted);
+  transition:transform .2s ease;
+}
+
+.editorSection:not([open]) .editorSectionSummary::after{
+  transform:rotate(-90deg);
+}
+
+.editorSection > .section,
+.editorSection > .panel{
+  padding-top:14px;
+}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="card topbar">
+      <div>
+        <h1>Serious Game builder narratif</h1>
+        <p>Créez des serious games textuels à scènes, choix, variables, règles d’effondrement et export HTML autonome.</p>
+      </div>
+      <div class="toolbar">
+        <button id="emptyProjectBtn" class="secondary">Nouveau projet</button>
+        <button id="newProjectBtn" class="secondary">Charger un exemple</button>
+        <button id="importJsonBtn" class="secondary">Importer projet</button>
+        <button id="exportJsonBtn" class="secondary">Sauvegarder projet</button>
+        <button id="exportHtmlBtn" class="good">Exporter en HTML</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="tabs" style="margin-bottom:1em">
+        <button class="tabBtn active" data-tab="editor">Éditeur</button>
+        <button class="tabBtn" data-tab="preview">Prévisualisation</button>
+        <button class="tabBtn" data-tab="json">Analyse structure</button>
+      </div>
+      <div class="panel">
+        <div id="editorTab" class="tabPanel">
+          <div class="mainGrid">
+            <div class="leftCol">
+<section class="card">
+  <details class="editorSection">
+    <summary class="editorSectionSummary">Projet</summary>
+    <div class="section">
+      <div class="fieldLabel">
+        <h2 style="margin:0;">Projet</h2>
+    <button
+      type="button"
+      class="helpIcon"
+      data-help-toggle="help-project-section"
+      aria-label="Aide sur le projet"
+      aria-expanded="false"
+    >
+      ?
+    </button>
+  </div>
+  <div class="helpBubble" id="help-project-section" role="note">
+    <strong>À quoi sert cette section</strong>
+    Cette section regroupe les paramètres généraux du jeu : son titre, son auteur, sa scène de départ, le nombre d’étapes affichées et le contenu du modal d’aide.
+    <br><br>
+    <strong>Comment l’utiliser</strong>
+    Commencez par renseigner ici les informations globales avant de créer les scènes et la logique du jeu.
+    <br><br>
+    <strong>Bon usage</strong>
+    Ces paramètres structurent l’identité du projet et le comportement général de l’interface exportée.
+  </div>
+                  <div class="fieldGrid">
+                    <div>
+  <div class="fieldLabel">
+    <label for="metaTitle">Titre</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-metaTitle" aria-label="Aide sur le titre" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-metaTitle" role="note">
+    <strong>Titre</strong>
+    Saisissez le titre principal du jeu. Il sera affiché en haut de l’interface exportée et permettra d’identifier clairement le projet.
+  </div>
+  <input id="metaTitle" type="text" />
+</div>
+                    <div>
+  <div class="fieldLabel">
+    <label for="metaSubtitle">Sous-titre</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-metaSubtitle" aria-label="Aide sur le sous-titre" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-metaSubtitle" role="note">
+    <strong>Sous-titre</strong>
+    Renseignez une courte formule de présentation. Elle sert à préciser l’angle, le contexte ou la finalité pédagogique du jeu.
+  </div>
+  <input id="metaSubtitle" type="text" />
+</div>
+                    <div>
+  <div class="fieldLabel">
+    <label for="metaAuthor">Auteur</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-metaAuthor" aria-label="Aide sur l’auteur" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-metaAuthor" role="note">
+    <strong>Auteur</strong>
+    Indiquez le nom de la personne ou de l’équipe qui a conçu le jeu. Cette information facilite l’identification, l’archivage et la maintenance.
+  </div>
+  <input id="metaAuthor" type="text" />
+</div>
+                    <div class="fieldGrid two">
+<div>
+  <div class="fieldLabel">
+    <label for="metaStartScene">Scène de départ</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-metaStartScene" aria-label="Aide sur la scène de départ" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-metaStartScene" role="note">
+    <strong>Scène de départ</strong>
+    Choisissez la première scène du jeu. C’est le point d’entrée du parcours narratif, celui que le joueur verra au lancement.
+  </div>
+  <select id="metaStartScene"></select>
+</div>
+<div>
+  <div class="fieldLabel">
+    <label for="metaTotalSteps">Nombre d’étapes affichées</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-metaTotalSteps" aria-label="Aide sur le nombre d’étapes" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-metaTotalSteps" role="note">
+    <strong>Nombre de scènes affichées</strong>
+    Indiquez le nombre d’étapes visibles dans la jauge de progression du jeu. Cela structure la lecture du parcours, même si le scénario comporte des branches.
+  </div>
+  <input id="metaTotalSteps" type="number" min="1" />
+</div>
+                    </div>
+<div>
+  <div class="fieldLabel">
+    <label for="helpTitle">Titre de l’aide</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-helpTitle" aria-label="Aide sur le titre de l’aide" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-helpTitle" role="note">
+    <strong>Titre de l'aide</strong>
+    Saisissez le titre qui apparaîtra en haut de la fenêtre d’aide. Il doit annoncer clairement la fonction de cette fenêtre.
+  </div>
+  <input id="helpTitle" type="text" />
+</div>
+<div>
+  <div class="fieldLabel">
+    <label for="helpContent">Contenu de l’aide</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-helpContent" aria-label="Aide sur le contenu de l’aide" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-helpContent" role="note">
+    <strong>Contenu de l'aide</strong>
+    Rédigez ici le texte qui sera affiché dans la fenêtre d’aide du jeu. Utilisez des lignes vides pour séparer les paragraphes et améliorer la lisibilité.
+  </div>
+  <textarea id="helpContent"></textarea>
+</div>
+                    <div>
+                      <label>
+                        <input id="openHelpOnStart" type="checkbox" style="width:auto; margin-right:8px;" />
+                        Ouvrir l’aide au démarrage
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                </details>
+</section>
+
+              <section class="card">
+  <details class="editorSection">
+    <summary class="editorSectionSummary">Variables</summary>
+    <div class="section">
+      <div class="itemHead">
+        <div>
+          <div class="fieldLabel">
+            <h2 style="margin:0;">Variables</h2>
+      <button
+        type="button"
+        class="helpIcon"
+        data-help-toggle="help-variables-section"
+        aria-label="Aide sur les variables"
+        aria-expanded="false"
+      >
+        ?
+      </button>
+    </div>
+<div class="helpBubble" id="help-variables-section" role="note">
+
+<strong>Ce que sont les variables</strong>
+
+Une variable est simplement une information que le jeu mémorise pendant la partie. Elle permet au jeu de se souvenir de ce que le joueur a fait et d’adapter la suite du parcours.
+
+<br><br>
+
+<strong>Deux types simples</strong>
+  Une variable peut être :
+  <ul>
+  <li>un état vrai ou faux (par exemple : les critères sont définis ou non),</li>
+  <li>un compteur qui augmente ou diminue (par exemple : le niveau de risque ou le nombre d’erreurs).</li>
+ </ul>
+  <strong>Pourquoi c’est utile</strong>
+  Ces informations permettent au jeu d’adapter la suite du parcours, de déclencher des diagnostics ou de produire une analyse finale cohérente avec les décisions prises.
+  <br><br>
+
+<strong>Personnalisation</strong>
+
+Vous pouvez créer vos propres variables pour modéliser votre situation pédagogique. Par exemple : confiance, expérience, satisfaction, etc.
+
+En plus de celles que vous créez, le moteur du jeu utilise trois variables internes qui structurent la simulation.
+
+<br><br>
+
+<strong>Les 3 variables du moteur</strong>
+
+Ces variables sont utilisées par le fonctionnement interne du jeu. Elles ne peuvent pas être modifiées ou supprimées car elles assurent la cohérence générale de la simulation.
+
+<br><br>
+
+<strong>Score (score)</strong>
+
+Le score représente la solidité globale des réponses et décisions faites par le joueur. Il augmente lorsque les décisions renforcent la qualité de son travail, et diminue lorsque des fragilités apparaissent.
+
+Ce n’est pas une note, mais un indicateur global de cohérence de ce qu'accomplit le joueur dans sa progression.
+
+<br><br>
+
+Il permet notamment d’évaluer la qualité globale du parcours, d’aider à produire certains diagnostics, de structurer les fins positives.
+
+<br><br>
+
+<strong>Risque (risk)</strong>
+
+Le risque représente l’accumulation progressive de fragilités dans le parcours du joueur. Contrairement au score, il ne traduit pas ce qui fonctionne bien mais ce qui peut provoquer une dégradation.
+
+Il augmente lorsque des raccourcis sont pris ou lorsque des éléments importants sont négligés.
+
+<br><br>
+
+Il permet notamment : de déclencher des règles d’effondrement, de modéliser les dérives progressives, de rendre visibles les effets cumulés des décisions.
+
+<br><br>
+
+<strong>Progression (step)</strong>
+
+La progression représente l’avancement dans le parcours du joueur. Elle permet d’afficher une barre de progression et de structurer le parcours.
+
+Elle n’évalue pas la qualité des décisions, seulement l’avancement dans les étapes.
+
+<br><br>
+
+Elle permet notamment : d’afficher l’étape actuelle, de donner un repère au joueur, de structurer la narration.
+
+<br><br>
+
+<strong>Pourquoi ces variables ne sont pas modifiables</strong>
+
+Ces trois variables assurent le fonctionnement technique du moteur de jeu. Les modifier pourrait rendre le jeu incohérent ou empêcher certaines mécaniques de fonctionner correctement.
+
+Elles servent de base commune à tous les jeux créés avec cet outil.
+
+<br><br>
+
+<strong>Conseil pratique</strong>
+
+Ne créez que les variables nécessaires pour représenter les éléments importants de votre parcours pédagogique. Chaque variable doit correspondre à quelque chose que vous voulez réellement observer dans le parcours. 
+</div>
+    <p class="muted small">États et compteurs utilisés par le jeu.</p>
+  </div>
+  <button id="addVariableBtn">Ajouter une variable</button>
+</div>
+                  <div id="variablesList" class="list"></div>
+                </div>
+          </details>
+</section>
+
+            <section class="card">
+  <details class="editorSection">
+    <summary class="editorSectionSummary">Règles d’effondrement</summary>
+    <div class="section">
+      <div class="itemHead">
+        <div>
+          <div class="fieldLabel">
+            <h2 style="margin:0;">Règles d’effondrement</h2>
+      <button
+        type="button"
+        class="helpIcon"
+        data-help-toggle="help-rules-section"
+        aria-label="Aide sur les règles d’effondrement"
+        aria-expanded="false"
+      >
+        ?
+      </button>
+    </div>
+    <div class="helpBubble" id="help-rules-section" role="note">
+      <strong>Ce que sont les règles d’effondrement</strong>
+      Les règles d’effondrement déterminent à quel moment le système considère que le parcours n’est plus suffisamment viable ou cohérent pour continuer normalement.
+      <br><br>
+      <strong>Comment les utiliser</strong>
+      Chaque règle combine une ou plusieurs conditions portant sur l’état du jeu. Si la règle devient vraie, le jeu bascule vers une scène de diagnostic ou une autre scène de rupture.
+      <br><br>
+      <strong>Bon usage</strong>
+      Utilisez ces règles pour modéliser des dégradations progressives, pas pour punir arbitrairement un choix isolé. Une bonne règle d’effondrement traduit une logique de système.
+    </div>
+    <p class="muted small">Si l’une de ces règles devient vraie, le jeu bascule vers la scène de diagnostic.</p>
+  </div>
+  <button id="addRuleBtn">Ajouter</button>
+</div>
+                  <div id="rulesList" class="list"></div>
+                </div>
+                </details>
+              </section>
+
+<section class="card">
+  <details class="editorSection">
+    <summary class="editorSectionSummary">Diagnostics</summary>
+    <div class="section">
+      <div class="itemHead">
+        <div>
+          <div class="fieldLabel">
+            <h2 style="margin:0;">Diagnostics</h2>
+      <button
+        type="button"
+        class="helpIcon"
+        data-help-toggle="help-diagnostics-section"
+        aria-label="Aide sur les diagnostics"
+        aria-expanded="false"
+      >
+        ?
+      </button>
+    </div>
+    <div class="helpBubble" id="help-diagnostics-section" role="note">
+      <strong>Ce que sont les diagnostics</strong>
+      Les diagnostics sont les messages d’analyse affichés à la fin d’un parcours en difficulté. Ils expliquent au joueur quelles fragilités ont été activées dans le système.
+      <br><br>
+      <strong>Comment les utiliser</strong>
+      Chaque diagnostic est relié à une ou plusieurs conditions. Lorsqu’elles sont vraies, le diagnostic apparaît dans la scène finale de diagnostic.
+      <br><br>
+      <strong>Bon usage</strong>
+      Rédigez des diagnostics explicatifs et utiles, pas seulement des constats. Ils doivent aider à comprendre le cheminement qui a conduit à la dégradation du parcours réalisé.
+    </div>
+    <p class="muted small">Cartes affichées dans la scène de diagnostic final.</p>
+  </div>
+  <button id="addDiagBtn">Ajouter</button>
+</div>
+                  <div id="diagnosticsList" class="list"></div>
+                </div>
+                </details>
+              </section>
+              </div>
+
+            <div class="centerCol">
+<section class="card">
+  <details class="editorSection">
+    <summary class="editorSectionSummary">Scènes</summary>
+    <div class="section">
+      <div class="itemHead">
+        <div>
+          <div class="fieldLabel">
+            <h2 style="margin:0;">Liste des scènes</h2>
+      <button
+        type="button"
+        class="helpIcon"
+        data-help-toggle="help-scenes-section"
+        aria-label="Aide sur les scènes"
+        aria-expanded="false"
+      >
+        ?
+      </button>
+    </div>
+    <div class="helpBubble" id="help-scenes-section" role="note">
+      <strong>Ce qu’est une scène</strong>
+      Une scène est une unité de récit dans le jeu. Elle contient un contexte, un titre, un ou plusieurs paragraphes de texte, puis éventuellement des choix proposés au joueur.
+      <br><br>
+      <strong>Comment les utiliser</strong>
+      Utilisez les scènes pour structurer le parcours étape par étape. Chaque scène peut faire avancer l’histoire, ouvrir une remédiation, conduire à une fin ou afficher un diagnostic. Les choix d’une scène permettent de relier cette scène à d’autres et de construire les embranchements du jeu.
+      <br><br>
+      <strong>Bon usage</strong>
+      Découpez votre jeu en scènes suffisamment courtes pour rester lisibles, mais assez riches pour poser une vraie situation de décision. Donnez à chaque scène un rôle clair dans la progression globale.
+    </div>
+    <p class="muted small">Créez les scènes, puis sélectionnez-en une pour l’éditer.</p>
+  </div>
+  <div class="inlineBtns">
+    <button id="addSceneBtn">Ajouter une scène</button>
+    <button id="duplicateSceneBtn" class="secondary">Dupliquer la scène</button>
+    <button id="deleteSceneBtn" class="bad">Supprimer la scène</button>
+  </div>
+</div>
+                  <div id="scenesList" class="list"></div>
+                </div>
+                </details>
+              </section>
+            </div>
+
+            <div class="rightCol">
+<section class="card">
+  <details class="editorSection">
+    <summary class="editorSectionSummary">Éditeur de scène</summary>
+    <div class="section">
+      <div class="itemHead">
+        <div>
+          <div class="fieldLabel">
+            <h2 style="margin:0;">Éditeur de scène</h2>
+      <button
+        type="button"
+        class="helpIcon"
+        data-help-toggle="help-scene-editor-section"
+        aria-label="Aide sur l’éditeur de scène"
+        aria-expanded="false"
+      >
+        ?
+      </button>
+    </div>
+    <div class="helpBubble" id="help-scene-editor-section" role="note">
+      <strong>À quoi sert cet espace</strong>
+      L’éditeur de scène permet de configurer en détail la scène sélectionnée : son identifiant, son chapitre, son titre, son texte, son type et l’ensemble de ses choix.
+      <br><br>
+      <strong>Comment l’utiliser</strong>
+      Sélectionnez d’abord une scène dans la liste centrale, puis modifiez ici son contenu et ses embranchements. Chaque modification met à jour le projet.
+      <br><br>
+      <strong>Bon usage</strong>
+      Travaillez scène par scène, en vérifiant à chaque fois son rôle dans le parcours, la cohérence de ses choix et sa place dans la progression globale.
+    </div>
+    <p class="muted small">Sélectionnez une scène dans la liste centrale.</p>
+  </div>
+  <span id="selectedScenePill" class="pill">Aucune scène</span>
+</div>
+
+                  <div id="sceneEditorEmpty" class="notice">
+                    Aucune scène sélectionnée.
+                  </div>
+
+                  <div id="sceneEditor" style="display:none;" class="stack">
+                    <div class="fieldGrid">
+<div>
+  <div class="fieldLabel">
+    <label for="sceneId">ID technique</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-sceneId" aria-label="Aide sur l’identifiant technique de la scène" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-sceneId" role="note">
+    <strong>ID technique</strong>
+    Donnez un identifiant unique à la scène. Il sert à créer les liens entre scènes via les choix. Il ne doit jamais être dupliqué.
+  </div>
+  <input id="sceneId" type="text" />
+</div>
+<div>
+  <div class="fieldLabel">
+    <label for="sceneChapter">Chapitre</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-sceneChapter" aria-label="Aide sur le chapitre" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-sceneChapter" role="note">
+    <strong>Chapitre</strong>
+    Un chapitre correspond à une phase dans la progression. Il sert à regrouper plusieurs scènes dans une phase cohérente.
+    Renseignez l’intitulé du chapitre ou de la phase dans laquelle s’inscrit cette scène. Cela aide à structurer le parcours et à repérer les grandes étapes.
+    Conseil : Si plusieurs scènes traitent du même problème pédagogique, elles doivent généralement partager le même chapitre.
+  </div>
+  <input id="sceneChapter" type="text" />
+</div>
+<div>
+  <div class="fieldLabel">
+    <label for="sceneTitle">Titre</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-sceneTitle" aria-label="Aide sur le titre de la scène" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-sceneTitle" role="note">
+    <strong>Titre de la scène</strong>
+    Donnez un titre lisible à la scène. C’est ce que verra le joueur dans l’interface du jeu exporté.
+  </div>
+  <input id="sceneTitle" type="text" />
+</div>
+                      <div class="fieldGrid two">
+<div>
+  <div class="fieldLabel">
+    <label for="sceneType">Type de scène</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-sceneType" aria-label="Aide sur le type de scène" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-sceneType" role="note">
+    <strong>Type de scène</strong>
+    Choisissez la fonction de la scène dans le parcours. Une scène normale fait avancer le récit, une finale clôt le jeu, une scène diagnostic affiche l’analyse des erreurs, une scène de remédiation permet au joueur de corriger une erreur ou de rééquilibrer son avancement après une décision qui a fragilisé la qualité de son parcours.
+  </div>
+  <select id="sceneType">
+                            <option value="normal">Normale</option>
+                            <option value="ending">Finale</option>
+                            <option value="diagnosis">Diagnostic</option>
+                            <option value="remediation">Remédiation</option>
+                          </select>
+                        </div>
+<div>
+  <div class="fieldLabel">
+    <label for="sceneEnding">Scène de fin ?</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-sceneEnding" aria-label="Aide sur le statut de fin" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-sceneEnding" role="note">
+    <strong>Scène de fin ?</strong>
+    Indiquez si cette scène clôt effectivement la partie. Une scène de fin n’affiche plus de choix ordinaires et propose en général un redémarrage.
+  </div>
+  <select id="sceneEnding">
+                            <option value="false">Non</option>
+                            <option value="true">Oui</option>
+                          </select>
+                        </div>
+                      </div>
+<div>
+  <div class="fieldLabel">
+    <label for="sceneText">Texte de la scène</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-sceneText" aria-label="Aide sur le texte de la scène" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-sceneText" role="note">
+    <strong>Texte de la scène</strong>
+    Rédigez ici le récit affiché au joueur. Utilisez une ligne vide entre deux paragraphes pour structurer la narration et améliorer la lisibilité.
+  </div>
+  <textarea id="sceneText"></textarea>
+  <div class="help">Un paragraphe par ligne vide.</div>
+</div>
+                    </div>
+
+                    <div class="itemHead">
+                      <div>
+                        <h3>Choix</h3>
+                        <p class="muted small">Ajoutez autant de choix que nécessaire.</p>
+                      </div>
+                      <button id="addChoiceBtn">Ajouter un choix</button>
+                    </div>
+
+                    <div id="choicesList" class="list"></div>
+                  </div>
+                </div>
+                </details>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <div id="previewTab" class="tabPanel" style="display:none;">
+          <div class="stack">
+<div class="itemHead">
+  <div>
+    <div class="fieldLabel">
+      <h2 style="margin:0;">Prévisualisation</h2>
+      <button
+        type="button"
+        class="helpIcon"
+        data-help-toggle="help-preview-section"
+        aria-label="Aide sur la prévisualisation"
+        aria-expanded="false"
+      >
+        ?
+      </button>
+    </div>
+    <div class="helpBubble" id="help-preview-section" role="note">
+      <strong>À quoi sert cet espace</strong>
+      La prévisualisation permet de tester immédiatement le jeu en cours de conception, sans l’exporter.
+      <br><br>
+      <strong>Comment l’utiliser</strong>
+      Utilisez cet aperçu pour vérifier le rendu, la navigation entre scènes, la cohérence des choix, l’ouverture de l’aide et le comportement général du jeu.
+      <br><br>
+      <strong>Bon usage</strong>
+      Prévisualisez souvent. Cela permet de repérer rapidement les scènes manquantes, les liaisons erronées et les effets qui ne produisent pas le comportement attendu.
+    </div>
+    <p class="muted small">Le jeu est généré à partir des données courantes.</p>
+  </div>
+  <div class="inlineBtns">
+    <button id="refreshPreviewBtn">Rafraîchir l’aperçu</button>
+    <button id="openPreviewNewTabBtn" class="secondary">Ouvrir dans un nouvel onglet</button>
+  </div>
+</div>
+            <div class="iframeWrap">
+              <iframe id="previewFrame" title="Prévisualisation du jeu"></iframe>
+            </div>
+          </div>
+        </div>
+
+        <div id="jsonTab" class="tabPanel" style="display:none;">
+          <div class="stack">
+<div class="itemHead">
+  <div>
+    <div class="fieldLabel">
+      <h2 style="margin:0;">Analyse structure</h2>
+      <button
+        type="button"
+        class="helpIcon"
+        data-help-toggle="help-json-section"
+        aria-label="Aide sur la structure JSON"
+        aria-expanded="false"
+      >
+        ?
+      </button>
+    </div>
+    <div class="helpBubble" id="help-json-section" role="note">
+      <strong>À quoi sert cet espace</strong>
+      Cette vue affiche la structure brute du projet sous forme de données JSON. Elle permet de voir exactement ce qui sera exporté ou sauvegardé.
+      <br><br>
+      <strong>Comment l’utiliser</strong>
+      Utilisez cette vue pour contrôler la cohérence générale du projet, repérer des erreurs de structure et vérifier les identifiants, les scènes, les choix et les règles.
+      <br><br>
+      <strong>Bon usage</strong>
+      Même si l’outil est conçu pour éviter le code, cette vue est très utile pour le contrôle qualité, l’archivage et le débogage.
+    </div>
+    <p class="muted small">Vue utile pour contrôle, débogage ou archivage.</p>
+  </div>
+</div>
+            <div id="validationBox" class="stack"></div>
+            <pre id="jsonPreview" class="jsonPreview"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <input id="hiddenJsonImport" type="file" accept=".json,application/json" style="display:none;" />
+
+  <script>
+    const RESERVED_VARS = [
+      { name: "score", label: "Score", type: "number", initial: 0, reserved: true },
+      { name: "risk", label: "Risque", type: "number", initial: 0, reserved: true },
+      { name: "step", label: "Étape", type: "number", initial: 0, reserved: true }
+    ];
+
+    function uid(prefix = "id") {
+      return `${prefix}_${Math.random().toString(36).slice(2, 9)}`;
+    }
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function sceneTemplate(id) {
+      return {
+        chapter: "Chapitre",
+        title: "Nouvelle scène",
+        text: ["Votre récit ici."],
+        type: "normal",
+        ending: false,
+        diagnosis: false,
+        choices: []
+      };
+    }
+
+    function choiceTemplate(sceneIds) {
+      return {
+        title: "Nouveau choix",
+        desc: "",
+        decisionLog: "",
+        goto: sceneIds[0] || "",
+        effects: {
+          score: 0,
+          risk: 0,
+          stepDelta: 1,
+          setFlags: {},
+          bumpFlags: {},
+          logs: [],
+          inventory: [],
+          salvage: false,
+          fatal: false
+        }
+      };
+    }
+
+    function conditionTemplate(variableName = "risk") {
+      return {
+        variable: variableName,
+        operator: ">=",
+        value: 1
+      };
+    }
+
+    function ruleTemplate(variableName = "risk") {
+      return {
+        id: uid("rule"),
+        name: "Nouvelle règle",
+        operator: "AND",
+        goto: "diagnostic_collapse",
+        conditions: [
+          conditionTemplate(variableName)
+        ]
+      };
+    }
+
+    function diagTemplate(variableName = "risk") {
+      return {
+        id: uid("diag"),
+        title: "Nouveau diagnostic",
+        text: "Texte du diagnostic.",
+        operator: "AND",
+        conditions: [
+          conditionTemplate(variableName)
+        ]
+      };
+    }
+
+    function variableTemplate() {
+      return {
+        name: uid("flag"),
+        label: "Nouvelle variable",
+        type: "boolean",
+        initial: false,
+        category: "custom",
+        description: ""
+      };
+    }
+
+function defaultProject() {
+  return {
+    meta: {
+      id: "nouveau_jeu",
+      title: "Nouveau jeu narratif",
+      subtitle: "Simulation interactive générique",
+      version: "1.0",
+      author: "",
+      description: "",
+      startScene: "intro",
+      totalSteps: 6
+    },
+    ui: {
+      openHelpOnStart: true,
+      labels: {
+        restart: "Rejouer",
+        undo: "Revenir d’un pas",
+        inventoryEmpty: "Aucune information retenue",
+        logEmpty: "Aucun événement notable pour le moment.",
+        decisionEmpty: "Aucune décision enregistrée pour le moment.",
+        noWarning: "Aucune alerte majeure pour l’instant."
+      }
+    },
+    help: {
+      title: "Comment utiliser ce jeu",
+      content: [
+        "Ce projet d’exemple montre la structure générale d’un jeu narratif décisionnel.",
+        "Vous pouvez modifier les scènes, les choix, les variables, les règles d’effondrement et les diagnostics pour créer votre propre simulation.",
+        "L’objectif de cet exemple n’est pas de traiter un sujet précis, mais de montrer comment fonctionne l’éditeur."
+      ]
+    },
+    variables: [
+      {
+        name: "goalClarified",
+        label: "Objectif clarifié",
+        type: "boolean",
+        initial: false,
+        category: "structure",
+        description: "Indique si le groupe a clarifié le but principal de son travail."
+      },
+      {
+        name: "infoCollected",
+        label: "Informations recueillies",
+        type: "boolean",
+        initial: false,
+        category: "données",
+        description: "Indique si des informations utiles ont été collectées avant la décision."
+      },
+      {
+        name: "alignmentLevel",
+        label: "Niveau d’alignement",
+        type: "number",
+        initial: 0,
+        category: "coordination",
+        description: "Mesure le niveau de cohérence obtenu dans la démarche."
+      },
+      {
+        name: "confusionRisk",
+        label: "Risque de confusion",
+        type: "number",
+        initial: 0,
+        category: "risques",
+        description: "Mesure l’accumulation de flou ou de désorganisation dans le parcours."
+      }
+    ],
+    rules: {
+      collapse: [
+        {
+          id: uid("rule"),
+          name: "Risque global trop élevé",
+          operator: "AND",
+          goto: "diagnostic_collapse",
+          conditions: [
+            { variable: "risk", operator: ">=", value: 7 }
+          ]
+        },
+        {
+          id: uid("rule"),
+          name: "Confusion trop importante",
+          operator: "AND",
+          goto: "diagnostic_collapse",
+          conditions: [
+            { variable: "confusionRisk", operator: ">=", value: 3 }
+          ]
+        }
+      ]
+    },
+    diagnostics: [
+      {
+        id: uid("diag"),
+        title: "Objectif insuffisamment clarifié",
+        text: "Le parcours a laissé trop de flou sur la finalité principale de l’action.",
+        operator: "AND",
+        conditions: [
+          { variable: "goalClarified", operator: "==", value: false }
+        ]
+      },
+      {
+        id: uid("diag"),
+        title: "Informations insuffisamment recueillies",
+        text: "Votre parcours s’est réalisé sans s’appuyer suffisamment sur des éléments utiles et stabilisés.",
+        operator: "AND",
+        conditions: [
+          { variable: "infoCollected", operator: "==", value: false }
+        ]
+      },
+      {
+        id: uid("diag"),
+        title: "Accumulation de fragilités",
+        text: "Plusieurs décisions ont progressivement fragilisé la cohérence générale du système.",
+        operator: "AND",
+        conditions: [
+          { variable: "risk", operator: ">", value: 0 }
+        ]
+      }
+    ],
+    scenes: {
+      intro: {
+        chapter: "Prologue",
+        title: "Le point de départ",
+        text: [
+          "Vous rejoignez un groupe chargé de préparer une décision importante dans un contexte complexe.",
+          "Plusieurs personnes veulent avancer vite, mais personne n’est encore tout à fait d’accord sur la manière de s’y prendre."
+        ],
+        type: "normal",
+        ending: false,
+        diagnosis: false,
+        choices: [
+          {
+            title: "Clarifier d’abord l’objectif",
+            desc: "Vous prenez un peu de temps pour stabiliser l’orientation du groupe.",
+            decisionLog: "Vous avez commencé par clarifier l’objectif.",
+            goto: "organisation",
+            effects: {
+              score: 2,
+              risk: 0,
+              stepDelta: 1,
+              setFlags: { goalClarified: true },
+              bumpFlags: { alignmentLevel: 1 },
+              logs: ["Le groupe dispose désormais d’un objectif plus clair."],
+              inventory: [
+                { key: "objectif", label: "Objectif clarifié", relevant: true }
+              ],
+              salvage: false,
+              fatal: false
+            }
+          },
+          {
+            title: "Passer directement à l’action",
+            desc: "Vous gagnez du temps apparent, mais le cadre reste plus flou.",
+            decisionLog: "Vous avez lancé l’action sans clarifier pleinement l’objectif.",
+            goto: "organisation",
+            effects: {
+              score: 0,
+              risk: 1,
+              stepDelta: 1,
+              setFlags: {},
+              bumpFlags: { confusionRisk: 1 },
+              logs: ["Le groupe avance, mais avec une orientation encore floue."],
+              inventory: [
+                { key: "demarrage_rapide", label: "Démarrage rapide", relevant: false }
+              ],
+              salvage: false,
+              fatal: false
+            }
+          }
+        ]
+      },
+
+      organisation: {
+        chapter: "Étape 1",
+        title: "Organiser la démarche",
+        text: [
+          "Le groupe doit maintenant choisir comment s’organiser et sur quoi s’appuyer pour construire une décision solide."
+        ],
+        type: "normal",
+        ending: false,
+        diagnosis: false,
+        choices: [
+          {
+            title: "Recueillir quelques informations utiles avant de continuer",
+            desc: "Vous ralentissez légèrement le rythme, mais vous consolidez la suite.",
+            decisionLog: "Vous avez choisi de recueillir des informations avant de poursuivre.",
+            goto: "arbitrage",
+            effects: {
+              score: 2,
+              risk: 0,
+              stepDelta: 1,
+              setFlags: { infoCollected: true },
+              bumpFlags: { alignmentLevel: 1 },
+              logs: ["Des informations utiles viennent soutenir la démarche."],
+              inventory: [
+                { key: "informations", label: "Informations recueillies", relevant: true }
+              ],
+              salvage: false,
+              fatal: false
+            }
+          },
+          {
+            title: "Continuer sans collecte complémentaire",
+            desc: "Vous gardez un rythme rapide, au prix d’un appui plus léger.",
+            decisionLog: "Vous avez poursuivi sans recueillir d’informations complémentaires.",
+            goto: "arbitrage",
+            effects: {
+              score: -1,
+              risk: 2,
+              stepDelta: 1,
+              setFlags: {},
+              bumpFlags: { confusionRisk: 1 },
+              logs: ["La progression est rapide, mais plus exposée aux angles morts."],
+              inventory: [
+                { key: "improvisation", label: "Décision poursuivie sans collecte", relevant: false }
+              ],
+              salvage: false,
+              fatal: false
+            }
+          }
+        ]
+      },
+
+      arbitrage: {
+        chapter: "Étape 2",
+        title: "Arbitrer sous contrainte",
+        text: [
+          "Le moment est venu de faire un choix structurant. Le groupe hésite entre une solution rapide et une solution mieux argumentée."
+        ],
+        type: "normal",
+        ending: false,
+        diagnosis: false,
+        choices: [
+          {
+            title: "Prendre le temps de justifier la décision",
+            desc: "Vous consolidez la cohérence de l’ensemble.",
+            decisionLog: "Vous avez privilégié une décision argumentée et structurée.",
+            goto: "ending_success",
+            effects: {
+              score: 3,
+              risk: 0,
+              stepDelta: 1,
+              setFlags: {},
+              bumpFlags: { alignmentLevel: 1 },
+              logs: ["La décision devient plus lisible et plus défendable."],
+              inventory: [
+                { key: "justification", label: "Décision justifiée", relevant: true }
+              ],
+              salvage: false,
+              fatal: false
+            }
+          },
+          {
+            title: "Choisir rapidement pour conclure",
+            desc: "Vous gagnez en vitesse, mais augmentez les fragilités.",
+            decisionLog: "Vous avez privilégié une conclusion rapide.",
+            goto: "diagnostic_collapse",
+            effects: {
+              score: -2,
+              risk: 3,
+              stepDelta: 1,
+              setFlags: {},
+              bumpFlags: { confusionRisk: 1 },
+              logs: ["La décision est prise rapidement, mais sur une base plus fragile."],
+              inventory: [
+                { key: "conclusion_rapide", label: "Conclusion rapide", relevant: false }
+              ],
+              salvage: false,
+              fatal: false
+            }
+          }
+        ]
+      },
+
+      ending_success: {
+        chapter: "Finale",
+        title: "Une décision globalement cohérente",
+        text: [
+          "Le parcours aboutit à une décision construite sur une base suffisamment claire, argumentée et défendable."
+        ],
+        type: "ending",
+        ending: true,
+        diagnosis: false,
+        choices: []
+      },
+
+      diagnostic_collapse: {
+        chapter: "Diagnostic",
+        title: "Le parcours s’est fragilisé",
+        text: [
+          "Vous avez accumulé plusieurs fragilités. Votre parcours s’interrompt pour laisser place à l’analyse."
+        ],
+        type: "diagnosis",
+        ending: true,
+        diagnosis: true,
+        choices: []
+      }
+    }
+  };
+}
+
+function emptyProject() {
+  return {
+    meta: {
+      id: "nouveau_jeu",
+      title: "",
+      subtitle: "",
+      version: "1.0",
+      author: "",
+      description: "",
+      startScene: "intro",
+      totalSteps: 1
+    },
+    ui: {
+      openHelpOnStart: true,
+      labels: {
+        restart: "Rejouer",
+        undo: "Revenir d’un pas",
+        inventoryEmpty: "Aucune information retenue",
+        logEmpty: "Aucun événement notable pour le moment.",
+        decisionEmpty: "Aucune décision enregistrée pour le moment.",
+        noWarning: "Aucune alerte majeure pour l’instant."
+      }
+    },
+    help: {
+      title: "Comment utiliser ce jeu",
+      content: [
+        "Complétez ce projet vide pour construire votre propre simulation."
+      ]
+    },
+    variables: [],
+    rules: {
+      collapse: []
+    },
+    diagnostics: [],
+    scenes: {
+      intro: {
+        chapter: "",
+        title: "",
+        text: [""],
+        type: "normal",
+        ending: false,
+        diagnosis: false,
+        choices: []
+      },
+      diagnostic_collapse: {
+        chapter: "Diagnostic",
+        title: "Diagnostic final",
+        text: [
+          "Cette scène s’affichera si une règle d’effondrement y redirige le jeu."
+        ],
+        type: "diagnosis",
+        ending: true,
+        diagnosis: true,
+        choices: []
+      }
+    }
+  };
+}
+
+    let project = defaultProject();
+    let selectedSceneId = "intro";
+    let currentTab = "editor";
+
+    const els = {
+      metaTitle: document.getElementById("metaTitle"),
+      metaSubtitle: document.getElementById("metaSubtitle"),
+      metaAuthor: document.getElementById("metaAuthor"),
+      metaStartScene: document.getElementById("metaStartScene"),
+      metaTotalSteps: document.getElementById("metaTotalSteps"),
+      helpTitle: document.getElementById("helpTitle"),
+      helpContent: document.getElementById("helpContent"),
+      openHelpOnStart: document.getElementById("openHelpOnStart"),
+
+      scenesList: document.getElementById("scenesList"),
+      variablesList: document.getElementById("variablesList"),
+      rulesList: document.getElementById("rulesList"),
+      diagnosticsList: document.getElementById("diagnosticsList"),
+
+      sceneEditor: document.getElementById("sceneEditor"),
+      sceneEditorEmpty: document.getElementById("sceneEditorEmpty"),
+      selectedScenePill: document.getElementById("selectedScenePill"),
+
+      sceneId: document.getElementById("sceneId"),
+      sceneChapter: document.getElementById("sceneChapter"),
+      sceneTitle: document.getElementById("sceneTitle"),
+      sceneType: document.getElementById("sceneType"),
+      sceneEnding: document.getElementById("sceneEnding"),
+      sceneText: document.getElementById("sceneText"),
+      choicesList: document.getElementById("choicesList"),
+
+      jsonPreview: document.getElementById("jsonPreview"),
+      validationBox: document.getElementById("validationBox"),
+
+      previewFrame: document.getElementById("previewFrame"),
+      hiddenJsonImport: document.getElementById("hiddenJsonImport")
+    };
+
+    function getAllVariableNames() {
+      return [
+        ...RESERVED_VARS.map(v => v.name),
+        ...project.variables.map(v => v.name)
+      ];
+    }
+    
+    function getVariableDefinition(name) {
+      return RESERVED_VARS.find(v => v.name === name) || project.variables.find(v => v.name === name);
+    }
+
+    function normalizeProject(proj) {
+      if (!proj.meta) proj.meta = {};
+      if (!proj.ui) proj.ui = {};
+      if (!proj.ui.labels) proj.ui.labels = {};
+      if (!proj.help) proj.help = {};
+      if (!Array.isArray(proj.variables)) proj.variables = [];
+      if (!proj.rules) proj.rules = { collapse: [] };
+      if (!Array.isArray(proj.rules.collapse)) proj.rules.collapse = [];
+      if (!Array.isArray(proj.diagnostics)) proj.diagnostics = [];
+      if (!proj.scenes) proj.scenes = {};
+
+      Object.values(proj.scenes).forEach(scene => {
+        if (!Array.isArray(scene.text)) {
+          if (typeof scene.text === "string") {
+            scene.text = splitParagraphs(scene.text);
+          } else {
+            scene.text = [];
+          }
+        }
+        if (!Array.isArray(scene.choices)) scene.choices = [];
+        if (typeof scene.ending !== "boolean") scene.ending = scene.type === "ending";
+        if (typeof scene.diagnosis !== "boolean") scene.diagnosis = scene.type === "diagnosis";
+        scene.choices.forEach(choice => {
+          if (!choice.effects) choice.effects = {};
+          choice.effects.score ??= 0;
+          choice.effects.risk ??= 0;
+          choice.effects.stepDelta ??= 1;
+          choice.effects.setFlags ??= {};
+          choice.effects.bumpFlags ??= {};
+          choice.effects.logs ??= [];
+          choice.effects.inventory ??= [];
+          choice.effects.salvage ??= false;
+          choice.effects.fatal ??= false;
+        });
+      });
+
+      proj.meta.title ??= "Nouveau jeu narratif";
+      proj.meta.subtitle ??= "";
+      proj.meta.author ??= "";
+      proj.meta.startScene ??= Object.keys(proj.scenes)[0] || "intro";
+      proj.meta.totalSteps ??= 8;
+
+      proj.help.title ??= "Comment utiliser ce jeu";
+      if (!Array.isArray(proj.help.content)) {
+        proj.help.content = typeof proj.help.content === "string" ? splitParagraphs(proj.help.content) : [];
+      }
+
+      proj.ui.openHelpOnStart ??= true;
+      proj.ui.labels.restart ??= "Rejouer";
+      proj.ui.labels.undo ??= "Revenir d’un pas";
+      proj.ui.labels.inventoryEmpty ??= "Aucune information retenue";
+      proj.ui.labels.logEmpty ??= "Aucun événement notable pour le moment.";
+      proj.ui.labels.decisionEmpty ??= "Aucune décision enregistrée pour le moment.";
+      proj.ui.labels.noWarning ??= "Aucune alerte majeure pour l’instant.";
+
+      return proj;
+    }
+
+    function splitParagraphs(text) {
+      return String(text)
+        .split(/\n\s*\n/g)
+        .map(t => t.trim())
+        .filter(Boolean);
+    }
+
+    function joinParagraphs(arr) {
+      return (arr || []).join("\n\n");
+    }
+
+    function validateProject(proj) {
+      const errors = [];
+      const warnings = [];
+      const sceneIds = Object.keys(proj.scenes);
+      const varNames = getAllVariableNames();
+
+      if (!proj.meta.title?.trim()) {
+        errors.push("Le titre du projet est vide.");
+      }
+
+      if (!proj.meta.startScene || !proj.scenes[proj.meta.startScene]) {
+        errors.push("La scène de départ est absente ou invalide.");
+      }
+
+      if (sceneIds.length === 0) {
+        errors.push("Aucune scène n’est définie.");
+      }
+
+      if (!proj.scenes.diagnostic_collapse) {
+        warnings.push("La scène 'diagnostic_collapse' n’existe pas. Certaines règles peuvent pointer vers une scène absente.");
+      }
+
+      const seenVarNames = new Set();
+      proj.variables.forEach(v => {
+        if (!v.name?.trim()) errors.push("Une variable a un nom technique vide.");
+        if (seenVarNames.has(v.name)) errors.push(`Nom de variable dupliqué : ${v.name}`);
+        seenVarNames.add(v.name);
+      });
+
+      sceneIds.forEach(id => {
+        const scene = proj.scenes[id];
+        if (!scene.title?.trim()) {
+          warnings.push(`La scène '${id}' n’a pas de titre.`);
+        }
+        scene.choices.forEach((choice, idx) => {
+          if (!choice.goto || !proj.scenes[choice.goto]) {
+            errors.push(`La scène '${id}', choix ${idx + 1}, pointe vers une cible inexistante : '${choice.goto}'.`);
+          }
+
+          Object.keys(choice.effects?.setFlags || {}).forEach(flagName => {
+            if (!varNames.includes(flagName)) {
+              errors.push(`La scène '${id}', choix ${idx + 1}, définit une variable inconnue : '${flagName}'.`);
+            }
+          });
+
+          Object.keys(choice.effects?.bumpFlags || {}).forEach(flagName => {
+            if (!varNames.includes(flagName)) {
+              errors.push(`La scène '${id}', choix ${idx + 1}, incrémente une variable inconnue : '${flagName}'.`);
+            }
+          });
+        });
+      });
+
+      proj.rules.collapse.forEach(rule => {
+        if (!rule.goto || !proj.scenes[rule.goto]) {
+          errors.push(`La règle d’effondrement '${rule.name}' pointe vers une scène inexistante : '${rule.goto}'.`);
+        }
+        (rule.conditions || []).forEach(cond => {
+          if (!varNames.includes(cond.variable)) {
+            errors.push(`La règle '${rule.name}' utilise une variable inconnue : '${cond.variable}'.`);
+          }
+        });
+      });
+
+      proj.diagnostics.forEach(diag => {
+        (diag.conditions || []).forEach(cond => {
+          if (!varNames.includes(cond.variable)) {
+            errors.push(`Le diagnostic '${diag.title}' utilise une variable inconnue : '${cond.variable}'.`);
+          }
+        });
+      });
+      
+      const incoming = new Map(sceneIds.map(id => [id, 0]));
+      sceneIds.forEach(id => {
+        proj.scenes[id].choices.forEach(choice => {
+          if (incoming.has(choice.goto)) {
+            incoming.set(choice.goto, incoming.get(choice.goto) + 1);
+          }
+        });
+      });
+
+      sceneIds.forEach(id => {
+        if (id !== proj.meta.startScene && incoming.get(id) === 0) {
+          warnings.push(`La scène '${id}' semble inaccessible depuis la scène de départ.`);
+        }
+      });
+
+      return { errors, warnings };
+    }
+
+    function renderMeta() {
+      els.metaTitle.value = project.meta.title || "";
+      els.metaSubtitle.value = project.meta.subtitle || "";
+      els.metaAuthor.value = project.meta.author || "";
+      els.metaTotalSteps.value = project.meta.totalSteps || 1;
+      els.helpTitle.value = project.help.title || "";
+      els.helpContent.value = joinParagraphs(project.help.content || []);
+      els.openHelpOnStart.checked = !!project.ui.openHelpOnStart;
+
+      const sceneIds = Object.keys(project.scenes);
+      els.metaStartScene.innerHTML = sceneIds
+        .map(id => `<option value="${escapeHtml(id)}">${escapeHtml(id)}</option>`)
+        .join("");
+      els.metaStartScene.value = project.meta.startScene;
+    }
+
+    function renderVariables() {
+      els.variablesList.innerHTML = "";
+
+      RESERVED_VARS.forEach(v => {
+        const div = document.createElement("div");
+        div.className = "varBlock";
+        div.innerHTML = `
+          <h4>${escapeHtml(v.label)} <span class="pill">🔒</span></h4>
+          <div class="fieldGrid three">
+            <div>
+              <label>Nom technique</label>
+              <input value="${escapeAttr(v.name)}" disabled />
+            </div>
+            <div>
+              <label>Type</label>
+              <input value="${escapeAttr(v.type)}" disabled />
+            </div>
+            <div>
+              <label>Valeur initiale</label>
+              <input value="${escapeAttr(String(v.initial))}" disabled />
+            </div>
+          </div>
+        `;
+        els.variablesList.appendChild(div);
+      });
+
+      project.variables.forEach((v, idx) => {
+        const div = document.createElement("div");
+        div.className = "varBlock";
+        div.innerHTML = `
+          <div class="itemHead">
+            <strong>Variable personnalisée ${idx + 1}</strong>
+            <div class="itemActions">
+              <button data-action="deleteVar" data-index="${idx}" class="bad">Supprimer</button>
+            </div>
+          </div>
+          <div class="fieldGrid two">
+<div>
+  <div class="fieldLabel">
+    <label>Nom technique</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-varName-${idx}" aria-label="Aide sur le nom technique de la variable" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-varName-${idx}" role="note">
+    <strong>Nom technique</strong>
+    Saisissez un identifiant technique unique et simple pour la variable. Il sera utilisé dans les effets, les règles et les diagnostics.
+  </div>
+  <input data-action="varName" data-index="${idx}" value="${escapeAttr(v.name)}" />
+</div>
+<div>
+  <div class="fieldLabel">
+    <label>Libellé</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-varLabel-${idx}" aria-label="Aide sur le libellé de la variable" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-varLabel-${idx}" role="note">
+    <strong>Libellé</strong>
+    Renseignez un nom lisible par vous-même. Ce libellé aide à comprendre rapidement le rôle de la variable dans l’éditeur.
+  </div>
+  <input data-action="varLabel" data-index="${idx}" value="${escapeAttr(v.label || "")}" />
+</div>
+          <div>
+  <div class="fieldLabel">
+    <label>Type</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-varType-${idx}" aria-label="Aide sur le type de variable" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-varType-${idx}" role="note">
+    <strong>Type</strong>
+    Choisissez booléen pour un état vrai ou faux, et nombre pour un compteur ou un niveau d’intensité.
+  </div>
+  <select data-action="varType" data-index="${idx}">
+                <option value="boolean" ${v.type === "boolean" ? "selected" : ""}>Booléen</option>
+                <option value="number" ${v.type === "number" ? "selected" : ""}>Nombre</option>
+              </select>
+            </div>
+<div>
+  <div class="fieldLabel">
+    <label>Valeur initiale</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-varInitial-${idx}" aria-label="Aide sur la valeur initiale" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-varInitial-${idx}" role="note">
+    <strong>Valeur initiale</strong>
+    Définissez la valeur de départ de la variable au lancement du jeu. Elle sert d’état initial avant toute décision du joueur.
+  </div>
+              ${v.type === "boolean"
+                ? `<select data-action="varInitialBool" data-index="${idx}">
+                    <option value="true" ${v.initial === true ? "selected" : ""}>true</option>
+                    <option value="false" ${v.initial === false ? "selected" : ""}>false</option>
+                  </select>`
+                : `<input type="number" data-action="varInitialNumber" data-index="${idx}" value="${Number(v.initial || 0)}" />`
+              }
+            </div>
+<div>
+  <div class="fieldLabel">
+    <label>Catégorie</label>
+    <button
+      type="button"
+      class="helpIcon"
+      data-help-toggle="help-varCategory-${idx}"
+      aria-label="Aide sur la catégorie"
+      aria-expanded="false"
+    >
+      ?
+    </button>
+  </div>
+
+  <div class="helpBubble" id="help-varCategory-${idx}" role="note">
+    <strong>À quoi sert la catégorie</strong>
+
+    La catégorie permet simplement de regrouper les variables qui parlent du même aspect du parcours.
+
+    <br><br>
+
+    <strong>Pourquoi c’est utile</strong>
+
+    Cela permet de garder un projet lisible lorsque le nombre de variables augmente, et d’identifier rapidement ce que chaque variable représente.
+
+    <br><br>
+
+    <strong>Conseil pratique</strong>
+
+    Si votre jeu reste simple, vous pouvez laisser ce champ vide. Il devient utile surtout lorsque votre simulation devient plus complexe.
+  </div>
+
+  <input data-action="varCategory" data-index="${idx}" value="${escapeAttr(v.category || "")}" />
+</div>
+<div>
+  <div class="fieldLabel">
+    <label>Description</label>
+    <button
+      type="button"
+      class="helpIcon"
+      data-help-toggle="help-varDescription-${idx}"
+      aria-label="Aide sur la description"
+      aria-expanded="false"
+    >
+      ?
+    </button>
+  </div>
+
+  <div class="helpBubble" id="help-varDescription-${idx}" role="note">
+    <strong>À quoi sert la description</strong>
+
+    La description permet d’expliquer clairement ce que représente cette variable dans votre simulation.
+
+    <br><br>
+
+    <strong>Pourquoi c’est important</strong>
+
+    Lorsque vous reviendrez plus tard sur votre projet, ou si quelqu’un d’autre l’utilise, cette description permettra de comprendre immédiatement le rôle de la variable.
+
+    <br><br>
+
+    <strong>Exemple</strong>
+
+    Au lieu d’écrire seulement :
+
+    biasRisk
+
+    vous pouvez préciser :
+
+    Niveau de risque lié à des jugements trop rapides.
+
+    <br><br>
+
+    <strong>Conseil pratique</strong>
+
+    Décrivez toujours la variable comme si vous expliquiez à un collègue ce qu’elle représente dans la situation pédagogique.
+  </div>
+
+  <input data-action="varDescription" data-index="${idx}" value="${escapeAttr(v.description || "")}" />
+</div>
+          </div>
+        `;
+        els.variablesList.appendChild(div);
+      });
+    }
+    
+    function renderRules() {
+      const varNames = getAllVariableNames();
+      const sceneIds = Object.keys(project.scenes);
+
+      els.rulesList.innerHTML = project.rules.collapse.map((rule, idx) => `
+        <div class="ruleBlock">
+          <div class="itemHead">
+            <strong>Règle ${idx + 1}</strong>
+            <div class="itemActions">
+              <button data-action="duplicateRule" data-index="${idx}">Dupliquer</button>
+              <button data-action="deleteRule" data-index="${idx}" class="bad">Supprimer</button>
+            </div>
+          </div>
+
+          <div class="fieldGrid two">
+<div>
+  <div class="fieldLabel">
+    <label>Nom</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-ruleName-${idx}" aria-label="Aide sur le nom de la règle" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-ruleName-${idx}" role="note">
+    <strong>Nom de la règle</strong>
+    Donnez un nom clair à la règle d’effondrement. Cela aide à comprendre rapidement la logique de bascule vers le diagnostic.
+  </div>
+  <input data-action="ruleName" data-index="${idx}" value="${escapeAttr(rule.name || "")}" />
+</div>
+            <div>
+  <div class="fieldLabel">
+    <label>Combinaison des conditions</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-ruleOperator-${idx}" aria-label="Aide sur la combinaison des conditions" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-ruleOperator-${idx}" role="note">
+    <strong>Combinaison des conditions</strong>
+    Vous pouvez décider que cet effondrement se produit en raison de olus plusieurs conditions. Choisissez ET si toutes les conditions doivent être vraies ensemble. Choisissez OU si une seule condition vraie parmi les différentes conditions suffit à déclencher la règle.
+  </div>
+  <select data-action="ruleOperator" data-index="${idx}">
+                <option value="AND" ${rule.operator === "AND" ? "selected" : ""}>ET</option>
+                <option value="OR" ${rule.operator === "OR" ? "selected" : ""}>OU</option>
+              </select>
+            </div>
+            <div>
+  <div class="fieldLabel">
+    <label>Scène de destination</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-ruleGoto-${idx}" aria-label="Aide sur la scène de destination de la règle" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-ruleGoto-${idx}" role="note">
+    <strong>Ce qui est attendu</strong>
+    Sélectionnez la scène vers laquelle le jeu basculera si cette règle devient vraie. Il s’agit généralement d’une scène de diagnostic.
+  </div>
+  <select data-action="ruleGoto" data-index="${idx}">
+                ${sceneIds.map(id => `<option value="${escapeAttr(id)}" ${rule.goto === id ? "selected" : ""}>${escapeHtml(id)}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+
+          <div class="stack" style="margin-top:10px;">
+            ${(rule.conditions || []).map((cond, cIdx) => `
+              <div class="itemCard">
+                <div class="itemHead">
+                  <strong>Condition ${cIdx + 1}</strong>
+                  <div class="itemActions">
+                    <button data-action="deleteRuleCondition" data-index="${idx}" data-cindex="${cIdx}" class="bad">Supprimer</button>
+                  </div>
+                </div>
+                <div class="fieldGrid three">
+                  <div>
+<div>
+  <div class="fieldLabel">
+    <label>Variable</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-ruleCondVariable-${idx}-${cIdx}" aria-label="Aide sur la variable de la condition" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-ruleCondVariable-${idx}-${cIdx}" role="note">
+    <strong>Variable</strong>
+    Choisissez ici l’information du jeu que la règle doit surveiller. Il peut s’agir d’une variable que vous avez créée, ou d’une variable du moteur comme le risque ou le score.
+    <br><br>
+    <strong>Exemple</strong>
+    Si vous choisissez <em>risk</em>, la règle pourra se déclencher lorsque le niveau global de la variable risk devient trop élevé (niveau défini plus loin).
+  </div>
+  <select data-action="ruleCondVariable" data-index="${idx}" data-cindex="${cIdx}">
+                      ${varNames.map(name => `<option value="${escapeAttr(name)}" ${cond.variable === name ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}
+                    </select>
+                  </div>
+                  </div>
+<div>
+  <div class="fieldLabel">
+    <label>Opérateur</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-ruleCondOperator-${idx}-${cIdx}" aria-label="Aide sur l’opérateur de la condition" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-ruleCondOperator-${idx}-${cIdx}" role="note">
+    <strong>Opérateur</strong>
+    L’opérateur indique comment comparer la variable à la valeur choisie.
+    <br><br>
+    <strong>Exemples</strong>
+    <em>==</em> signifie égal à,
+    <em>!=</em> signifie différent de,
+    <em>&gt;=</em> signifie supérieur ou égal à.
+    <br><br>
+    <strong>Bon usage</strong>
+    Utilisez un opérateur simple et cohérent avec le type de variable. Par exemple, pour un compteur de risque, on utilise souvent <em>&gt;=</em>.
+  </div>
+  <select data-action="ruleCondOperator" data-index="${idx}" data-cindex="${cIdx}">
+                      ${["==","!=",">","<",">=","<="].map(op => `<option value="${op}" ${cond.operator === op ? "selected" : ""}>${op}</option>`).join("")}
+                    </select>
+                  </div>
+<div>
+  <div class="fieldLabel">
+    <label>Valeur</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-ruleCondValue-${idx}-${cIdx}" aria-label="Aide sur la valeur de la condition" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-ruleCondValue-${idx}-${cIdx}" role="note">
+    <strong>Valeur</strong>
+    Saisissez la valeur à laquelle la variable sera comparée.
+    <br><br>
+    <strong>Exemples</strong>
+    Pour une variable booléenne, on met souvent <em>true</em> ou <em>false</em>.
+    Pour une variable numérique, on met un nombre, par exemple <em>3</em> ou <em>8</em>.
+    <br><br>
+    <strong>Bon usage</strong>
+    Cette valeur doit représenter un seuil ou un état significatif dans votre logique de jeu.
+  </div>
+  <input data-action="ruleCondValue" data-index="${idx}" data-cindex="${cIdx}" value="${escapeAttr(String(cond.value))}" />
+</div>
+                </div>
+              </div>
+            `).join("")}
+            <button data-action="addRuleCondition" data-index="${idx}" class="secondary">Ajouter une condition</button>
+          </div>
+        </div>
+      `).join("");
+    }
+    
+    function renderDiagnostics() {
+      const varNames = getAllVariableNames();
+
+      els.diagnosticsList.innerHTML = project.diagnostics.map((diag, idx) => `
+        <div class="diagBlock">
+          <div class="itemHead">
+            <strong>Diagnostic ${idx + 1}</strong>
+            <div class="itemActions">
+              <button data-action="duplicateDiag" data-index="${idx}">Dupliquer</button>
+              <button data-action="deleteDiag" data-index="${idx}" class="bad">Supprimer</button>
+            </div>
+          </div>
+
+          <div class="fieldGrid">
+<div>
+  <div class="fieldLabel">
+    <label>Titre</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-diagTitle-${idx}" aria-label="Aide sur le titre du diagnostic" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-diagTitle-${idx}" role="note">
+    <strong>Titre du diagnostic</strong>
+    Donnez un titre synthétique au diagnostic. Il doit permettre d’identifier rapidement la nature du problème détecté.
+  </div>
+  <input data-action="diagTitle" data-index="${idx}" value="${escapeAttr(diag.title || "")}" />
+</div>
+<div>
+  <div class="fieldLabel">
+    <label>Texte</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-diagText-${idx}" aria-label="Aide sur le texte du diagnostic" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-diagText-${idx}" role="note">
+    <strong>Texte du diagnostic</strong>
+    Rédigez une explication claire du problème diagnostiqué. Ce texte doit aider le joueur à comprendre la logique de l’échec ou de la fragilité constatée.
+  </div>
+  <textarea data-action="diagText" data-index="${idx}">${escapeHtml(diag.text || "")}</textarea>
+</div>
+            <div>
+              <label>Combinaison des conditions</label>
+              <select data-action="diagOperator" data-index="${idx}">
+                <option value="AND" ${diag.operator === "AND" ? "selected" : ""}>ET</option>
+                <option value="OR" ${diag.operator === "OR" ? "selected" : ""}>OU</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="stack" style="margin-top:10px;">
+            ${(diag.conditions || []).map((cond, cIdx) => `
+              <div class="itemCard">
+                <div class="itemHead">
+                  <strong>Condition ${cIdx + 1}</strong>
+                  <div class="itemActions">
+                    <button data-action="deleteDiagCondition" data-index="${idx}" data-cindex="${cIdx}" class="bad">Supprimer</button>
+                  </div>
+                </div>
+                <div class="fieldGrid three">
+ <div>
+  <div class="fieldLabel">
+    <label>Variable</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-diagCondVariable-${idx}-${cIdx}" aria-label="Aide sur la variable du diagnostic" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-diagCondVariable-${idx}-${cIdx}" role="note">
+    <strong>Variable</strong>
+    Choisissez la variable qui servira à décider si ce diagnostic doit apparaître à la fin du jeu.
+  </div>
+  <select data-action="diagCondVariable" data-index="${idx}" data-cindex="${cIdx}">
+                      ${varNames.map(name => `<option value="${escapeAttr(name)}" ${cond.variable === name ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}
+                    </select>
+                  </div>
+      <div>
+  <div class="fieldLabel">
+    <label>Opérateur</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-diagCondOperator-${idx}-${cIdx}" aria-label="Aide sur l’opérateur du diagnostic" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-diagCondOperator-${idx}-${cIdx}" role="note">
+    <strong>Opérateur</strong>
+    L’opérateur indique comment la variable doit être comparée à la valeur pour décider d’afficher ce diagnostic.
+  </div>
+  <select data-action="diagCondOperator" data-index="${idx}" data-cindex="${cIdx}">
+                      ${["==","!=",">","<",">=","<="].map(op => `<option value="${op}" ${cond.operator === op ? "selected" : ""}>${op}</option>`).join("")}
+                    </select>
+                  </div>
+<div>
+  <div class="fieldLabel">
+    <label>Valeur</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-diagCondValue-${idx}-${cIdx}" aria-label="Aide sur la valeur du diagnostic" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-diagCondValue-${idx}-${cIdx}" role="note">
+    <strong>Valeur</strong>
+    Saisissez la valeur de référence qui permettra de décider si ce diagnostic doit être affiché.
+    <br><br>
+    <strong>Exemples</strong>
+    Vous pouvez utiliser <em>true</em> pour un état présent, ou un nombre comme <em>1</em>, <em>2</em> ou <em>3</em> pour un seuil de déclenchement.
+    <br><br>
+    <strong>Bon usage</strong>
+    Choisissez une valeur qui corresponde à un vrai signal pédagogique, pas à une simple variation sans importance.
+  </div>
+  <input data-action="diagCondValue" data-index="${idx}" data-cindex="${cIdx}" value="${escapeAttr(String(cond.value))}" />
+</div>
+                </div>
+              </div>
+            `).join("")}
+            <button data-action="addDiagCondition" data-index="${idx}" class="secondary">Ajouter une condition</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderScenesList() {
+      const ids = Object.keys(project.scenes);
+      els.scenesList.innerHTML = ids.map(id => {
+        const scene = project.scenes[id];
+        const isActive = id === selectedSceneId;
+        const choiceCount = scene.choices?.length || 0;
+        const tags = [];
+        if (project.meta.startScene === id) tags.push("départ");
+        if (scene.ending) tags.push("fin");
+        if (scene.diagnosis) tags.push("diagnostic");
+        if (scene.type === "remediation") tags.push("remédiation");
+
+        return `
+          <div class="itemCard ${isActive ? "active" : ""}">
+            <div class="itemHead">
+              <div>
+                <strong>${escapeHtml(id)}</strong>
+                <div class="muted small">${escapeHtml(scene.title || "")}</div>
+              </div>
+              <div class="itemActions">
+                <button data-action="selectScene" data-scene="${escapeAttr(id)}">${isActive ? "Ouverte" : "Éditer"}</button>
+              </div>
+            </div>
+            <div class="inlineBtns">
+              <span class="pill">${escapeHtml(scene.chapter || "Sans chapitre")}</span>
+              <span class="pill">${choiceCount} choix</span>
+              ${tags.map(tag => `<span class="pill">${escapeHtml(tag)}</span>`).join("")}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderSceneEditor() {
+      const scene = project.scenes[selectedSceneId];
+      if (!scene) {
+        els.sceneEditor.style.display = "none";
+        els.sceneEditorEmpty.style.display = "block";
+        els.selectedScenePill.textContent = "Aucune scène";
+        return;
+      }
+
+      els.sceneEditor.style.display = "grid";
+      els.sceneEditorEmpty.style.display = "none";
+      els.selectedScenePill.textContent = selectedSceneId;
+
+      els.sceneId.value = selectedSceneId;
+      els.sceneChapter.value = scene.chapter || "";
+      els.sceneTitle.value = scene.title || "";
+      els.sceneType.value = scene.type || "normal";
+      els.sceneEnding.value = String(!!scene.ending);
+      els.sceneText.value = joinParagraphs(scene.text || []);
+
+      renderChoices();
+    }
+
+    function renderChoices() {
+      const scene = project.scenes[selectedSceneId];
+      if (!scene) {
+        els.choicesList.innerHTML = "";
+        return;
+      }
+      
+      const sceneIds = Object.keys(project.scenes);
+      const customFlags = project.variables;
+
+      els.choicesList.innerHTML = scene.choices.map((choice, idx) => `
+        <details open class="choiceBlock">
+          <summary>Choix ${idx + 1} — ${escapeHtml(choice.title || "Sans titre")}</summary>
+          <div class="detailsBody stack">
+            <div class="itemActions">
+              <button data-action="duplicateChoice" data-index="${idx}">Dupliquer</button>
+              <button data-action="deleteChoice" data-index="${idx}" class="bad">Supprimer</button>
+            </div>
+
+            <div class="fieldGrid">
+<div>
+  <div class="fieldLabel">
+    <label>Titre</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceTitle-${idx}" aria-label="Aide sur le titre du choix" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceTitle-${idx}" role="note">
+    <strong>Titre du choix</strong>
+    Saisissez l’intitulé visible du choix proposé au joueur. Il doit être crédible, compréhensible et suffisamment distinct des autres options.
+  </div>
+  <input data-action="choiceTitle" data-index="${idx}" value="${escapeAttr(choice.title || "")}" />
+</div>
+<div>
+  <div class="fieldLabel">
+    <label>Description</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceDesc-${idx}" aria-label="Aide sur la description du choix" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceDesc-${idx}" role="note">
+    <strong>Description du choix</strong>
+    Ajoutez une courte nuance sous le titre du choix. Elle aide à faire comprendre l’intention ou le compromis associé à cette décision.
+  </div>
+  <input data-action="choiceDesc" data-index="${idx}" value="${escapeAttr(choice.desc || "")}" />
+</div>
+<div>
+  <div class="fieldLabel">
+    <label>Log de décision</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceDecisionLog-${idx}" aria-label="Aide sur le log de décision" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceDecisionLog-${idx}" role="note">
+    <strong>Ce qui est attendu</strong>
+    Rédigez la trace qui sera enregistrée dans le journal des décisions. Elle doit résumer clairement l’arbitrage effectué par le joueur.
+  </div>
+  <input data-action="choiceDecisionLog" data-index="${idx}" value="${escapeAttr(choice.decisionLog || "")}" />
+</div>
+             <div>
+  <div class="fieldLabel">
+    <label>Scène cible</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceGoto-${idx}" aria-label="Aide sur la scène cible du choix" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceGoto-${idx}" role="note">
+    <strong>Scène ciblt</strong>
+    Choisissez la scène vers laquelle ce choix conduira le joueur. Ce lien construit la structure d’embranchement du jeu.
+  </div>
+  <select data-action="choiceGoto" data-index="${idx}">
+                  ${sceneIds.map(id => `<option value="${escapeAttr(id)}" ${choice.goto === id ? "selected" : ""}>${escapeHtml(id)}</option>`).join("")}
+                </select>
+              </div>
+            </div>
+
+            <div class="fieldGrid three">
+<div>
+  <div class="fieldLabel">
+    <label>Score</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceScore-${idx}" aria-label="Aide sur l’effet score" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceScore-${idx}" role="note">
+    <strong>Score</strong>
+    Indiquez ici l’effet du choix sur la qualité globale du parcours. Une valeur positive renforce la solidité, une valeur négative la fragilise.
+  </div>
+  <input type="number" data-action="choiceScore" data-index="${idx}" value="${Number(choice.effects?.score || 0)}" />
+</div>
+<div>
+  <div class="fieldLabel">
+    <label>Risque</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceRisk-${idx}" aria-label="Aide sur l’effet risque" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceRisk-${idx}" role="note">
+    <strong>Risque</strong>
+    Renseignez l’impact du choix sur le niveau de fragilité globale. Plus cette valeur augmente, plus le jeu se rapproche d’un effondrement du parcours.
+  </div>
+  <input type="number" data-action="choiceRisk" data-index="${idx}" value="${Number(choice.effects?.risk || 0)}" />
+</div>
+<div>
+  <div class="fieldLabel">
+    <label>Progression</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceStepDelta-${idx}" aria-label="Aide sur la progression" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceStepDelta-${idx}" role="note">
+    <strong>Progression</strong>
+    Définissez de combien ce choix fait avancer la progression affichée. En général, on met 1 pour une étape normale.
+  </div>
+  <input type="number" data-action="choiceStepDelta" data-index="${idx}" value="${Number(choice.effects?.stepDelta ?? 1)}" />
+</div>
+            </div>
+
+            <div class="fieldGrid two">
+<div>
+  <div class="fieldLabel">
+    <label>Logs ajoutés, un par ligne</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceLogs-${idx}" aria-label="Aide sur les logs ajoutés" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceLogs-${idx}" role="note">
+    <strong>Logs ajoutés</strong>
+    Saisissez ici les messages qui seront ajoutés au journal de progression après ce choix. Ils servent à expliciter les conséquences produites par la décision.
+  </div>
+  <textarea data-action="choiceLogs" data-index="${idx}">${escapeHtml((choice.effects?.logs || []).join("\n"))}</textarea>
+</div>
+<div>
+  <div class="fieldLabel">
+    <label>Inventaire des éléments recueillis, un par ligne, format clé|libellé|true/false</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceInventory-${idx}" aria-label="Aide sur l’inventaire" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceInventory-${idx}" role="note">
+
+<strong>Ce qu’est l’inventaire</strong>
+
+L’inventaire représente les informations, ressources ou éléments de compréhension que le joueur a collectés pendant sa démarche. Il fonctionne comme une mémoire visible de ce que le joueur a pris en compte ou ignoré.
+
+<br><br>
+
+<strong>À quoi cela sert pour le joueur</strong>
+
+L’inventaire permet au joueur de voir concrètement ce qu’il a intégré dans son parcours.
+
+Cela rend visibles les effets réels des décisions prises.
+
+<br><br>
+
+<strong>Pourquoi c’est utile pédagogiquement</strong>
+
+Cela permet de montrer que la qualité du parcours et des décisions prises dépend aussi des éléments que l’on a pris le temps de recueillir et d’utiliser.
+
+Un joueur qui néglige certaines éléments peut voir les conséquences plus tard dans le jeu.
+
+<br><br>
+
+<strong>Comment remplir ce champ</strong>
+
+Chaque ligne correspond à un élément ajouté à l’inventaire sous la forme :
+
+clé | nom affiché | pertinent
+<br>
+Exemple : collègue| collègue consulté | true
+<br>
+Ce qui signifie qu'à un moment dans le parcours, le joueur a consulté un collègue, et que cette action a été bénéfique pour sa progression.
+
+<br><br>
+
+<strong>Que signifie pertinent ici ?</strong>
+
+true signifie que l’information aide à améliorer la qualité du parcours.
+
+false signifie que l’information est inutile ou trompeuse.
+
+Cela permet au jeu de distinguer les informations réellement utiles des informations secondaires.
+
+<br><br>
+
+<strong>Conseil pratique</strong>
+
+Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le joueur considère comme importants dans son parcours.
+
+</div>
+  <textarea data-action="choiceInventory" data-index="${idx}">${escapeHtml((choice.effects?.inventory || []).map(item => `${item.key}|${item.label}|${item.relevant}`).join("\n"))}</textarea>
+</div>
+            </div>
+
+            <div class="fieldGrid two">
+<div>
+  <div class="fieldLabel">
+    <label>Variables à définir, une par ligne, format variable=true</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceSetFlags-${idx}" aria-label="Aide sur les variables à définir" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceSetFlags-${idx}" role="note">
+    <strong>Variables à définir</strong>
+    Renseignez ici les variables dont la valeur doit être directement fixée par ce choix. Utilisez une ligne par variable sous la forme variable=valeur.
+  </div>
+  <textarea data-action="choiceSetFlags" data-index="${idx}">${escapeHtml(formatMap(choice.effects?.setFlags || {}))}</textarea>
+</div>
+<div>
+  <div class="fieldLabel">
+    <label>Variables à incrémenter, une par ligne, format variable=1</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceBumpFlags-${idx}" aria-label="Aide sur les variables à incrémenter" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceBumpFlags-${idx}" role="note">
+    <strong>Variables à incrémenter</strong>
+    Renseignez ici les variables numériques qui doivent être augmentées par ce choix. Utilisez une ligne par variable sous la forme variable=valeur.
+  </div>
+  <textarea data-action="choiceBumpFlags" data-index="${idx}">${escapeHtml(formatMap(choice.effects?.bumpFlags || {}))}</textarea>
+</div>
+            </div>
+
+            <div class="fieldGrid two">
+<div>
+  <div class="fieldLabel">
+    <label>
+      <input type="checkbox" data-action="choiceSalvage" data-index="${idx}" style="width:auto; margin-right:8px;" ${choice.effects?.salvage ? "checked" : ""} />
+      Marque ce choix comme remédiation
+    </label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceSalvage-${idx}" aria-label="Aide sur la remédiation" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceSalvage-${idx}" role="note">
+    Activez cette option si le choix sert à corriger ou compenser une erreur antérieure dans le parcours du joueur.
+  </div>
+</div>
+              <div>
+  <div class="fieldLabel">
+    <label>
+      <input type="checkbox" data-action="choiceFatal" data-index="${idx}" style="width:auto; margin-right:8px;" ${choice.effects?.fatal ? "checked" : ""} />
+      Rend ce choix fatal
+    </label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceFatal-${idx}" aria-label="Aide sur le caractère fatal du choix" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceFatal-${idx}" role="note">
+    Activez cette option si ce choix doit conduire directement à une impasse ou à un ech échec irréversible du parcours.
+  </div>
+</div>
+            </div>
+            
+              ${customFlags.length ? `
+              <div class="notice">
+                Variables disponibles : ${customFlags.map(v => `<span class="pill">${escapeHtml(v.name)}</span>`).join(" ")}
+              </div>
+            ` : `
+              <div class="notice">Aucune variable personnalisée définie pour le moment.</div>
+            `}
+          </div>
+        </details>
+      `).join("");
+    }
+
+    function renderJsonPreview() {
+      els.jsonPreview.textContent = JSON.stringify(project, null, 2);
+    }
+
+    function renderValidation() {
+      const result = validateProject(project);
+      const blocks = [];
+
+      if (result.errors.length === 0 && result.warnings.length === 0) {
+        blocks.push(`<div class="notice">Projet valide. Aucun problème détecté.</div>`);
+      }
+
+      result.errors.forEach(err => {
+        blocks.push(`<div class="notice warn"><strong>Erreur</strong><br>${escapeHtml(err)}</div>`);
+      });
+
+      result.warnings.forEach(warn => {
+        blocks.push(`<div class="notice"><strong>Alerte</strong><br>${escapeHtml(warn)}</div>`);
+      });
+
+      els.validationBox.innerHTML = blocks.join("");
+    }
+
+    function renderPreview() {
+      const html = buildPlayableHtml(project);
+      els.previewFrame.srcdoc = html;
+    }
+
+    function renderAll() {
+      normalizeProject(project);
+
+      const sceneIds = Object.keys(project.scenes);
+      if (!project.scenes[selectedSceneId]) {
+        selectedSceneId = sceneIds[0] || null;
+      }
+      if (project.meta.startScene && !project.scenes[project.meta.startScene]) {
+        project.meta.startScene = sceneIds[0] || "";
+      }
+
+      renderMeta();
+      renderVariables();
+      renderRules();
+      renderDiagnostics();
+      renderScenesList();
+      renderSceneEditor();
+      renderJsonPreview();
+      renderValidation();
+
+      if (currentTab === "preview") {
+        renderPreview();
+      }
+    }
+
+    function formatMap(obj) {
+      return Object.entries(obj || {})
+        .map(([k, v]) => `${k}=${v}`)
+        .join("\n");
+    }
+
+    function parseMap(text, mode = "auto") {
+      const obj = {};
+      String(text || "")
+        .split("\n")
+        .map(line => line.trim())
+        .filter(Boolean)
+        .forEach(line => {
+          const eq = line.indexOf("=");
+          if (eq === -1) return;
+          const key = line.slice(0, eq).trim();
+          let value = line.slice(eq + 1).trim();
+          if (!key) return;
+
+          if (mode === "bool") {
+            obj[key] = value === "true";
+          } else if (mode === "number") {
+            obj[key] = Number(value) || 0;
+          } else {
+            if (value === "true") value = true;
+            else if (value === "false") value = false;
+            else if (!Number.isNaN(Number(value)) && value !== "") value = Number(value);
+            obj[key] = value;
+          }
+        });
+      return obj;
+    }
+
+    function parseInventory(text) {
+      return String(text || "")
+        .split("\n")
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => {
+          const parts = line.split("|");
+          return {
+            key: (parts[0] || "").trim(),
+            label: (parts[1] || "").trim(),
+            relevant: String(parts[2] || "true").trim() !== "false"
+          };
+        })
+        .filter(item => item.key && item.label);
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function escapeAttr(str) {
+      return escapeHtml(str).replaceAll('"', "&quot;");
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll(".tabBtn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tab);
+      });
+      document.getElementById("editorTab").style.display = tab === "editor" ? "block" : "none";
+      document.getElementById("previewTab").style.display = tab === "preview" ? "block" : "none";
+      document.getElementById("jsonTab").style.display = tab === "json" ? "block" : "none";
+
+      if (tab === "preview") {
+        renderPreview();
+      }
+      if (tab === "json") {
+        renderJsonPreview();
+        renderValidation();
+      }
+    }
+
+    function addScene() {
+      let id = uid("scene");
+      while (project.scenes[id]) {
+        id = uid("scene");
+      }
+      project.scenes[id] = sceneTemplate(id);
+      selectedSceneId = id;
+      renderAll();
+    }
+
+    function duplicateScene() {
+      if (!selectedSceneId || !project.scenes[selectedSceneId]) return;
+      let id = `${selectedSceneId}_copy`;
+      let i = 2;
+      while (project.scenes[id]) {
+        id = `${selectedSceneId}_copy_${i++}`;
+      }
+      project.scenes[id] = clone(project.scenes[selectedSceneId]);
+      selectedSceneId = id;
+      renderAll();
+    }
+
+    function deleteScene() {
+      if (!selectedSceneId || !project.scenes[selectedSceneId]) return;
+      const ids = Object.keys(project.scenes);
+      if (ids.length <= 1) {
+        alert("Le projet doit conserver au moins une scène.");
+        return;
+      }
+      if (!confirm(`Supprimer la scène '${selectedSceneId}' ?`)) return;
+
+      delete project.scenes[selectedSceneId];
+      const nextId = Object.keys(project.scenes)[0];
+      selectedSceneId = nextId;
+      if (project.meta.startScene && !project.scenes[project.meta.startScene]) {
+        project.meta.startScene = nextId;
+      }
+      Object.values(project.scenes).forEach(scene => {
+        scene.choices.forEach(choice => {
+          if (choice.goto && !project.scenes[choice.goto]) {
+            choice.goto = nextId;
+          }
+        });
+      });
+      renderAll();
+    }
+
+    function renameScene(oldId, newId) {
+      newId = newId.trim();
+      if (!newId || oldId === newId) return;
+      if (project.scenes[newId]) {
+        alert("Cet identifiant de scène existe déjà.");
+        renderAll();
+        return;
+      }
+
+      const newScenes = {};
+      Object.keys(project.scenes).forEach(id => {
+        if (id === oldId) {
+          newScenes[newId] = project.scenes[oldId];
+        } else {
+          newScenes[id] = project.scenes[id];
+        }
+      });
+      project.scenes = newScenes;
+
+      if (project.meta.startScene === oldId) {
+        project.meta.startScene = newId;
+      }
+
+      project.rules.collapse.forEach(rule => {
+        if (rule.goto === oldId) rule.goto = newId;
+      });
+
+      Object.values(project.scenes).forEach(scene => {
+        scene.choices.forEach(choice => {
+          if (choice.goto === oldId) choice.goto = newId;
+        });
+      });
+
+      selectedSceneId = newId;
+      renderAll();
+    }
+    
+    function addChoice() {
+      const scene = project.scenes[selectedSceneId];
+      if (!scene) return;
+      scene.choices.push(choiceTemplate(Object.keys(project.scenes)));
+      renderAll();
+    }
+
+    function duplicateChoice(index) {
+      const scene = project.scenes[selectedSceneId];
+      if (!scene) return;
+      scene.choices.splice(index + 1, 0, clone(scene.choices[index]));
+      renderAll();
+    }
+
+    function deleteChoice(index) {
+      const scene = project.scenes[selectedSceneId];
+      if (!scene) return;
+      scene.choices.splice(index, 1);
+      renderAll();
+    }
+
+    function buildPlayableData(proj) {
+      const data = clone(proj);
+
+      const stateLines = [
+        {
+          label: "Cohérence",
+          expr: "score"
+        },
+        {
+          label: "Fragilités",
+          expr: "risk"
+        }
+      ];
+
+      data._builderStateLines = stateLines;
+
+      return data;
+    }
+
+    function buildPlayableHtml(proj) {
+      const data = buildPlayableData(proj);
+      const serialized = JSON.stringify(data).replace(/<\/script/gi, "<\\/script");
+
+      return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(proj.meta.title || "Jeu narratif")}</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --bg2:#151c35;
+      --panel:#171d36;
+      --panel2:#202847;
+      --text:#eef2ff;
+      --muted:#b8c2df;
+      --accent:#7cc8ff;
+      --good:#74d5a3;
+      --warn:#f3ca70;
+      --bad:#ff8080;
+      --border:rgba(255,255,255,.10);
+      --shadow:0 12px 30px rgba(0,0,0,.35);
+      --radius:18px;
+      --max:980px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      min-height:100vh;
+      background:radial-gradient(circle at top, #243066 0%, #11152a 42%, #090c16 100%);
+      color:var(--text);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height:1.52;
+      padding:14px;
+      display:flex;
+      justify-content:center;
+    }
+    .app{width:100%;max-width:var(--max);display:grid;gap:12px}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .topbar{
+  padding:14px;
+  position:sticky;
+  top:0;
+  z-index:50;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background:rgba(11, 16, 32, 0.88);
+}
+    .topbar-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    h1,h2,h3,p{margin:0}
+    .title h1{font-size:1.2rem;line-height:1.2}
+    .title p{margin-top:6px;color:var(--muted);font-size:.94rem}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+    .stat{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:10px;min-height:70px}
+    .stat-label{color:var(--muted);font-size:.74rem;margin-bottom:4px}
+    .stat-value{font-size:1rem;font-weight:700}
+    .progress-wrap{margin-top:10px;height:12px;border-radius:999px;overflow:hidden;background:var(--panel);border:1px solid var(--border)}
+    .progress{width:0%;height:100%;background:linear-gradient(90deg, var(--accent), #90efcf);transition:width .25s ease}
+    .layout{display:grid;gap:12px}
+    .scene{padding:16px;min-height:460px}
+    .chapter{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid rgba(124,200,255,.28);background:rgba(124,200,255,.08);color:#d8efff;font-size:.8rem;margin-bottom:12px}
+    .scene h2{font-size:1.3rem;line-height:1.18;margin-bottom:10px}
+    .scene p{margin-bottom:12px;font-size:1rem}
+    .muted{color:var(--muted)}
+    .small{font-size:.84rem;color:var(--muted)}
+    .good{color:var(--good)}
+    .warn{color:var(--warn)}
+    .bad{color:var(--bad)}
+    .choices{display:grid;gap:10px;margin-top:16px}
+    .choice{
+      width:100%;text-align:left;border:none;border-radius:16px;padding:14px;background:var(--panel);
+      border:1px solid var(--border);color:var(--text);cursor:pointer;
+      transition:transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    .choice:hover,.choice:focus{outline:none;background:var(--panel2);border-color:rgba(124,200,255,.36);transform:translateY(-1px)}
+    .choice-title{display:block;font-weight:700;margin-bottom:4px;font-size:.98rem}
+    .choice-desc{display:block;font-size:.9rem;color:var(--muted)}
+    .toolbar{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px 16px}
+    .tool-btn{
+      border:none;padding:13px 12px;border-radius:14px;background:#273158;color:var(--text);
+      font-weight:700;border:1px solid var(--border);cursor:pointer;
+    }
+    .tool-btn:hover,.tool-btn:focus{outline:none;background:#2f3b6c}
+    .tool-btn[disabled]{opacity:.45;cursor:not-allowed}
+    .panel{padding:14px;background:var(--panel);border-top:1px solid var(--border)}
+    details{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+    
+    summary{list-style:none;cursor:pointer;padding:14px;font-weight:700;user-select:none}
+    summary::-webkit-details-marker{display:none}
+    .inner{padding:0 14px 14px}
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{background:#232d50;border:1px solid var(--border);color:#e1e8ff;padding:8px 10px;border-radius:999px;font-size:.84rem}
+    .log{display:grid;gap:8px}
+    .log-item{background:#202847;border:1px solid var(--border);border-radius:12px;padding:10px;font-size:.9rem;color:#dde5ff}
+    .log-item.warn{background:rgba(255, 128, 128, 0.08);border-color:rgba(255, 128, 128, 0.35);color:#dde5ff}
+    .decision-item{background:#202847;border:1px solid var(--border);border-left:4px solid rgba(124,200,255,.55);border-radius:12px;padding:10px;font-size:.9rem;color:#eef2ff}
+    .ending{border-left:4px solid var(--accent);padding-left:12px;margin:8px 0 14px}
+    .diagnosis{display:grid;gap:10px;margin:12px 0 14px}
+    .diag{background:#202847;border:1px solid var(--border);border-radius:14px;padding:12px}
+    .error-box{background:rgba(255,128,128,.10);border:1px solid rgba(255,128,128,.35);color:#ffdada;border-radius:14px;padding:12px}
+    .footer-note{text-align:center;font-size:.82rem;color:var(--muted);padding:0 8px 8px}
+    .icon-btn{
+      flex:0 0 auto;width:42px;height:42px;border:none;border-radius:999px;background:#273158;color:var(--text);
+      border:1px solid var(--border);font-size:1.15rem;font-weight:700;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+    }
+    .icon-btn:hover,.icon-btn:focus{outline:none;background:#2f3b6c}
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(5, 8, 18, .82);backdrop-filter: blur(6px);-webkit-backdrop-filter: blur(6px);
+      display:none;align-items:flex-end;justify-content:center;padding:0;z-index:1000;
+    }
+    .modal-overlay.open{display:flex}
+    .modal-dialog{
+      width:100%;max-height:90vh;background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border-top-left-radius:20px;border-top-right-radius:20px;border:1px solid var(--border);
+      box-shadow:0 -10px 30px rgba(0,0,0,.35);position:relative;overflow:hidden;
+    }
+    .modal-content{padding:18px 16px 24px;overflow:auto;max-height:90vh}
+    .modal-content h2{font-size:1.2rem;line-height:1.2;margin:0 36px 14px 0}
+    .modal-content h3{font-size:1rem;line-height:1.25;margin:18px 0 10px}
+    .modal-content p{margin:0 0 12px;color:var(--text)}
+    .modal-close{
+      position:absolute;top:10px;right:10px;width:38px;height:38px;border:none;border-radius:999px;background:#273158;color:var(--text);
+      border:1px solid var(--border);font-size:1.35rem;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;z-index:2;
+    }
+    .modal-close:hover,.modal-close:focus{outline:none;background:#2f3b6c}
+    body.modal-open{overflow:hidden}
+    @media (min-width: 840px){
+      .layout{grid-template-columns:1.35fr .95fr;align-items:start}
+      .scene h2{font-size:1.42rem}
+      .modal-overlay{align-items:center;padding:24px}
+      .modal-dialog{width:min(760px, 100%);max-height:88vh;border-radius:20px}
+      .modal-content{padding:22px 22px 28px;max-height:88vh}
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="card topbar">
+      <div class="topbar-head">
+        <div class="title">
+          <h1 id="gameTitle"></h1>
+          <p id="gameSubtitle"></p>
+        </div>
+        <button id="helpBtn" class="icon-btn" type="button" aria-label="Ouvrir l’aide">?</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="stat-label">Progression</div><div class="stat-value" id="stepLabel">0 / 0</div></div>
+        <div class="stat"><div class="stat-label">Cohérence</div><div class="stat-value" id="scoreLabel">0</div></div>
+        <div class="stat"><div class="stat-label">Fragilités</div><div class="stat-value" id="riskLabel">0</div></div>
+        <div class="stat"><div class="stat-label">Infos retenues</div><div class="stat-value" id="infoLabel">0</div></div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress" id="progress"></div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <section class="card">
+        <div class="scene" id="scene">Chargement du récit…</div>
+        <div class="toolbar">
+          <button class="tool-btn" id="undoBtn">Revenir d’un pas</button>
+          <button class="tool-btn" style="background-color:#A34949;" id="restartBtn">⚠️Recommencer</button>
+        </div>
+      </section>
+      
+        <aside class="card">
+        <div class="panel">
+          <details open>
+            <summary>Inventaire des éléments recueillis</summary>
+            <div class="inner"><div class="chips" id="inventory"></div></div>
+          </details>
+        </div>
+
+        <div class="panel" style="border-top:none;">
+          <details open>
+            <summary>Journal de progression</summary>
+            <div class="inner"><div class="log" id="log"></div></div>
+          </details>
+        </div>
+
+        <div class="panel" style="border-top:none;">
+          <details open>
+            <summary>Journal des décisions</summary>
+            <div class="inner"><div class="log" id="decisionLog"></div></div>
+          </details>
+        </div>
+
+        <div class="panel" style="border-top:none; display:none;">
+          <details>
+            <summary>État de la progression</summary>
+            <div class="inner" id="statePanel"></div>
+          </details>
+        </div>
+      </aside>
+    </section>
+
+    <div id="helpModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
+        <button id="closeHelpBtn" class="modal-close" type="button" aria-label="Fermer l’aide">×</button>
+        <div class="modal-content">
+          <h2 id="helpModalTitle"></h2>
+          <div id="helpModalBody"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const PROJECT = ${serialized};
+
+    function bootGame(project) {
+      function createInitialFlags() {
+        const flags = {};
+        (project.variables || []).forEach(v => {
+          flags[v.name] = v.initial;
+        });
+        return flags;
+      }
+
+      function parseConditionValue(variableName, rawValue) {
+        const variable = findVariable(variableName);
+        if (!variable) return rawValue;
+
+        if (variable.type === "boolean") {
+          if (rawValue === true || rawValue === "true") return true;
+          if (rawValue === false || rawValue === "false") return false;
+          return !!rawValue;
+        }
+
+        if (variable.type === "number") {
+          return Number(rawValue);
+        }
+
+        return rawValue;
+      }
+
+      function findVariable(name) {
+        const builtins = [
+          { name: "score", type: "number" },
+          { name: "risk", type: "number" },
+          { name: "step", type: "number" }
+        ];
+        return builtins.find(v => v.name === name) || (project.variables || []).find(v => v.name === name);
+      }
+
+      function evaluateCondition(state, cond) {
+        let left;
+        if (cond.variable === "score") left = state.score;
+        else if (cond.variable === "risk") left = state.risk;
+        else if (cond.variable === "step") left = state.step;
+        else left = state.flags[cond.variable];
+
+        const right = parseConditionValue(cond.variable, cond.value);
+
+        switch (cond.operator) {
+          case "==": return left == right;
+          case "!=": return left != right;
+          case ">": return left > right;
+          case "<": return left < right;
+          case ">=": return left >= right;
+          case "<=": return left <= right;
+          default: return false;
+        }
+      }
+
+      function evaluateConditions(state, conditions = [], operator = "AND") {
+        if (!conditions.length) return true;
+        if (operator === "OR") {
+          return conditions.some(cond => evaluateCondition(state, cond));
+        }
+        return conditions.every(cond => evaluateCondition(state, cond));
+      }
+
+      function buildDiagnosisItems(flags, state) {
+        return (project.diagnostics || [])
+          .filter(diag => evaluateConditions(state, diag.conditions || [], diag.operator || "AND"))
+          .map(diag => ({
+            title: diag.title,
+            text: diag.text
+          }))
+          .concat(
+            (project.diagnostics || []).length === 0
+              ? [{ title: "Diagnostic", text: "Aucun diagnostic n’a été configuré pour ce projet." }]
+              : []
+          );
+      }
+
+      function shouldCollapse(state) {
+        return (project.rules?.collapse || []).some(rule =>
+          evaluateConditions(state, rule.conditions || [], rule.operator || "AND")
+        );
+      }
+      
+      function resolveCollapseScene(state) {
+        const matched = (project.rules?.collapse || []).find(rule =>
+          evaluateConditions(state, rule.conditions || [], rule.operator || "AND")
+        );
+        return matched?.goto || "diagnostic_collapse";
+      }
+
+      const TOTAL_STEPS = project.meta?.totalSteps || 8;
+
+      const state = {
+        current: project.meta?.startScene,
+        step: 0,
+        score: 0,
+        risk: 0,
+        fatal: false,
+        history: [],
+        log: [],
+        decisions: [],
+        inventory: [],
+        flags: createInitialFlags()
+      };
+
+      function snapshot() {
+        state.history.push(JSON.stringify({
+          current: state.current,
+          step: state.step,
+          score: state.score,
+          risk: state.risk,
+          fatal: state.fatal,
+          log: state.log,
+          decisions: state.decisions,
+          inventory: state.inventory,
+          flags: state.flags
+        }));
+        if (state.history.length > 50) state.history.shift();
+      }
+
+      function restore() {
+        if (state.history.length === 0) return;
+        const prev = JSON.parse(state.history.pop());
+        state.current = prev.current;
+        state.step = prev.step;
+        state.score = prev.score;
+        state.risk = prev.risk;
+        state.fatal = prev.fatal;
+        state.log = prev.log;
+        state.decisions = prev.decisions;
+        state.inventory = prev.inventory;
+        state.flags = prev.flags;
+        render();
+      }
+
+      function restart() {
+        state.current = project.meta?.startScene;
+        state.step = 0;
+        state.score = 0;
+        state.risk = 0;
+        state.fatal = false;
+        state.history = [];
+        state.log = [];
+        state.decisions = [];
+        state.inventory = [];
+        state.flags = createInitialFlags();
+        render();
+      }
+
+      function addLog(text) {
+        state.log.unshift(text);
+        if (state.log.length > 24) state.log.pop();
+      }
+
+      function addDecision(text) {
+        state.decisions.unshift(text);
+        if (state.decisions.length > 30) state.decisions.pop();
+      }
+
+      function addInfo(key, label, relevant = true) {
+        if (state.inventory.find(i => i.key === key)) return;
+        state.inventory.push({ key, label, relevant });
+      }
+
+      function visible(choice) {
+        return true;
+      }
+
+      function applyEffects(effects = {}, choice = null) {
+        if (choice) addDecision(choice.decisionLog || choice.title);
+
+        if (typeof effects.score === "number") state.score += effects.score;
+        if (typeof effects.risk === "number") state.risk += effects.risk;
+        if (typeof effects.stepDelta === "number") state.step += effects.stepDelta;
+
+        if (Array.isArray(effects.logs)) {
+          effects.logs.forEach(addLog);
+        }
+
+        if (Array.isArray(effects.inventory)) {
+          effects.inventory.forEach(item => addInfo(item.key, item.label, item.relevant));
+        }
+
+        if (effects.setFlags) {
+          Object.keys(effects.setFlags).forEach(key => {
+            state.flags[key] = effects.setFlags[key];
+          });
+        }
+
+        if (effects.bumpFlags) {
+          Object.keys(effects.bumpFlags).forEach(key => {
+            state.flags[key] = (state.flags[key] || 0) + effects.bumpFlags[key];
+          });
+        }
+
+        if (effects.goto) state.current = effects.goto;
+        if (effects.fatal) state.fatal = true;
+      }
+
+      function choose(choice) {
+        snapshot();
+        applyEffects(choice.effects, choice);
+
+        if (shouldCollapse(state) && !state.fatal) {
+          state.current = resolveCollapseScene(state);
+          state.fatal = true;
+        } else if (choice.goto) {
+          state.current = choice.goto;
+        }
+
+        render();
+      }
+
+      function renderStats() {
+        document.getElementById("stepLabel").textContent = \`\${Math.min(state.step, TOTAL_STEPS)} / \${TOTAL_STEPS}\`;
+        document.getElementById("scoreLabel").textContent = state.score;
+        document.getElementById("riskLabel").textContent = state.risk;
+        document.getElementById("infoLabel").textContent = state.inventory.length;
+        document.getElementById("progress").style.width = \`\${Math.min((state.step / TOTAL_STEPS) * 100, 100)}%\`;
+      }
+
+      function renderInventory() {
+        const box = document.getElementById("inventory");
+        if (state.inventory.length === 0) {
+          box.innerHTML = \`<span class="chip">\${project.ui?.labels?.inventoryEmpty || "Aucune information retenue"}</span>\`;
+          return;
+        }
+        box.innerHTML = state.inventory
+          .map(item => \`<span class="chip" title="\${item.relevant ? "Information pertinente" : "Information discutable"}">\${escapeHtml(item.label)}</span>\`)
+          .join("");
+      }
+
+      function renderLog() {
+        const box = document.getElementById("log");
+        if (state.log.length === 0) {
+          box.innerHTML = \`<div class="log-item">\${project.ui?.labels?.logEmpty || "Aucun événement notable pour le moment."}</div>\`;
+          return;
+        }
+        box.innerHTML = state.log.map(item => \`<div class="log-item">\${escapeHtml(item)}</div>\`).join("");
+      }
+
+      function renderDecisionLog() {
+        const box = document.getElementById("decisionLog");
+        if (state.decisions.length === 0) {
+          box.innerHTML = \`<div class="decision-item">\${project.ui?.labels?.decisionEmpty || "Aucune décision enregistrée pour le moment."}</div>\`;
+          return;
+        }
+        box.innerHTML = state.decisions.map(item => \`<div class="decision-item">\${escapeHtml(item)}</div>\`).join("");
+      }
+
+      function renderStatePanel() {
+        const f = state.flags;
+        const lines = [
+          ["Score", state.score],
+          ["Risque", state.risk],
+          ["Étape", state.step]
+        ];
+
+        Object.entries(f).forEach(([k, v]) => {
+          lines.push([k, String(v)]);
+        });
+
+        const warnings = [];
+        Object.entries(f).forEach(([k, v]) => {
+          if (typeof v === "number" && v > 0 && /risk|blur|weak|noise|drift|opacity|misalignment|halo/i.test(k)) {
+            warnings.push(\`\${k} : \${v}\`);
+          }
+        });
+
+        document.getElementById("statePanel").innerHTML =
+          \`<div class="log">
+            \${lines.map(([k,v]) => \`<div class="log-item"><strong>\${escapeHtml(k)}</strong><br>\${escapeHtml(v)}</div>\`).join("")}
+            \${warnings.length
+              ? warnings.map(w => \`<div class="log-item warn">\${escapeHtml(w)}</div>\`).join("")
+              : \`<div class="log-item">\${project.ui?.labels?.noWarning || "Aucune alerte majeure pour l’instant."}</div>\`
+            }
+          </div>\`;
+      }
+
+      function renderScene() {
+        const scene = project.scenes?.[state.current];
+        const el = document.getElementById("scene");
+        
+        if (!scene) {
+          el.innerHTML = \`<div class="error-box"><strong>Erreur :</strong> scène introuvable (\${escapeHtml(state.current || "")}).</div>\`;
+          return;
+        }
+
+        let html = \`
+          <div class="chapter">\${escapeHtml(scene.chapter || "")}</div>
+          <h2>\${escapeHtml(scene.title || "")}</h2>
+          \${(scene.text || []).map(p => \`<p>\${escapeHtml(p)}</p>\`).join("")}
+        \`;
+
+        if (scene.diagnosis) {
+          const items = buildDiagnosisItems(state.flags, state);
+          html += \`
+            <div class="ending">
+              <p class="bad"><strong>Issue : diagnostic</strong></p>
+              <p class="muted">Cohérence : \${state.score}. Fragilités : \${state.risk}. Étape atteinte : \${state.step} / \${TOTAL_STEPS}.</p>
+            </div>
+            <div class="diagnosis">
+              \${items.map(item => \`
+                <div class="diag">
+                  <strong>\${escapeHtml(item.title)}</strong>
+                  <p style="margin-top:8px;">\${escapeHtml(item.text)}</p>
+                </div>
+              \`).join("")}
+            </div>
+            <div class="choices">
+              <button class="choice" data-action="restart">
+                <span class="choice-title">\${escapeHtml(project.ui?.labels?.restart || "Rejouer")}</span>
+                <span class="choice-desc">Repartir du début.</span>
+              </button>
+            </div>
+          \`;
+        } else if (scene.ending) {
+          html += \`
+            <div class="choices">
+              <button class="choice" data-action="restart">
+                <span class="choice-title">\${escapeHtml(project.ui?.labels?.restart || "Rejouer")}</span>
+                <span class="choice-desc">Repartir du début.</span>
+              </button>
+            </div>
+          \`;
+        } else {
+          const choices = (scene.choices || []).filter(visible);
+          html += \`<div class="choices">\`;
+          choices.forEach((choice, index) => {
+            html += \`
+              <button class="choice" data-choice="\${index}">
+                <span class="choice-title">\${escapeHtml(choice.title || "")}</span>
+                <span class="choice-desc">\${escapeHtml(choice.desc || "")}</span>
+              </button>
+            \`;
+          });
+          html += \`</div>\`;
+        }
+
+        el.innerHTML = html;
+
+        if (scene.ending) {
+          const restartBtn = el.querySelector('[data-action="restart"]');
+          if (restartBtn) restartBtn.addEventListener("click", restart);
+        } else {
+          const availableChoices = (scene.choices || []).filter(visible);
+          el.querySelectorAll("[data-choice]").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const idx = Number(btn.dataset.choice);
+              const choice = availableChoices[idx];
+              if (!choice) return;
+              choose(choice);
+            });
+          });
+        }
+      }
+
+      function renderHelp() {
+        document.getElementById("gameTitle").textContent = project.meta?.title || "Jeu narratif";
+        document.getElementById("gameSubtitle").textContent = project.meta?.subtitle || "";
+        document.getElementById("helpModalTitle").textContent = project.help?.title || "Aide";
+        document.getElementById("helpModalBody").innerHTML = (project.help?.content || [])
+          .map(p => \`<p>\${escapeHtml(p)}</p>\`)
+          .join("");
+      }
+
+      function render() {
+        try {
+          renderHelp();
+          renderStats();
+          renderInventory();
+          renderLog();
+          renderDecisionLog();
+          renderStatePanel();
+          renderScene();
+
+          const undoBtn = document.getElementById("undoBtn");
+          if (undoBtn) undoBtn.disabled = state.history.length === 0;
+        } catch (error) {
+          document.getElementById("scene").innerHTML = \`
+            <div class="error-box">
+              <strong>Erreur de rendu</strong>
+              <p style="margin-top:8px;">\${escapeHtml(String(error.message || error))}</p>
+            </div>
+          \`;
+          console.error(error);
+        }
+      }
+
+      function openHelpModal() {
+        const modal = document.getElementById("helpModal");
+        const closeBtn = document.getElementById("closeHelpBtn");
+        if (!modal) return;
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+        if (closeBtn) closeBtn.focus();
+      }
+
+      function closeHelpModal() {
+        const modal = document.getElementById("helpModal");
+        const helpBtn = document.getElementById("helpBtn");
+        if (!modal) return;
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+        if (helpBtn) helpBtn.focus();
+      }
+      
+      document.getElementById("undoBtn")?.addEventListener("click", restore);
+      document.getElementById("restartBtn")?.addEventListener("click", restart);
+      document.getElementById("helpBtn")?.addEventListener("click", openHelpModal);
+      document.getElementById("closeHelpBtn")?.addEventListener("click", closeHelpModal);
+
+      document.getElementById("helpModal")?.addEventListener("click", (event) => {
+        if (event.target === document.getElementById("helpModal")) {
+          closeHelpModal();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && document.getElementById("helpModal")?.classList.contains("open")) {
+          closeHelpModal();
+        }
+      });
+
+      render();
+
+      if (project.ui?.openHelpOnStart) {
+        setTimeout(() => openHelpModal(), 120);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => bootGame(PROJECT));
+    } else {
+      bootGame(PROJECT);
+    }
+  <\/script>
+</body>
+</html>`;
+    }
+
+    function downloadFile(filename, content, type = "text/plain;charset=utf-8") {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function openPreviewInNewTab() {
+      const html = buildPlayableHtml(project);
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }
+
+    document.querySelectorAll(".tabBtn").forEach(btn => {
+      btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+    });
+
+    document.getElementById("newProjectBtn").addEventListener("click", () => {
+      if (!confirm("Charger l'exemple de projet générique ? Le projet courant sera remplacé, sauvegardez d'abord !")) return;
+      project = defaultProject();
+      selectedSceneId = "intro";
+      renderAll();
+    });
+    
+    document.getElementById("emptyProjectBtn").addEventListener("click", () => {
+  if (!confirm("Démarrer un projet vide ? Le projet courant sera remplacé, saivegardez d'abord !")) return;
+  project = emptyProject();
+  selectedSceneId = "intro";
+  renderAll();
+});
+
+    document.getElementById("addVariableBtn").addEventListener("click", () => {
+      project.variables.push(variableTemplate());
+      renderAll();
+    });
+
+    document.getElementById("addRuleBtn").addEventListener("click", () => {
+      project.rules.collapse.push(ruleTemplate(getAllVariableNames()[0] || "risk"));
+      renderAll();
+    });
+
+    document.getElementById("addDiagBtn").addEventListener("click", () => {
+      project.diagnostics.push(diagTemplate(getAllVariableNames()[0] || "risk"));
+      renderAll();
+    });
+
+    document.getElementById("addSceneBtn").addEventListener("click", addScene);
+    document.getElementById("duplicateSceneBtn").addEventListener("click", duplicateScene);
+    document.getElementById("deleteSceneBtn").addEventListener("click", deleteScene);
+    document.getElementById("addChoiceBtn").addEventListener("click", addChoice);
+
+    document.getElementById("refreshPreviewBtn").addEventListener("click", renderPreview);
+    document.getElementById("openPreviewNewTabBtn").addEventListener("click", openPreviewInNewTab);
+
+    document.getElementById("exportJsonBtn").addEventListener("click", () => {
+      downloadFile("project.json", JSON.stringify(project, null, 2), "application/json;charset=utf-8");
+    });
+    
+    document.getElementById("exportHtmlBtn").addEventListener("click", () => {
+      const result = validateProject(project);
+      if (result.errors.length) {
+        alert("Le projet contient des erreurs bloquantes. Consultez l’onglet JSON pour les voir.");
+        switchTab("json");
+        return;
+      }
+      downloadFile("game.html", buildPlayableHtml(project), "text/html;charset=utf-8");
+    });
+
+    document.getElementById("importJsonBtn").addEventListener("click", () => {
+      els.hiddenJsonImport.click();
+    });
+
+    els.hiddenJsonImport.addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        project = normalizeProject(parsed);
+        selectedSceneId = project.meta.startScene || Object.keys(project.scenes)[0] || null;
+        renderAll();
+      } catch (error) {
+        alert("Import impossible : fichier JSON invalide.");
+        console.error(error);
+      } finally {
+        event.target.value = "";
+      }
+    });
+
+    els.metaTitle.addEventListener("input", () => {
+      project.meta.title = els.metaTitle.value;
+      renderAll();
+    });
+
+    els.metaSubtitle.addEventListener("input", () => {
+      project.meta.subtitle = els.metaSubtitle.value;
+      renderAll();
+    });
+
+    els.metaAuthor.addEventListener("input", () => {
+      project.meta.author = els.metaAuthor.value;
+      renderAll();
+    });
+
+    els.metaStartScene.addEventListener("change", () => {
+      project.meta.startScene = els.metaStartScene.value;
+      renderAll();
+    });
+
+    els.metaTotalSteps.addEventListener("input", () => {
+      project.meta.totalSteps = Math.max(1, Number(els.metaTotalSteps.value) || 1);
+      renderAll();
+    });
+
+    els.helpTitle.addEventListener("input", () => {
+      project.help.title = els.helpTitle.value;
+      renderAll();
+    });
+
+    els.helpContent.addEventListener("input", () => {
+      project.help.content = splitParagraphs(els.helpContent.value);
+      renderAll();
+    });
+
+    els.openHelpOnStart.addEventListener("change", () => {
+      project.ui.openHelpOnStart = els.openHelpOnStart.checked;
+      renderAll();
+    });
+
+    els.sceneId.addEventListener("change", () => {
+      renameScene(selectedSceneId, els.sceneId.value);
+    });
+
+    els.sceneChapter.addEventListener("input", () => {
+      if (!project.scenes[selectedSceneId]) return;
+      project.scenes[selectedSceneId].chapter = els.sceneChapter.value;
+      renderAll();
+    });
+
+    els.sceneTitle.addEventListener("input", () => {
+      if (!project.scenes[selectedSceneId]) return;
+      project.scenes[selectedSceneId].title = els.sceneTitle.value;
+      renderAll();
+    });
+
+    els.sceneType.addEventListener("change", () => {
+      if (!project.scenes[selectedSceneId]) return;
+      const scene = project.scenes[selectedSceneId];
+      scene.type = els.sceneType.value;
+      scene.ending = scene.type === "ending" || scene.ending;
+      scene.diagnosis = scene.type === "diagnosis";
+      if (scene.type === "ending") scene.ending = true;
+      renderAll();
+    });
+
+    els.sceneEnding.addEventListener("change", () => {
+      if (!project.scenes[selectedSceneId]) return;
+      project.scenes[selectedSceneId].ending = els.sceneEnding.value === "true";
+      renderAll();
+    });
+
+    els.sceneText.addEventListener("input", () => {
+      if (!project.scenes[selectedSceneId]) return;
+      project.scenes[selectedSceneId].text = splitParagraphs(els.sceneText.value);
+      renderAll();
+    });
+
+    document.body.addEventListener("click", (event) => {
+      const btn = event.target.closest("button[data-action]");
+      if (!btn) return;
+
+      const action = btn.dataset.action;
+      const idx = Number(btn.dataset.index);
+      const cIdx = Number(btn.dataset.cindex);
+
+      if (action === "deleteVar") {
+        project.variables.splice(idx, 1);
+        renderAll();
+      }
+
+      if (action === "duplicateRule") {
+        project.rules.collapse.splice(idx + 1, 0, clone(project.rules.collapse[idx]));
+        project.rules.collapse[idx + 1].id = uid("rule");
+        renderAll();
+      }
+
+      if (action === "deleteRule") {
+        project.rules.collapse.splice(idx, 1);
+        renderAll();
+      }
+
+      if (action === "addRuleCondition") {
+        project.rules.collapse[idx].conditions.push(conditionTemplate(getAllVariableNames()[0] || "risk"));
+        renderAll();
+      }
+      
+      if (action === "deleteRuleCondition") {
+        project.rules.collapse[idx].conditions.splice(cIdx, 1);
+        renderAll();
+      }
+
+      if (action === "duplicateDiag") {
+        project.diagnostics.splice(idx + 1, 0, clone(project.diagnostics[idx]));
+        project.diagnostics[idx + 1].id = uid("diag");
+        renderAll();
+      }
+
+      if (action === "deleteDiag") {
+        project.diagnostics.splice(idx, 1);
+        renderAll();
+      }
+
+      if (action === "addDiagCondition") {
+        project.diagnostics[idx].conditions.push(conditionTemplate(getAllVariableNames()[0] || "risk"));
+        renderAll();
+      }
+
+      if (action === "deleteDiagCondition") {
+        project.diagnostics[idx].conditions.splice(cIdx, 1);
+        renderAll();
+      }
+
+      if (action === "selectScene") {
+        selectedSceneId = btn.dataset.scene;
+        renderAll();
+      }
+
+      if (action === "duplicateChoice") {
+        duplicateChoice(idx);
+      }
+
+      if (action === "deleteChoice") {
+        deleteChoice(idx);
+      }
+    });
+
+    document.body.addEventListener("input", (event) => {
+      const el = event.target;
+     if (action === "choiceSalvage" || action === "choiceFatal") {
+  return;
+}
+
+      const idx = Number(el.dataset.index);
+      const cIdx = Number(el.dataset.cindex);
+
+      if (action === "varName") {
+        project.variables[idx].name = el.value.trim();
+      } else if (action === "varLabel") {
+        project.variables[idx].label = el.value;
+      } else if (action === "varType") {
+        project.variables[idx].type = el.value;
+        project.variables[idx].initial = el.value === "boolean" ? false : 0;
+      } else if (action === "varInitialBool") {
+        project.variables[idx].initial = el.value === "true";
+      } else if (action === "varInitialNumber") {
+        project.variables[idx].initial = Number(el.value) || 0;
+      } else if (action === "varCategory") {
+        project.variables[idx].category = el.value;
+      } else if (action === "varDescription") {
+        project.variables[idx].description = el.value;
+      } else if (action === "ruleName") {
+        project.rules.collapse[idx].name = el.value;
+      } else if (action === "ruleOperator") {
+        project.rules.collapse[idx].operator = el.value;
+      } else if (action === "ruleGoto") {
+        project.rules.collapse[idx].goto = el.value;
+      } else if (action === "ruleCondVariable") {
+        project.rules.collapse[idx].conditions[cIdx].variable = el.value;
+      } else if (action === "ruleCondOperator") {
+        project.rules.collapse[idx].conditions[cIdx].operator = el.value;
+      } else if (action === "ruleCondValue") {
+        project.rules.collapse[idx].conditions[cIdx].value = el.value;
+      } else if (action === "diagTitle") {
+        project.diagnostics[idx].title = el.value;
+      } else if (action === "diagText") {
+        project.diagnostics[idx].text = el.value;
+      } else if (action === "diagOperator") {
+        project.diagnostics[idx].operator = el.value;
+      } else if (action === "diagCondVariable") {
+        project.diagnostics[idx].conditions[cIdx].variable = el.value;
+      } else if (action === "diagCondOperator") {
+        project.diagnostics[idx].conditions[cIdx].operator = el.value;
+      } else if (action === "diagCondValue") {
+        project.diagnostics[idx].conditions[cIdx].value = el.value;
+      } else {
+        const scene = project.scenes[selectedSceneId];
+        if (!scene) return;
+        const choice = scene.choices[idx];
+        if (!choice) return;
+
+        if (action === "choiceTitle") choice.title = el.value;
+        else if (action === "choiceDesc") choice.desc = el.value;
+        else if (action === "choiceDecisionLog") choice.decisionLog = el.value;
+        else if (action === "choiceGoto") choice.goto = el.value;
+        else if (action === "choiceScore") choice.effects.score = Number(el.value) || 0;
+        else if (action === "choiceRisk") choice.effects.risk = Number(el.value) || 0;
+        else if (action === "choiceStepDelta") choice.effects.stepDelta = Number(el.value) || 0;
+        else if (action === "choiceLogs") {
+          choice.effects.logs = String(el.value)
+            .split("\n")
+            .map(t => t.trim())
+            .filter(Boolean);
+        }
+        else if (action === "choiceInventory") {
+          choice.effects.inventory = parseInventory(el.value);
+        }
+        else if (action === "choiceSetFlags") {
+          choice.effects.setFlags = parseMap(el.value, "auto");
+        }
+        else if (action === "choiceBumpFlags") {
+          choice.effects.bumpFlags = parseMap(el.value, "number");
+        }
+      }
+
+      renderAll();
+    });
+    
+    document.body.addEventListener("change", (event) => {
+      const el = event.target;
+      const action = el.dataset.action;
+      if (!action) return;
+
+      const idx = Number(el.dataset.index);
+      const scene = project.scenes[selectedSceneId];
+      const choice = scene?.choices[idx];
+
+      if (action === "choiceSalvage" && choice) {
+        choice.effects.salvage = el.checked;
+      }
+
+      if (action === "choiceFatal" && choice) {
+        choice.effects.fatal = el.checked;
+      }
+
+      renderAll();
+    });
+
+function setupContextHelp() {
+  let openBubble = null;
+  let openButton = null;
+
+  function closeCurrentHelp() {
+    if (openBubble) {
+      openBubble.classList.remove("open");
+      openBubble = null;
+    }
+    if (openButton) {
+      openButton.setAttribute("aria-expanded", "false");
+      openButton = null;
+    }
+  }
+
+  document.addEventListener("click", (event) => {
+    const toggle = event.target.closest("[data-help-toggle]");
+
+    if (toggle) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const targetId = toggle.getAttribute("data-help-toggle");
+      const bubble = document.getElementById(targetId);
+      if (!bubble) return;
+
+      const sameBubbleAlreadyOpen = openBubble === bubble;
+
+      closeCurrentHelp();
+
+      if (!sameBubbleAlreadyOpen) {
+        bubble.classList.add("open");
+        toggle.setAttribute("aria-expanded", "true");
+        openBubble = bubble;
+        openButton = toggle;
+      }
+
+      return;
+    }
+
+    if (openBubble && !event.target.closest(".helpBubble")) {
+      closeCurrentHelp();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeCurrentHelp();
+    }
+  });
+}
+
+    setupContextHelp();
+renderAll();
+  </script>
+</body>
+</html>

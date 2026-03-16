@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accueil outils</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --bg2:#151c35;
+      --panel:#171d36;
+      --panel2:#202847;
+      --panel3:#263059;
+      --text:#eef2ff;
+      --muted:#b8c2df;
+      --accent:#7cc8ff;
+      --accent2:#90efcf;
+      --border:rgba(255,255,255,.10);
+      --shadow:0 12px 30px rgba(0,0,0,.35);
+      --radius:18px;
+      --max:1100px;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      padding:0;
+    }
+
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top, #243066 0%, #11152a 42%, #090c16 100%);
+      color:var(--text);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height:1.5;
+      padding:18px;
+    }
+
+    .page{
+      width:100%;
+      max-width:var(--max);
+      margin:0 auto;
+      display:grid;
+      gap:16px;
+    }
+
+    .hero,
+    .card,
+    .workflowBox{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .hero{
+      padding:22px 20px;
+    }
+
+    .hero h1{
+      margin:0;
+      font-size:1.55rem;
+      line-height:1.15;
+    }
+
+    .hero p{
+      margin:10px 0 0;
+      color:var(--muted);
+      max-width:70ch;
+    }
+
+    .cards{
+      display:grid;
+      gap:14px;
+    }
+
+    .card{
+      padding:18px;
+      display:grid;
+      gap:12px;
+    }
+
+    .card h2{
+      margin:0;
+      font-size:1.2rem;
+      line-height:1.2;
+    }
+
+    .card p{
+      margin:0;
+      color:var(--muted);
+    }
+
+    .badge{
+      display:inline-flex;
+      width:max-content;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(124,200,255,.28);
+      background:rgba(124,200,255,.08);
+      color:#d8efff;
+      font-size:.8rem;
+    }
+
+    .actions{
+      margin-top:4px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:44px;
+      padding:12px 16px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#273158;
+      color:var(--text);
+      text-decoration:none;
+      font-weight:700;
+      transition:transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+
+    .btn:hover,
+    .btn:focus{
+      outline:none;
+      background:#314071;
+      border-color:rgba(124,200,255,.36);
+      transform:translateY(-1px);
+    }
+
+    .workflowDesktop{
+      display:none;
+    }
+
+    .workflowBox{
+      padding:18px;
+    }
+
+    .workflowBox h2{
+      margin:0 0 10px;
+      font-size:1.05rem;
+      line-height:1.2;
+    }
+
+    .workflowBox p{
+      margin:0 0 10px;
+      color:var(--muted);
+    }
+
+    .workflowBox p:last-child{
+      margin-bottom:0;
+    }
+
+    .workflowMobile details{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .workflowMobile summary{
+      list-style:none;
+      cursor:pointer;
+      padding:16px 18px;
+      font-weight:700;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .workflowMobile summary::-webkit-details-marker{
+      display:none;
+    }
+
+    .workflowMobile summary::after{
+      content:"▾";
+      color:var(--muted);
+      transition:transform .2s ease;
+      flex:0 0 auto;
+    }
+
+    .workflowMobile details:not([open]) summary::after{
+      transform:rotate(-90deg);
+    }
+
+    .workflowMobile .workflowBox{
+      border:none;
+      box-shadow:none;
+      border-radius:0;
+      background:transparent;
+      padding-top:0;
+    }
+
+    @media (min-width: 860px){
+      .cards{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .workflowMobile{
+        display:none;
+      }
+
+      .workflowDesktop{
+        display:block;
+      }
+
+      .hero{
+        padding:26px 24px;
+      }
+
+      .hero h1{
+        font-size:1.75rem;
+      }
+
+      .card{
+        padding:22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <h1>Choisissez votre point d’entrée</h1>
+      <p>
+        Vous pouvez soit générer rapidement une base de travail à partir d’un template, soit concevoir un serious game narratif étape par étape avec l’outil auteur.
+      </p>
+    </section>
+
+    <section class="workflowMobile">
+      <details>
+        <summary>Comprendre le workflow</summary>
+        <div class="workflowBox">
+          <h2>Comment vous pouvez avancer</h2>
+          <p>
+            Vous pouvez commencer par le générateur de template si vous voulez produire rapidement une structure initiale, un canevas de contenu ou une base de départ que vous enrichirez ensuite.
+          </p>
+          <p>
+            Vous pouvez ensuite passer dans le serious game designer pour construire le parcours complet, organiser les scènes, les choix, les variables, les règles d’effondrement et les diagnostics.
+          </p>
+          <p>
+            Si vous savez déjà précisément ce que vous voulez concevoir, vous pouvez entrer directement dans le serious game designer. Si vous avez d’abord besoin d’un cadre ou d’une trame, il est plus pertinent de commencer par le générateur de template.
+          </p>
+        </div>
+      </details>
+    </section>
+
+    <section class="cards">
+      <article class="card">
+        <span class="badge">Génération assistée</span>
+        <h2>Générateur de template</h2>
+        <p>
+          Générez rapidement une structure de départ pour préparer votre travail. Cet outil vous aide à produire un cadre initial cohérent, réutilisable et facile à adapter ensuite selon votre besoin.
+        </p>
+        <div class="actions">
+          <a class="btn" href="templateGenerator.html">Accéder</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <span class="badge">Conception auteur</span>
+        <h2>Serious game designer</h2>
+        <p>
+          Construisez votre serious game scène par scène. Cet outil vous permet de concevoir les choix, les effets, les variables, les règles et les diagnostics pour produire une simulation narrative interactive complète.
+        </p>
+        <div class="actions">
+          <a class="btn" href="gameDesigner.html">Accéder</a>
+        </div>
+      </article>
+    </section>
+
+    <section class="workflowDesktop">
+      <div class="workflowBox">
+        <h2>Comment vous pouvez organiser votre travail</h2>
+        <p>
+          Vous pouvez commencer par le générateur de template si vous voulez produire rapidement une base de départ, une trame ou une structure initiale avant d’entrer dans un travail de conception plus détaillé.
+        </p>
+        <p>
+          Vous pouvez ensuite utiliser le serious game designer pour transformer cette base en parcours interactif, en organisant les scènes, les choix, les variables, les règles d’effondrement et les diagnostics.
+        </p>
+        <p>
+          Si votre scénario est déjà clair dans votre esprit, vous pouvez aussi entrer directement dans le serious game designer. Le générateur de template est surtout utile lorsque vous avez besoin d’un premier cadrage avant de construire le jeu lui-même.
+        </p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
