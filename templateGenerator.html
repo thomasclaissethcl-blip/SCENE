@@ -1,1433 +1,1727 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Générateur de templates narratifs V1</title>
-  <style>
-    :root{
-      --bg:#0b1020;
-      --bg2:#151c35;
-      --panel:#171d36;
-      --panel2:#202847;
-      --panel3:#263059;
-      --text:#eef2ff;
-      --muted:#b8c2df;
-      --accent:#7cc8ff;
-      --good:#74d5a3;
-      --warn:#f3ca70;
-      --bad:#ff8080;
-      --border:rgba(255,255,255,.10);
-      --shadow:0 12px 30px rgba(0,0,0,.35);
-      --radius:18px;
-      --max:1500px;
-    }
-
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0}
-    body{
-      min-height:100vh;
-      background:
-        radial-gradient(circle at top, #243066 0%, #11152a 42%, #090c16 100%);
-      color:var(--text);
-      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      line-height:1.5;
-      padding:14px;
-    }
-
-    .app{
-      max-width:var(--max);
-      margin:0 auto;
-      display:grid;
-      gap:12px;
-    }
-
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-
-    .topbar{
-      padding:16px;
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-
-    h1,h2,h3,p{margin:0}
-    .topbar h1{
-      font-size:1.25rem;
-      line-height:1.15;
-    }
-    .topbar p{
-      margin-top:6px;
-      color:var(--muted);
-      font-size:.95rem;
-    }
-
-    .toolbar{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    button{
-      border:none;
-      border-radius:12px;
-      padding:10px 12px;
-      background:#273158;
-      color:var(--text);
-      border:1px solid var(--border);
-      cursor:pointer;
-      font-weight:700;
-    }
-    button:hover,
-    button:focus{
-      outline:none;
-      background:#314071;
-    }
-    button.good{background:#1d4a3b}
-    button.warn{background:#604c20}
-    button.bad{background:#5a2424}
-    button.secondary{background:#202847}
-
-    .layout{
-      display:grid;
-      gap:12px;
-    }
-
-    .panel{
-      padding:14px;
-    }
-
-    .section{
-      display:grid;
-      gap:10px;
-      margin-bottom:14px;
-    }
-
-    .section:last-child{
-      margin-bottom:0;
-    }
-
-    .section h2{
-      font-size:1rem;
-      margin-bottom:2px;
-    }
-
-    .help{
-      color:var(--muted);
-      font-size:.86rem;
-    }
-
-    .fieldGrid{
-      display:grid;
-      gap:10px;
-    }
-
-    .fieldGrid.two{
-      grid-template-columns:1fr 1fr;
-    }
-
-    .fieldGrid.three{
-      grid-template-columns:1fr 1fr 1fr;
-    }
-
-    label{
-      display:block;
-      font-size:.86rem;
-      color:var(--muted);
-      margin-bottom:0;
-    }
-
-    input[type="text"],
-    textarea,
-    select{
-      width:100%;
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:10px 12px;
-      background:#11182f;
-      color:var(--text);
-      font:inherit;
-    }
-
-    textarea{
-      min-height:90px;
-      resize:vertical;
-    }
-
-    .checkboxGrid{
-      display:grid;
-      gap:8px;
-    }
-
-    .checkboxItem{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      padding:10px 12px;
-      border:1px solid var(--border);
-      border-radius:12px;
-      background:#1a2343;
-    }
-
-    .checkboxItem input{
-      margin-top:2px;
-      flex:0 0 auto;
-    }
-
-    .checkboxItem .meta{
-      display:grid;
-      gap:2px;
-    }
-
-    .checkboxItem strong{
-      font-size:.92rem;
-    }
-
-    .checkboxItem span{
-      color:var(--muted);
-      font-size:.84rem;
-    }
-
-    .mainGrid{
-      display:grid;
-      gap:12px;
-    }
-
-    .leftCol,
-    .rightCol{
-      display:grid;
-      gap:12px;
-      align-content:start;
-    }
-
-    .notice{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      background:#1a2343;
-      color:#dfe7ff;
-      font-size:.88rem;
-    }
-
-    .pillRow{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-    }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:.8rem;
-      border:1px solid var(--border);
-      background:#232d50;
-      color:#e1e8ff;
-    }
-
-    .stats{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:8px;
-    }
-
-    .stat{
-      background:#1a2343;
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:10px;
-    }
-
-    .stat .k{
-      color:var(--muted);
-      font-size:.75rem;
-      margin-bottom:4px;
-    }
-    .stat .v{
-      font-size:1rem;
-      font-weight:700;
-    }
-
-    .structureList{
-      display:grid;
-      gap:10px;
-    }
-
-    .sceneCard{
-      background:#1a2343;
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:12px;
-      display:grid;
-      gap:10px;
-    }
-
-    .sceneTop{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:flex-start;
-      flex-wrap:wrap;
-    }
-
-    .sceneTop .titleBlock{
-      display:grid;
-      gap:4px;
-    }
-
-    .sceneNum{
-      color:var(--muted);
-      font-size:.78rem;
-      text-transform:uppercase;
-      letter-spacing:.04em;
-    }
-
-    .sceneTitle{
-      font-size:1rem;
-      font-weight:800;
-      line-height:1.2;
-    }
-
-    .sceneFunc{
-      color:var(--muted);
-      font-size:.87rem;
-    }
-
-    .tagGroup{
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px;
-    }
-
-    .tag{
-      font-size:.76rem;
-      border-radius:999px;
-      padding:5px 8px;
-      border:1px solid var(--border);
-      background:#243158;
-      color:#e7efff;
-    }
-
-    .tag.install{background:rgba(124,200,255,.10); border-color:rgba(124,200,255,.25)}
-    .tag.decision{background:rgba(124,255,215,.10); border-color:rgba(124,255,215,.25)}
-    .tag.tension{background:rgba(243,202,112,.10); border-color:rgba(243,202,112,.25)}
-    .tag.critical{background:rgba(255,128,128,.10); border-color:rgba(255,128,128,.25)}
-    .tag.correction{background:rgba(116,213,163,.10); border-color:rgba(116,213,163,.25)}
-    .tag.ending{background:rgba(180,160,255,.10); border-color:rgba(180,160,255,.25)}
-
-    .sceneBody{
-      display:grid;
-      gap:10px;
-    }
-
-    .miniBlock{
-      background:#11182f;
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:10px;
-      display:grid;
-      gap:6px;
-    }
-
-    .miniBlock strong{
-      font-size:.86rem;
-    }
-
-    .miniBlock .content{
-      color:#dbe4ff;
-      font-size:.86rem;
-    }
-
-    .choicePreview{
-      display:grid;
-      gap:6px;
-    }
-
-    .choiceLine{
-      border-left:3px solid rgba(124,200,255,.45);
-      padding-left:8px;
-      font-size:.85rem;
-    }
-
-    .choiceLine .desc{
-      color:var(--muted);
-      font-size:.8rem;
-      margin-top:2px;
-    }
-
-    .jsonBox{
-      background:#0d1429;
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:12px;
-      max-height:540px;
-      overflow:auto;
-      white-space:pre-wrap;
-      font-size:.82rem;
-      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      color:#dce6ff;
-    }
-
-    .tabs{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      padding:12px 14px 0;
-    }
-
-    .tabBtn.active{
-      background:#3b4c86;
-    }
-
-    .tabPanel{
-      padding:14px;
-      border-top:1px solid var(--border);
-    }
-
-    .label-help{
-      position:relative;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      margin-bottom:6px;
-      flex-wrap:wrap;
-    }
-
-    .help-toggle{
-      width:22px;
-      height:22px;
-      padding:0;
-      border-radius:999px;
-      background:#273158;
-      color:var(--text);
-      border:1px solid var(--border);
-      font-size:.78rem;
-      font-weight:700;
-      line-height:1;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      flex:0 0 auto;
-    }
-
-    .help-toggle:hover,
-    .help-toggle:focus{
-      outline:none;
-      background:#314071;
-    }
-
-    .help-popover{
-      position:absolute;
-      top:calc(100% + 8px);
-      left:0;
-      width:min(300px, calc(100vw - 40px));
-      padding:10px 12px;
-      border-radius:12px;
-      background:#10182f;
-      border:1px solid var(--border);
-      color:var(--text);
-      font-size:.82rem;
-      line-height:1.4;
-      box-shadow:var(--shadow);
-      z-index:30;
-    }
-
-    .help-popover[hidden]{
-      display:none;
-    }
-
-    .estimateBox{
-      margin-top:10px;
-      padding:12px;
-      border-radius:12px;
-      background:#11182f;
-      border:1px solid var(--border);
-      display:grid;
-      gap:6px;
-      font-size:.88rem;
-    }
-
-    .estimateTitle{
-      font-weight:700;
-    }
-
-    .modal-overlay{
-      position:fixed;
-      inset:0;
-      background:rgba(5, 8, 18, .82);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      display:none;
-      align-items:flex-end;
-      justify-content:center;
-      padding:0;
-      z-index:1000;
-    }
-
-    .modal-overlay.open{
-      display:flex;
-    }
-
-    .modal-dialog{
-      width:100%;
-      max-height:90vh;
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border-top-left-radius:20px;
-      border-top-right-radius:20px;
-      border:1px solid var(--border);
-      box-shadow:0 -10px 30px rgba(0,0,0,.35);
-      position:relative;
-      overflow:hidden;
-    }
-
-    .modal-content{
-      padding:18px 16px 24px;
-      overflow:auto;
-      max-height:90vh;
-    }
-
-    .modal-content h2{
-      font-size:1.2rem;
-      line-height:1.2;
-      margin:0 36px 14px 0;
-    }
-
-    .modal-content p{
-      margin:0 0 12px;
-      color:var(--text);
-    }
-
-    .modal-content h3{
-      margin:16px 0 8px;
-      font-size:1rem;
-    }
-
-    .modal-close{
-      position:absolute;
-      top:10px;
-      right:10px;
-      width:38px;
-      height:38px;
-      border:none;
-      border-radius:999px;
-      background:#273158;
-      color:var(--text);
-      border:1px solid var(--border);
-      font-size:1.35rem;
-      line-height:1;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      z-index:2;
-    }
-
-    .modal-close:hover,
-    .modal-close:focus{
-      outline:none;
-      background:#2f3b6c;
-    }
-
-    body.modal-open{
-      overflow:hidden;
-    }
-
-    @media (min-width: 1120px){
-      .mainGrid{
-        grid-template-columns:430px 1fr;
-      }
-    }
-
-    @media (min-width: 840px){
-      .modal-overlay{
-        align-items:center;
-        padding:24px;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Générateur de templates narratifs V1</title>
+    <style>
+      :root {
+        --bg: #0b1020;
+        --bg2: #151c35;
+        --panel: #171d36;
+        --panel2: #202847;
+        --panel3: #263059;
+        --text: #eef2ff;
+        --muted: #b8c2df;
+        --accent: #7cc8ff;
+        --good: #74d5a3;
+        --warn: #f3ca70;
+        --bad: #ff8080;
+        --border: rgba(255, 255, 255, 0.1);
+        --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        --radius: 18px;
+        --max: 1500px;
       }
 
-      .modal-dialog{
-        width:min(760px, 100%);
-        max-height:88vh;
-        border-radius:20px;
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        min-height: 100vh;
+        background: radial-gradient(circle at top, #243066 0%, #11152a 42%, #090c16 100%);
+        color: var(--text);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Arial,
+          sans-serif;
+        line-height: 1.5;
+        padding: 14px;
       }
 
-      .modal-content{
-        padding:22px 22px 28px;
-        max-height:88vh;
+      .app {
+        max-width: var(--max);
+        margin: 0 auto;
+        display: grid;
+        gap: 12px;
       }
-    }
 
-    @media (max-width: 760px){
-      .fieldGrid.two,
-      .fieldGrid.three,
-      .stats{
-        grid-template-columns:1fr;
+      .card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
       }
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <section class="card topbar">
-      <div>
-        <h1>Générateur de templates narratifs V1</h1>
-        <p>Cette interface génère une structure JSON importable dans l’outil auteur. La structure est calculée à partir d’un brief minimal puis visualisée avant export.</p>
-      </div>
-      <div class="toolbar">
-        <button id="openGlobalHelpBtn" class="secondary">Aide</button>
-        <button id="resetBtn" class="secondary">Réinitialiser</button>
-        <button id="generateBtn" class="good">Générer la structure</button>
-        <button id="copyJsonBtn">Copier le JSON</button>
-        <button id="downloadJsonBtn" class="warn">Télécharger le JSON</button>
-      </div>
-    </section>
 
-    <section class="card">
-      <div class="mainGrid">
-        <div class="leftCol panel">
-          <div class="section">
-            <h2>Nature du parcours</h2>
-            <div class="fieldGrid">
-              <div>
-                <div class="label-help">
-                  <label for="typeSelect">Type de parcours</label>
-                  <button type="button" class="help-toggle" aria-expanded="false">?</button>
-                  <div class="help-popover" hidden>
-                    Détermine la logique générale du parcours. Ce choix influence la structure des scènes, les types de décisions proposées et les variables utilisées. Par exemple, un parcours de gestion de crise génère plus de tensions et de contraintes qu’un parcours d’apprentissage progressif.
-                  </div>
-                </div>
-                <select id="typeSelect">
-                  <option value="decision">Prise de décision</option>
-                  <option value="crisis">Gestion de crise</option>
-                  <option value="learning">Apprentissage progressif</option>
-                </select>
-              </div>
-            </div>
+      .topbar {
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+      .topbar h1 {
+        font-size: 1.25rem;
+        line-height: 1.15;
+      }
+      .topbar p {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: none;
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: #273158;
+        color: var(--text);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        font-weight: 700;
+      }
+      button:hover,
+      button:focus {
+        outline: none;
+        background: #314071;
+      }
+      button.good {
+        background: #1d4a3b;
+      }
+      button.warn {
+        background: #604c20;
+      }
+      button.bad {
+        background: #5a2424;
+      }
+      button.secondary {
+        background: #202847;
+      }
+
+      .layout {
+        display: grid;
+        gap: 12px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      .section {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .section:last-child {
+        margin-bottom: 0;
+      }
+
+      .section h2 {
+        font-size: 1rem;
+        margin-bottom: 2px;
+      }
+
+      .help {
+        color: var(--muted);
+        font-size: 0.86rem;
+      }
+
+      .fieldGrid {
+        display: grid;
+        gap: 10px;
+      }
+
+      .fieldGrid.two {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .fieldGrid.three {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+
+      label {
+        display: block;
+        font-size: 0.86rem;
+        color: var(--muted);
+        margin-bottom: 0;
+      }
+
+      input[type="text"],
+      textarea,
+      select {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: #11182f;
+        color: var(--text);
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 90px;
+        resize: vertical;
+      }
+
+      .checkboxGrid {
+        display: grid;
+        gap: 8px;
+      }
+
+      .checkboxItem {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #1a2343;
+      }
+
+      .checkboxItem input {
+        margin-top: 2px;
+        flex: 0 0 auto;
+      }
+
+      .checkboxItem .meta {
+        display: grid;
+        gap: 2px;
+      }
+
+      .checkboxItem strong {
+        font-size: 0.92rem;
+      }
+
+      .checkboxItem span {
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .mainGrid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .leftCol,
+      .rightCol {
+        display: grid;
+        gap: 12px;
+        align-content: start;
+      }
+
+      .notice {
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: #1a2343;
+        color: #dfe7ff;
+        font-size: 0.88rem;
+      }
+
+      .pillRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        border: 1px solid var(--border);
+        background: #232d50;
+        color: #e1e8ff;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      .stat {
+        background: #1a2343;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px;
+      }
+
+      .stat .k {
+        color: var(--muted);
+        font-size: 0.75rem;
+        margin-bottom: 4px;
+      }
+      .stat .v {
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .structureList {
+        display: grid;
+        gap: 10px;
+      }
+
+      .sceneCard {
+        background: #1a2343;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .sceneTop {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .sceneTop .titleBlock {
+        display: grid;
+        gap: 4px;
+      }
+
+      .sceneNum {
+        color: var(--muted);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .sceneTitle {
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.2;
+      }
+
+      .sceneFunc {
+        color: var(--muted);
+        font-size: 0.87rem;
+      }
+
+      .tagGroup {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .tag {
+        font-size: 0.76rem;
+        border-radius: 999px;
+        padding: 5px 8px;
+        border: 1px solid var(--border);
+        background: #243158;
+        color: #e7efff;
+      }
+
+      .tag.install {
+        background: rgba(124, 200, 255, 0.1);
+        border-color: rgba(124, 200, 255, 0.25);
+      }
+      .tag.decision {
+        background: rgba(124, 255, 215, 0.1);
+        border-color: rgba(124, 255, 215, 0.25);
+      }
+      .tag.tension {
+        background: rgba(243, 202, 112, 0.1);
+        border-color: rgba(243, 202, 112, 0.25);
+      }
+      .tag.critical {
+        background: rgba(255, 128, 128, 0.1);
+        border-color: rgba(255, 128, 128, 0.25);
+      }
+      .tag.correction {
+        background: rgba(116, 213, 163, 0.1);
+        border-color: rgba(116, 213, 163, 0.25);
+      }
+      .tag.ending {
+        background: rgba(180, 160, 255, 0.1);
+        border-color: rgba(180, 160, 255, 0.25);
+      }
+
+      .sceneBody {
+        display: grid;
+        gap: 10px;
+      }
+
+      .miniBlock {
+        background: #11182f;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .miniBlock strong {
+        font-size: 0.86rem;
+      }
+
+      .miniBlock .content {
+        color: #dbe4ff;
+        font-size: 0.86rem;
+      }
+
+      .choicePreview {
+        display: grid;
+        gap: 6px;
+      }
+
+      .choiceLine {
+        border-left: 3px solid rgba(124, 200, 255, 0.45);
+        padding-left: 8px;
+        font-size: 0.85rem;
+      }
+
+      .choiceLine .desc {
+        color: var(--muted);
+        font-size: 0.8rem;
+        margin-top: 2px;
+      }
+
+      .jsonBox {
+        background: #0d1429;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px;
+        max-height: 540px;
+        overflow: auto;
+        white-space: pre-wrap;
+        font-size: 0.82rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        color: #dce6ff;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 12px 14px 0;
+      }
+
+      .tabBtn.active {
+        background: #3b4c86;
+      }
+
+      .tabPanel {
+        padding: 14px;
+        border-top: 1px solid var(--border);
+      }
+
+      .label-help {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+        flex-wrap: wrap;
+      }
+
+      .help-toggle {
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        border-radius: 999px;
+        background: #273158;
+        color: var(--text);
+        border: 1px solid var(--border);
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex: 0 0 auto;
+      }
+
+      .help-toggle:hover,
+      .help-toggle:focus {
+        outline: none;
+        background: #314071;
+      }
+
+      .help-popover {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        width: min(300px, calc(100vw - 40px));
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: #10182f;
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-size: 0.82rem;
+        line-height: 1.4;
+        box-shadow: var(--shadow);
+        z-index: 30;
+      }
+
+      .help-popover[hidden] {
+        display: none;
+      }
+
+      .estimateBox {
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 12px;
+        background: #11182f;
+        border: 1px solid var(--border);
+        display: grid;
+        gap: 6px;
+        font-size: 0.88rem;
+      }
+
+      .estimateTitle {
+        font-weight: 700;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(5, 8, 18, 0.82);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 0;
+        z-index: 1000;
+      }
+
+      .modal-overlay.open {
+        display: flex;
+      }
+
+      .modal-dialog {
+        width: 100%;
+        max-height: 90vh;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        border: 1px solid var(--border);
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.35);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .modal-content {
+        padding: 18px 16px 24px;
+        overflow: auto;
+        max-height: 90vh;
+      }
+
+      .modal-content h2 {
+        font-size: 1.2rem;
+        line-height: 1.2;
+        margin: 0 36px 14px 0;
+      }
+
+      .modal-content p {
+        margin: 0 0 12px;
+        color: var(--text);
+      }
+
+      .modal-content h3 {
+        margin: 16px 0 8px;
+        font-size: 1rem;
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 38px;
+        height: 38px;
+        border: none;
+        border-radius: 999px;
+        background: #273158;
+        color: var(--text);
+        border: 1px solid var(--border);
+        font-size: 1.35rem;
+        line-height: 1;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+      }
+
+      .modal-close:hover,
+      .modal-close:focus {
+        outline: none;
+        background: #2f3b6c;
+      }
+
+      body.modal-open {
+        overflow: hidden;
+      }
+
+      @media (min-width: 1120px) {
+        .mainGrid {
+          grid-template-columns: 430px 1fr;
+          align-items: stretch;
+          height: calc(100vh - 210px);
+          min-height: 600px;
+        }
+
+        .leftCol,
+        .rightCol {
+          min-height: 0;
+          height: 100%;
+          overflow-y: auto;
+          overflow-x: hidden;
+        }
+
+        @media (min-width: 1120px) {
+          .rightCol > .card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+          }
+
+          .tabPanel {
+            overflow-y: auto;
+            min-height: 0;
+          }
+        }
+      }
+
+      @media (min-width: 840px) {
+        .modal-overlay {
+          align-items: center;
+          padding: 24px;
+        }
+
+        .modal-dialog {
+          width: min(760px, 100%);
+          max-height: 88vh;
+          border-radius: 20px;
+        }
+
+        .modal-content {
+          padding: 22px 22px 28px;
+          max-height: 88vh;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .fieldGrid.two,
+        .fieldGrid.three,
+        .stats {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .titleBlock {
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+      }
+
+      .logo svg {
+        display: block;
+        height: 90px;
+        width: auto;
+        color: currentColor;
+      }
+
+      .titleText {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .titleText h1 {
+        margin: 0;
+      }
+
+      .titleText p {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <section class="card topbar">
+        <div class="titleBlock">
+          <div class="logo">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="8" width="48" height="48" rx="12" stroke="currentColor" stroke-width="4" />
+              <circle cx="22" cy="20" r="4" fill="currentColor" />
+              <circle cx="42" cy="20" r="4" fill="currentColor" />
+              <circle cx="32" cy="42" r="4" fill="currentColor" />
+              <path d="M22 24V30C22 32 23 33 25 34L32 38" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+              <path d="M42 24V30C42 32 41 33 39 34L32 38" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+            </svg>
           </div>
 
-          <div class="section">
-            <h2>Contexte narratif</h2>
-            <div class="fieldGrid">
-              <div>
-                <div class="label-help">
-                  <label for="contextInput">Contexte du scénario</label>
-                  <button type="button" class="help-toggle" aria-expanded="false">?</button>
-                  <div class="help-popover" hidden>
-                    Indiquez le domaine dans lequel se déroule le parcours. Cela permet de générer des textes génériques cohérents. Exemples : gestion de projet, management, qualité, cybersécurité, relation client, production, formation, etc.
-                  </div>
-                </div>
-                <input id="contextInput" type="text" value="organisation" />
-              </div>
-
-              <div>
-                <div class="label-help">
-                  <label for="roleInput">Rôle du joueur</label>
-                  <button type="button" class="help-toggle" aria-expanded="false">?</button>
-                  <div class="help-popover" hidden>
-                    Indiquez le rôle incarné par le joueur dans le scénario. Cela permet de contextualiser les décisions proposées. Exemples : responsable, chef de projet, analyste, coordinateur, technicien, consultant, etc.
-                  </div>
-                </div>
-                <input id="roleInput" type="text" value="responsable" />
-              </div>
-
-              <div>
-                <div class="label-help">
-                  <label for="objectiveInput">Objectif du parcours</label>
-                  <button type="button" class="help-toggle" aria-expanded="false">?</button>
-                  <div class="help-popover" hidden>
-                    Décrivez ce que le joueur doit comprendre à travers le parcours. Cela servira à générer le diagnostic final. Exemple : comprendre les effets cumulés des décisions, apprendre à gérer l’incertitude, structurer une analyse avant d’agir, etc.
-                  </div>
-                </div>
-                <textarea id="objectiveInput">Comprendre les effets cumulés de décisions prises dans un contexte imparfaitement stabilisé.</textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="section">
-            <h2>Structure</h2>
-            <div class="fieldGrid three">
-              <div>
-                <div class="label-help">
-                  <label for="lengthSelect">Longueur du parcours</label>
-                  <button type="button" class="help-toggle" aria-expanded="false">?</button>
-                  <div class="help-popover" hidden>
-                    Détermine le nombre de scènes et la complexité globale. Un parcours court permet un test rapide. Un parcours standard offre un bon équilibre. Un parcours avancé permet d’introduire plus de tensions, de décisions intermédiaires et de corrections.
-                  </div>
-                </div>
-                <select id="lengthSelect">
-                  <option value="short">Court</option>
-                  <option value="standard" selected>Standard</option>
-                  <option value="advanced">Avancé</option>
-                </select>
-              </div>
-
-              <div>
-                <div class="label-help">
-                  <label for="variablesSelect">Nombre de variables</label>
-                  <button type="button" class="help-toggle" aria-expanded="false">?</button>
-                  <div class="help-popover" hidden>
-                    Les variables représentent l’état interne du système. Elles évoluent selon les décisions prises. Plus il y a de variables, plus le parcours devient riche mais aussi plus complexe à équilibrer.
-                  </div>
-                </div>
-                <select id="variablesSelect">
-                  <option value="3">3</option>
-                  <option value="5" selected>5</option>
-                  <option value="7">7</option>
-                </select>
-              </div>
-
-              <div>
-                <div class="label-help">
-                  <label for="endingSelect">Type d’issue</label>
-                  <button type="button" class="help-toggle" aria-expanded="false">?</button>
-                  <div class="help-popover" hidden>
-                    Détermine la forme de conclusion du parcours. Une issue simple donne une seule fin. Plusieurs issues permettent différents résultats. L’option diagnostic met l’accent sur l’analyse des décisions prises.
-                  </div>
-                </div>
-                <select id="endingSelect">
-                  <option value="diagnostic_only">Diagnostic uniquement</option>
-                  <option value="ending_and_diagnostic" selected>Issue + diagnostic</option>
-                  <option value="multiple_endings">Plusieurs issues + diagnostic</option>
-                </select>
-              </div>
-            </div>
-
-            <div id="estimateBox" class="estimateBox">
-              <div class="estimateTitle">Structure estimée</div>
-              <div id="estimateText">Le générateur estime ici la taille et la complexité du parcours.</div>
-            </div>
-          </div>
-
-          <div class="section">
-            <h2>Tensions à intégrer</h2>
-            <div class="label-help">
-              <label>Tensions du parcours</label>
-              <button type="button" class="help-toggle" aria-expanded="false">?</button>
-              <div class="help-popover" hidden>
-                Les tensions sont des difficultés qui compliquent la prise de décision. Elles permettent de rendre le parcours plus réaliste. Par exemple : pression du temps, manque d’informations, désaccords, fatigue, signaux faibles, etc. Il est conseillé de ne pas en sélectionner trop pour garder un parcours lisible.
-              </div>
-            </div>
-            <div class="help">Sélection recommandée : 2 à 4 tensions.</div>
-            <div id="tensionsBox" class="checkboxGrid"></div>
-          </div>
-
-          <div class="section">
-            <h2>Types de décisions</h2>
-            <div class="label-help">
-              <label>Types de décisions</label>
-              <button type="button" class="help-toggle" aria-expanded="false">?</button>
-              <div class="help-popover" hidden>
-                Définit les dilemmes proposés au joueur. Chaque type produit des arbitrages réalistes entre plusieurs options ayant chacune des avantages et des inconvénients. Il est recommandé d’en sélectionner entre deux et quatre.
-              </div>
-            </div>
-            <div class="help">Sélection recommandée : 2 à 4 types.</div>
-            <div id="decisionsBox" class="checkboxGrid"></div>
+          <div class="titleText">
+            <h1>SCENE</h1>
+            <p style="font-size: 0.7em">Système de Création d'Expériences Narratives à Embranchements</p>
+            <p>L'outil dont VOUS êtes le héros</p>
           </div>
         </div>
 
-        <div class="rightCol">
-          <div class="card">
-            <div class="tabs">
-              <button class="tabBtn active" data-tab="structure">Visualisation</button>
-              <button class="tabBtn" data-tab="summary">Résumé</button>
-              <button class="tabBtn" data-tab="json">JSON</button>
+        <div class="toolbar">
+          <button id="openGlobalHelpBtn" class="secondary">Aide</button>
+          <button id="resetBtn" class="secondary">Réinitialiser</button>
+          <button id="generateBtn" class="good">Générer la structure</button>
+          <!--<button id="copyJsonBtn">Copier le JSON</button>-->
+          <button id="downloadJsonBtn" class="warn">Télécharger le JSON</button>
+        </div>
+        <div>
+          <h1>Générateur de templates</h1>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="mainGrid">
+          <div class="leftCol panel">
+            <div class="section">
+              <h2>Paramètres</h2>
+              <div class="fieldGrid">
+                <div>
+                  <div class="label-help">
+                    <label for="typeSelect">Type de parcours</label>
+                    <button type="button" class="help-toggle" aria-expanded="false">?</button>
+                    <div class="help-popover" hidden>
+                      Détermine la logique générale du parcours. Ce choix influence la structure des scènes, les types de décisions proposées et les
+                      variables utilisées. Par exemple, un parcours de gestion de crise génère plus de tensions et de contraintes qu’un parcours
+                      d’apprentissage progressif.
+                    </div>
+                  </div>
+                  <select id="typeSelect">
+                    <option value="" selected>Choisissez un type de parcours</option>
+                    <option value="decision">Prise de décision</option>
+                    <option value="crisis">Gestion de crise</option>
+                    <option value="learning">Apprentissage progressif</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <div id="structureTab" class="tabPanel">
-              <div id="structureStats" class="stats"></div>
-              <div id="structurePills" class="pillRow" style="margin-top:12px;"></div>
-              <div id="structureList" class="structureList" style="margin-top:12px;"></div>
+            <div class="section">
+              <h2>Contexte narratif</h2>
+              <div class="fieldGrid">
+                <div>
+                  <div class="label-help">
+                    <label for="contextInput">Contexte du scénario</label>
+                    <button type="button" class="help-toggle" aria-expanded="false">?</button>
+                    <div class="help-popover" hidden>
+                      Indiquez le domaine dans lequel se déroule le parcours. Cela permet de générer des textes génériques cohérents. Exemples :
+                      gestion de projet, management, qualité, cybersécurité, relation client, production, formation, etc.
+                    </div>
+                  </div>
+                  <input id="contextInput" type="text" value="organisation" />
+                </div>
+
+                <div>
+                  <div class="label-help">
+                    <label for="roleInput">Rôle du joueur</label>
+                    <button type="button" class="help-toggle" aria-expanded="false">?</button>
+                    <div class="help-popover" hidden>
+                      Indiquez le rôle incarné par le joueur dans le scénario. Cela permet de contextualiser les décisions proposées. Exemples :
+                      responsable, chef de projet, analyste, coordinateur, technicien, consultant, etc.
+                    </div>
+                  </div>
+                  <input id="roleInput" type="text" value="responsable" />
+                </div>
+
+                <div>
+                  <div class="label-help">
+                    <label for="objectiveInput">Objectif du parcours</label>
+                    <button type="button" class="help-toggle" aria-expanded="false">?</button>
+                    <div class="help-popover" hidden>
+                      Décrivez ce que le joueur doit comprendre à travers le parcours. Cela servira à générer le diagnostic final. Exemple :
+                      comprendre les effets cumulés des décisions, apprendre à gérer l’incertitude, structurer une analyse avant d’agir, etc.
+                    </div>
+                  </div>
+                  <textarea id="objectiveInput">
+Comprendre les effets cumulés de décisions prises dans un contexte imparfaitement stabilisé.</textarea
+                  >
+                </div>
+              </div>
             </div>
 
-            <div id="summaryTab" class="tabPanel" style="display:none;">
-              <div class="section">
-                <h2>Résumé de génération</h2>
-                <div id="summaryBox" class="notice"></div>
+            <div class="section">
+              <h2>Structure</h2>
+              <div class="fieldGrid three">
+                <div>
+                  <div class="label-help">
+                    <label for="lengthSelect">Longueur du parcours</label>
+                    <button type="button" class="help-toggle" aria-expanded="false">?</button>
+                    <div class="help-popover" hidden>
+                      Détermine le nombre de scènes et la complexité globale. Un parcours court permet un test rapide. Un parcours standard offre un
+                      bon équilibre. Un parcours avancé permet d’introduire plus de tensions, de décisions intermédiaires et de corrections.
+                    </div>
+                  </div>
+                  <select id="lengthSelect">
+                    <option value="short">Court</option>
+                    <option value="standard" selected>Standard</option>
+                    <option value="advanced">Avancé</option>
+                  </select>
+                </div>
+
+                <div>
+                  <div class="label-help">
+                    <label for="variablesSelect">Nombre de variables</label>
+                    <button type="button" class="help-toggle" aria-expanded="false">?</button>
+                    <div class="help-popover" hidden>
+                      Les variables représentent l’état interne du système. Elles évoluent selon les décisions prises. Plus il y a de variables, plus
+                      le parcours devient riche mais aussi plus complexe à équilibrer.
+                    </div>
+                  </div>
+                  <select id="variablesSelect">
+                    <option value="3">3</option>
+                    <option value="5" selected>5</option>
+                    <option value="7">7</option>
+                  </select>
+                </div>
+
+                <div>
+                  <div class="label-help">
+                    <label for="endingSelect">Type d’issue</label>
+                    <button type="button" class="help-toggle" aria-expanded="false">?</button>
+                    <div class="help-popover" hidden>
+                      Détermine la forme de conclusion du parcours. Une issue simple donne une seule fin. Plusieurs issues permettent différents
+                      résultats. L’option diagnostic met l’accent sur l’analyse des décisions prises.
+                    </div>
+                  </div>
+                  <select id="endingSelect">
+                    <option value="diagnostic_only">Diagnostic uniquement</option>
+                    <option value="ending_and_diagnostic" selected>Issue + diagnostic</option>
+                    <option value="multiple_endings">Plusieurs issues + diagnostic</option>
+                  </select>
+                </div>
               </div>
-              <div class="section">
-                <h2>Variables retenues</h2>
-                <div id="variablesSummary" class="pillRow"></div>
-              </div>
-              <div class="section">
-                <h2>Règles d’effondrement</h2>
-                <div id="rulesSummary" class="fieldGrid"></div>
-              </div>
-              <div class="section">
-                <h2>Diagnostics générés</h2>
-                <div id="diagnosticsSummary" class="fieldGrid"></div>
+
+              <div id="estimateBox" class="estimateBox">
+                <div class="estimateTitle">Structure estimée</div>
+                <div id="estimateText">Le générateur estime ici la taille et la complexité du parcours.</div>
               </div>
             </div>
 
-            <div id="jsonTab" class="tabPanel" style="display:none;">
-              <div class="section">
-                <h2>JSON généré</h2>
-                <div class="help">Ce JSON est directement importable dans l’outil auteur.</div>
+            <div class="section">
+              <h2>Tensions à intégrer</h2>
+              <div class="label-help">
+                <label>Tensions du parcours</label>
+                <button type="button" class="help-toggle" aria-expanded="false">?</button>
+                <div class="help-popover" hidden>
+                  Les tensions sont des difficultés qui compliquent la prise de décision. Elles permettent de rendre le parcours plus réaliste. Par
+                  exemple : pression du temps, manque d’informations, désaccords, fatigue, signaux faibles, etc. Il est conseillé de ne pas en
+                  sélectionner trop pour garder un parcours lisible.
+                </div>
               </div>
-              <pre id="jsonBox" class="jsonBox"></pre>
+              <div class="help">Sélection recommandée : 2 à 4 tensions.</div>
+              <div id="tensionsBox" class="checkboxGrid"></div>
+            </div>
+
+            <div class="section">
+              <h2>Types de décisions</h2>
+              <div class="label-help">
+                <label>Types de décisions</label>
+                <button type="button" class="help-toggle" aria-expanded="false">?</button>
+                <div class="help-popover" hidden>
+                  Définit les dilemmes proposés au joueur. Chaque type produit des arbitrages réalistes entre plusieurs options ayant chacune des
+                  avantages et des inconvénients. Il est recommandé d’en sélectionner entre deux et quatre.
+                </div>
+              </div>
+              <div class="help">Sélection recommandée : 2 à 4 types.</div>
+              <div id="decisionsBox" class="checkboxGrid"></div>
+            </div>
+          </div>
+
+          <div class="rightCol">
+            <div class="card">
+              <div class="tabs">
+                <button class="tabBtn active" data-tab="structure">Visualisation</button>
+                <button class="tabBtn" data-tab="summary">Résumé</button>
+                <button class="tabBtn" data-tab="json">JSON</button>
+              </div>
+
+              <div id="structureTab" class="tabPanel">
+                <div class="help" style="margin-bottom: 12px">
+                  Visualisez la structure complète de votre parcours interactif pour comprendre l’enchaînement des scènes, des décisions et des
+                  tensions avant d’écrire les contenus détaillés. Vérifiez rapidement l’équilibre du scénario en observant le nombre de scènes, les
+                  types de décisions et la progression pédagogique. Utilisez cette vue comme un plan de conception pour valider votre architecture
+                  avant de passer à la rédaction dans l’outil auteur.
+                </div>
+
+                <div id="structureStats" class="stats"></div>
+                <div id="structurePills" class="pillRow" style="margin-top: 12px"></div>
+                <div id="structureList" class="structureList" style="margin-top: 12px"></div>
+              </div>
+
+              <div id="summaryTab" class="tabPanel" style="display: none">
+                <div class="help" style="margin-bottom: 12px">
+                  Consultez ici les variables qui structurent votre parcours, les règles qui influencent son évolution et les diagnostics qui
+                  permettront d’analyser les décisions prises. Vérifiez que ces éléments correspondent bien à votre objectif pédagogique avant de
+                  finaliser votre scénario.
+                </div>
+
+                <div class="section">
+                  <div id="summaryBox" class="notice"></div>
+                </div>
+
+                <div class="section">
+                  <h2>Variables retenues</h2>
+                  <div id="variablesSummary" class="pillRow"></div>
+                </div>
+
+                <div class="section">
+                  <h2>Règles d’effondrement</h2>
+                  <div id="rulesSummary" class="fieldGrid"></div>
+                </div>
+
+                <div class="section">
+                  <h2>Diagnostics générés</h2>
+                  <div id="diagnosticsSummary" class="fieldGrid"></div>
+                </div>
+              </div>
+
+              <div id="jsonTab" class="tabPanel" style="display: none">
+                <div class="help" style="margin-bottom: 12px">
+                  Consultez ici la structure technique complète de votre parcours. Ce fichier contient les scènes, les décisions, les variables et les
+                  règles générées automatiquement. Vous pouvez le copier ou le télécharger pour l’importer dans l’outil auteur et poursuivre la
+                  conception.
+                </div>
+
+                <pre id="jsonBox" class="jsonBox"></pre>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-  </div>
+      </section>
+    </div>
 
-  <div id="globalHelpModal" class="modal-overlay" aria-hidden="true">
-    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="globalHelpTitle">
-      <button id="closeGlobalHelpBtn" class="modal-close" type="button" aria-label="Fermer l’aide">×</button>
-      <div class="modal-content">
-        <h2 id="globalHelpTitle">Comment fonctionne le générateur</h2>
-        <p>Ce générateur crée automatiquement une structure de parcours narratif à partir d’un brief minimal. Il ne produit pas un jeu finalisé, mais un template JSON cohérent, directement importable dans l’outil auteur.</p>
-        <h3>Étapes recommandées</h3>
-        <p>Choisissez d’abord le type de parcours. Renseignez ensuite le contexte, le rôle du joueur et l’objectif du parcours. Sélectionnez la longueur, le nombre de variables, les tensions et les types de décisions. Enfin, générez la structure puis vérifiez l’aperçu avant d’exporter le JSON.</p>
-        <h3>Ce que produit l’outil</h3>
-        <p>Le générateur crée les variables, les scènes principales, les choix génériques, les règles d’effondrement et les diagnostics. Les textes restent génériques pour pouvoir être adaptés ensuite dans l’outil auteur.</p>
-        <h3>Bon usage</h3>
-        <p>Pour une V1, il est conseillé de limiter le nombre de tensions et de types de décisions. Une structure trop chargée devient vite difficile à retravailler. Commencez simple, puis enrichissez dans l’outil auteur si nécessaire.</p>
+    <div id="globalHelpModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="globalHelpTitle">
+        <button id="closeGlobalHelpBtn" class="modal-close" type="button" aria-label="Fermer l’aide">×</button>
+        <div class="modal-content">
+          <h2 id="globalHelpTitle">Comment fonctionne le générateur</h2>
+          <p>
+            Ce générateur crée automatiquement une structure de parcours narratif à partir d’un brief minimal. Il ne produit pas un jeu finalisé, mais
+            un template JSON cohérent, directement importable dans l’outil auteur.
+          </p>
+          <h3>Étapes recommandées</h3>
+          <p>
+            Choisissez d’abord le type de parcours. Renseignez ensuite le contexte, le rôle du joueur et l’objectif du parcours. Sélectionnez la
+            longueur, le nombre de variables, les tensions et les types de décisions. Enfin, générez la structure puis vérifiez l’aperçu avant
+            d’exporter le JSON.
+          </p>
+          <h3>Ce que produit l’outil</h3>
+          <p>
+            Le générateur crée les variables, les scènes principales, les choix génériques, les règles d’effondrement et les diagnostics. Les textes
+            restent génériques pour pouvoir être adaptés ensuite dans l’outil auteur.
+          </p>
+          <h3>Bon usage</h3>
+          <p>
+            Pour une V1, il est conseillé de limiter le nombre de tensions et de types de décisions. Une structure trop chargée devient vite difficile
+            à retravailler. Commencez simple, puis enrichissez dans l’outil auteur si nécessaire.
+          </p>
+        </div>
       </div>
     </div>
-  </div>
-  
-   <script>
-    const TENSIONS = [
-      {
-        id: "time_pressure",
-        label: "Pression temporelle",
-        desc: "Ajoute des scènes ou des effets liés à l’urgence."
-      },
-      {
-        id: "lack_of_information",
-        label: "Manque d’information",
-        desc: "Renforce les scènes de clarification et de vérification."
-      },
-      {
-        id: "disagreement",
-        label: "Désaccord entre acteurs",
-        desc: "Introduit des tensions relationnelles ou organisationnelles."
-      },
-      {
-        id: "weak_signal",
-        label: "Signal faible",
-        desc: "Insère une scène d’alerte ou d’indice à investiguer."
-      },
-      {
-        id: "fatigue",
-        label: "Fatigue",
-        desc: "Ajoute une dimension d’usure ou de saturation."
-      },
-      {
-        id: "progressive_error",
-        label: "Erreur progressive",
-        desc: "Accentue les effets cumulés des petits écarts."
-      },
-      {
-        id: "lack_of_method",
-        label: "Manque de méthode",
-        desc: "Ajoute des scènes centrées sur la structuration ou l’improvisation."
-      }
-    ];
 
-    const DECISION_TYPES = [
-      {
-        id: "analyze_act",
-        label: "Analyser / agir",
-        desc: "Choisir entre compréhension préalable et mise en action rapide."
-      },
-      {
-        id: "consult_decide_alone",
-        label: "Consulter / décider seul",
-        desc: "Choisir entre discussion collective et décision autonome."
-      },
-      {
-        id: "correct_continue",
-        label: "Corriger / continuer",
-        desc: "Choisir entre ajustement et continuité."
-      },
-      {
-        id: "secure_accelerate",
-        label: "Sécuriser / accélérer",
-        desc: "Choisir entre robustesse et vitesse."
-      },
-      {
-        id: "standardize_adapt",
-        label: "Standardiser / adapter",
-        desc: "Choisir entre règle commune et adaptation locale."
-      },
-      {
-        id: "anticipate_react",
-        label: "Anticiper / réagir",
-        desc: "Choisir entre préparation et réponse en temps réel."
-      }
-    ];
+    <script>
+      const TENSIONS = [
+        {
+          id: "time_pressure",
+          label: "Pression temporelle",
+          desc: "Ajoute des scènes ou des effets liés à l’urgence.",
+        },
+        {
+          id: "lack_of_information",
+          label: "Manque d’information",
+          desc: "Renforce les scènes de clarification et de vérification.",
+        },
+        {
+          id: "disagreement",
+          label: "Désaccord entre acteurs",
+          desc: "Introduit des tensions relationnelles ou organisationnelles.",
+        },
+        {
+          id: "weak_signal",
+          label: "Signal faible",
+          desc: "Insère une scène d’alerte ou d’indice à investiguer.",
+        },
+        {
+          id: "fatigue",
+          label: "Fatigue",
+          desc: "Ajoute une dimension d’usure ou de saturation.",
+        },
+        {
+          id: "progressive_error",
+          label: "Erreur progressive",
+          desc: "Accentue les effets cumulés des petits écarts.",
+        },
+        {
+          id: "lack_of_method",
+          label: "Manque de méthode",
+          desc: "Ajoute des scènes centrées sur la structuration ou l’improvisation.",
+        },
+      ];
 
-    const VARIABLE_LIBRARY = {
-      decision: [
-        { name: "clarity", label: "Clarté", type: "number", initial: 2, category: "system", description: "Mesure le niveau de clarification de la situation." },
-        { name: "risk", label: "Niveau de risque", type: "number", initial: 2, category: "system", description: "Mesure la fragilité globale des décisions." },
-        { name: "alignment", label: "Alignement collectif", type: "number", initial: 2, category: "system", description: "Mesure la cohérence collective." },
-        { name: "timePressure", label: "Pression temporelle", type: "number", initial: 1, category: "system", description: "Mesure le niveau d’urgence ressenti." },
-        { name: "confidence", label: "Confiance dans l’action", type: "number", initial: 2, category: "system", description: "Mesure l’assurance avec laquelle l’action est menée." },
-        { name: "informationQuality", label: "Qualité des informations", type: "number", initial: 2, category: "system", description: "Mesure la fiabilité des données utilisées." },
-        { name: "decisionQuality", label: "Qualité de décision", type: "number", initial: 2, category: "system", description: "Mesure la qualité globale des arbitrages." }
-      ],
-      crisis: [
-        { name: "risk", label: "Risque", type: "number", initial: 3, category: "system", description: "Mesure la fragilité globale de la situation." },
-        { name: "timePressure", label: "Pression temporelle", type: "number", initial: 3, category: "system", description: "Mesure l’urgence dans la gestion de la crise." },
-        { name: "coordination", label: "Coordination", type: "number", initial: 2, category: "system", description: "Mesure la qualité d’organisation collective." },
-        { name: "informationQuality", label: "Qualité des informations", type: "number", initial: 2, category: "system", description: "Mesure la qualité des informations disponibles." },
-        { name: "containment", label: "Containment", type: "number", initial: 1, category: "system", description: "Mesure la capacité à contenir la crise." },
-        { name: "trust", label: "Confiance", type: "number", initial: 2, category: "system", description: "Mesure la confiance dans la gestion de la situation." },
-        { name: "fatigue", label: "Fatigue", type: "number", initial: 1, category: "system", description: "Mesure l’usure du collectif ou du système." }
-      ],
-      learning: [
-        { name: "learning", label: "Apprentissage", type: "number", initial: 0, category: "system", description: "Mesure la progression globale d’apprentissage." },
-        { name: "confidence", label: "Confiance", type: "number", initial: 2, category: "system", description: "Mesure l’assurance dans l’action." },
-        { name: "method", label: "Méthode", type: "number", initial: 1, category: "system", description: "Mesure la structuration de l’approche." },
-        { name: "feedbackUse", label: "Utilisation des retours", type: "number", initial: 0, category: "system", description: "Mesure l’usage des feedbacks." },
-        { name: "errors", label: "Erreurs", type: "number", initial: 0, category: "system", description: "Mesure les erreurs accumulées." },
-        { name: "progress", label: "Progression", type: "number", initial: 0, category: "system", description: "Mesure la progression du parcours." },
-        { name: "understanding", label: "Compréhension", type: "number", initial: 1, category: "system", description: "Mesure la compréhension de la situation ou de la méthode." }
-      ]
-    };
-    
-    const BASE_STRUCTURES = {
-      decision: {
-        short: [
-          "intro",
-          "context_gap",
-          "decision_1",
-          "signal_1",
-          "critical_turn",
-          "correction_1",
-          "ending",
-          "diagnostic_collapse"
-        ],
-        standard: [
-          "intro",
-          "context_gap",
-          "organization",
-          "decision_1",
-          "signal_1",
-          "tension_1",
-          "decision_2",
-          "accumulation",
-          "critical_turn",
-          "correction_1",
-          "ending",
-          "diagnostic_collapse"
-        ],
-        advanced: [
-          "intro",
-          "context_gap",
-          "organization",
-          "decision_1",
-          "signal_1",
-          "tension_1",
-          "decision_2",
-          "accumulation",
-          "tension_2",
-          "decision_3",
-          "critical_turn",
-          "correction_1",
-          "stabilization",
-          "ending",
-          "diagnostic_collapse"
-        ]
-      },
-      crisis: {
-        short: [
-          "intro",
-          "qualification",
-          "decision_1",
-          "signal_1",
-          "critical_turn",
-          "correction_1",
-          "ending",
-          "diagnostic_collapse"
-        ],
-        standard: [
-          "intro",
-          "qualification",
-          "organization",
-          "decision_1",
-          "signal_1",
-          "tension_1",
-          "containment",
-          "critical_turn",
-          "correction_1",
-          "ending",
-          "diagnostic_collapse"
-        ],
-        advanced: [
-          "intro",
-          "qualification",
-          "organization",
-          "decision_1",
-          "signal_1",
-          "spread",
-          "tension_1",
-          "decision_2",
-          "containment",
-          "critical_turn",
-          "correction_1",
-          "stabilization",
-          "ending",
-          "diagnostic_collapse"
-        ]
-      },
-      learning: {
-        short: [
-          "intro",
-          "attempt_1",
-          "feedback_1",
-          "decision_1",
-          "attempt_2",
-          "correction_1",
-          "ending",
-          "diagnostic_collapse"
-        ],
-        standard: [
-          "intro",
-          "attempt_1",
-          "feedback_1",
-          "decision_1",
-          "difficulty_1",
-          "adjustment",
-          "attempt_2",
-          "consolidation",
-          "ending",
-          "diagnostic_collapse"
-        ],
-        advanced: [
-          "intro",
-          "attempt_1",
-          "feedback_1",
-          "decision_1",
-          "difficulty_1",
-          "adjustment",
-          "attempt_2",
-          "difficulty_2",
-          "decision_2",
-          "consolidation",
-          "attempt_3",
-          "ending",
-          "diagnostic_collapse"
-        ]
-      }
-    };
-    
-    const SCENE_LIBRARY = {
-      intro: {
-        chapter: "Prologue",
-        role: "Installer le contexte et la responsabilité du joueur.",
-        functionLabel: "Entrée dans la situation",
-        family: "install",
-        defaultType: "normal"
-      },
-      context_gap: {
-        chapter: "Étape 1",
-        role: "Montrer que certaines informations manquent.",
-        functionLabel: "Contexte incomplet",
-        family: "install",
-        defaultType: "normal"
-      },
-      organization: {
-        chapter: "Étape 2",
-        role: "Structurer l’action ou l’organisation.",
-        functionLabel: "Organisation initiale",
-        family: "decision",
-        defaultType: "normal"
-      },
-      qualification: {
-        chapter: "Étape 1",
-        role: "Qualifier la situation et ses contours.",
-        functionLabel: "Qualification initiale",
-        family: "install",
-        defaultType: "normal"
-      },
-      decision_1: {
-        chapter: "Étape 3",
-        role: "Première décision structurante.",
-        functionLabel: "Premier arbitrage",
-        family: "decision",
-        defaultType: "normal"
-      },
-      decision_2: {
-        chapter: "Étape 5",
-        role: "Deuxième décision sous contraintes.",
-        functionLabel: "Deuxième arbitrage",
-        family: "decision",
-        defaultType: "normal"
-      },
-      decision_3: {
-        chapter: "Étape 7",
-        role: "Décision supplémentaire dans une trajectoire complexe.",
-        functionLabel: "Arbitrage avancé",
-        family: "critical",
-        defaultType: "normal"
-      },
-      signal_1: {
-        chapter: "Étape 4",
-        role: "Introduire un signal faible ou une alerte.",
-        functionLabel: "Signal faible",
-        family: "tension",
-        defaultType: "normal"
-      },
-      tension_1: {
-        chapter: "Étape 5",
-        role: "Faire émerger une tension visible.",
-        functionLabel: "Première tension",
-        family: "tension",
-        defaultType: "normal"
-      },
-      tension_2: {
-        chapter: "Étape 8",
-        role: "Ajouter une tension supplémentaire.",
-        functionLabel: "Tension supplémentaire",
-        family: "critical",
-        defaultType: "normal"
-      },
-      accumulation: {
-        chapter: "Étape 6",
-        role: "Montrer l’effet cumulatif des choix.",
-        functionLabel: "Accumulation des effets",
-        family: "tension",
-        defaultType: "normal"
-      },
-      spread: {
-        chapter: "Étape 5",
-        role: "Montrer une propagation ou un élargissement du problème.",
-        functionLabel: "Risque de propagation",
-        family: "tension",
-        defaultType: "normal"
-      },
-      containment: {
-        chapter: "Étape 6",
-        role: "Chercher à contenir ou stabiliser la situation.",
-        functionLabel: "Containment",
-        family: "decision",
-        defaultType: "normal"
-      },
-      attempt_1: {
-        chapter: "Étape 1",
-        role: "Première tentative ou premier essai.",
-        functionLabel: "Première tentative",
-        family: "decision",
-        defaultType: "normal"
-      },
-      attempt_2: {
-        chapter: "Étape 4",
-        role: "Nouvelle tentative après retour ou ajustement.",
-        functionLabel: "Nouvelle tentative",
-        family: "decision",
-        defaultType: "normal"
-      },
-      attempt_3: {
-        chapter: "Étape 6",
-        role: "Tentative avancée de consolidation.",
-        functionLabel: "Tentative avancée",
-        family: "decision",
-        defaultType: "normal"
-      },
-      feedback_1: {
-        chapter: "Étape 2",
-        role: "Introduire un retour d’expérience ou un feedback.",
-        functionLabel: "Retour disponible",
-        family: "tension",
-        defaultType: "normal"
-      },
-      difficulty_1: {
-        chapter: "Étape 3",
-        role: "Introduire une nouvelle difficulté.",
-        functionLabel: "Difficulté nouvelle",
-        family: "tension",
-        defaultType: "normal"
-      },
-      difficulty_2: {
-        chapter: "Étape 5",
-        role: "Élever le niveau de difficulté.",
-        functionLabel: "Difficulté renforcée",
-        family: "critical",
-        defaultType: "normal"
-      },
-      adjustment: {
-        chapter: "Étape 4",
-        role: "Permettre un ajustement ou une réorientation.",
-        functionLabel: "Ajustement",
-        family: "correction",
-        defaultType: "normal"
-      },
-      consolidation: {
-        chapter: "Étape 5",
-        role: "Consolider ce qui a été appris ou stabilisé.",
-        functionLabel: "Consolidation",
-        family: "correction",
-        defaultType: "normal"
-      },
-      critical_turn: {
-        chapter: "Moment critique",
-        role: "Créer un point de bascule décisionnel.",
-        functionLabel: "Point critique",
-        family: "critical",
-        defaultType: "normal"
-      },
-      correction_1: {
-        chapter: "Correction",
-        role: "Ouvrir une possibilité de remédiation.",
-        functionLabel: "Correction possible",
-        family: "correction",
-        defaultType: "remediation"
-      },
-      stabilization: {
-        chapter: "Stabilisation",
-        role: "Montrer une amélioration ou un redressement partiel.",
-        functionLabel: "Stabilisation",
-        family: "correction",
-        defaultType: "normal"
-      },
-      ending: {
-        chapter: "Finale",
-        role: "Donner une issue au parcours.",
-        functionLabel: "Issue",
-        family: "ending",
-        defaultType: "ending"
-      },
-      diagnostic_collapse: {
-        chapter: "Diagnostic",
-        role: "Analyser le parcours en fin de partie.",
-        functionLabel: "Diagnostic final",
-        family: "ending",
-        defaultType: "diagnosis"
-      }
-    };
-    
-    const DECISION_EFFECTS = {
-      analyze_act: {
-        label: "Analyser / agir",
-        options: [
+      const DECISION_TYPES = [
+        {
+          id: "analyze_act",
+          label: "Analyser / agir",
+          desc: "Choisir entre compréhension préalable et mise en action rapide.",
+        },
+        {
+          id: "consult_decide_alone",
+          label: "Consulter / décider seul",
+          desc: "Choisir entre discussion collective et décision autonome.",
+        },
+        {
+          id: "correct_continue",
+          label: "Corriger / continuer",
+          desc: "Choisir entre ajustement et continuité.",
+        },
+        {
+          id: "secure_accelerate",
+          label: "Sécuriser / accélérer",
+          desc: "Choisir entre robustesse et vitesse.",
+        },
+        {
+          id: "standardize_adapt",
+          label: "Standardiser / adapter",
+          desc: "Choisir entre règle commune et adaptation locale.",
+        },
+        {
+          id: "anticipate_react",
+          label: "Anticiper / réagir",
+          desc: "Choisir entre préparation et réponse en temps réel.",
+        },
+      ];
+
+      const VARIABLE_LIBRARY = {
+        decision: [
           {
-            title: "Analyser d’abord la situation",
-            desc: "Vous cherchez à clarifier avant d’agir.",
-            effectPairs: [
-              ["clarity", +1],
-              ["timePressure", +1],
-              ["risk", -1]
-            ]
+            name: "clarity",
+            label: "Clarté",
+            type: "number",
+            initial: 2,
+            category: "system",
+            description: "Mesure le niveau de clarification de la situation.",
           },
           {
-            title: "Agir immédiatement",
-            desc: "Vous privilégiez la rapidité d’action.",
-            effectPairs: [
-              ["timePressure", -1],
-              ["risk", +1],
-              ["clarity", -1]
-            ]
-          }
-        ]
-      },
-      consult_decide_alone: {
-        label: "Consulter / décider seul",
-        options: [
-          {
-            title: "Consulter les acteurs concernés",
-            desc: "Vous cherchez à enrichir la décision.",
-            effectPairs: [
-              ["alignment", +1],
-              ["trust", +1],
-              ["timePressure", +1]
-            ]
+            name: "risk",
+            label: "Niveau de risque",
+            type: "number",
+            initial: 2,
+            category: "system",
+            description: "Mesure la fragilité globale des décisions.",
           },
           {
-            title: "Décider seul",
-            desc: "Vous avancez plus vite, avec moins de concertation.",
-            effectPairs: [
-              ["confidence", +1],
-              ["alignment", -1],
-              ["timePressure", -1]
-            ]
-          }
-        ]
-      },
-      correct_continue: {
-        label: "Corriger / continuer",
-        options: [
-          {
-            title: "Corriger la trajectoire",
-            desc: "Vous acceptez d’ajuster le parcours.",
-            effectPairs: [
-              ["risk", -1],
-              ["learning", +1],
-              ["timePressure", +1]
-            ]
+            name: "alignment",
+            label: "Alignement collectif",
+            type: "number",
+            initial: 2,
+            category: "system",
+            description: "Mesure la cohérence collective.",
           },
           {
-            title: "Continuer dans la même logique",
-            desc: "Vous maintenez le cap déjà engagé.",
-            effectPairs: [
-              ["confidence", +1],
-              ["risk", +1],
-              ["learning", -1]
-            ]
-          }
-        ]
-      },
-      secure_accelerate: {
-        label: "Sécuriser / accélérer",
-        options: [
-          {
-            title: "Sécuriser l’action",
-            desc: "Vous privilégiez la robustesse.",
-            effectPairs: [
-              ["risk", -1],
-              ["clarity", +1],
-              ["timePressure", +1]
-            ]
+            name: "timePressure",
+            label: "Pression temporelle",
+            type: "number",
+            initial: 1,
+            category: "system",
+            description: "Mesure le niveau d’urgence ressenti.",
           },
           {
-            title: "Accélérer la mise en œuvre",
-            desc: "Vous privilégiez la vitesse.",
-            effectPairs: [
-              ["timePressure", -1],
-              ["risk", +1],
-              ["clarity", -1]
-            ]
-          }
-        ]
-      },
-      standardize_adapt: {
-        label: "Standardiser / adapter",
-        options: [
-          {
-            title: "Appliquer un cadre standard",
-            desc: "Vous cherchez la cohérence commune.",
-            effectPairs: [
-              ["alignment", +1],
-              ["clarity", +1],
-              ["confidence", -1]
-            ]
+            name: "confidence",
+            label: "Confiance dans l’action",
+            type: "number",
+            initial: 2,
+            category: "system",
+            description: "Mesure l’assurance avec laquelle l’action est menée.",
           },
           {
-            title: "Adapter au contexte local",
-            desc: "Vous privilégiez l’ajustement fin.",
-            effectPairs: [
-              ["confidence", +1],
-              ["alignment", -1],
-              ["clarity", -1]
-            ]
-          }
-        ]
-      },
-      anticipate_react: {
-        label: "Anticiper / réagir",
-        options: [
-          {
-            title: "Anticiper la suite",
-            desc: "Vous préparez les étapes suivantes.",
-            effectPairs: [
-              ["clarity", +1],
-              ["risk", -1],
-              ["timePressure", +1]
-            ]
+            name: "informationQuality",
+            label: "Qualité des informations",
+            type: "number",
+            initial: 2,
+            category: "system",
+            description: "Mesure la fiabilité des données utilisées.",
           },
           {
-            title: "Réagir au fil de l’eau",
-            desc: "Vous ajustez en temps réel.",
-            effectPairs: [
-              ["timePressure", -1],
-              ["confidence", +1],
-              ["risk", +1]
-            ]
-          }
-        ]
+            name: "decisionQuality",
+            label: "Qualité de décision",
+            type: "number",
+            initial: 2,
+            category: "system",
+            description: "Mesure la qualité globale des arbitrages.",
+          },
+        ],
+        crisis: [
+          {
+            name: "risk",
+            label: "Risque",
+            type: "number",
+            initial: 3,
+            category: "system",
+            description: "Mesure la fragilité globale de la situation.",
+          },
+          {
+            name: "timePressure",
+            label: "Pression temporelle",
+            type: "number",
+            initial: 3,
+            category: "system",
+            description: "Mesure l’urgence dans la gestion de la crise.",
+          },
+          {
+            name: "coordination",
+            label: "Coordination",
+            type: "number",
+            initial: 2,
+            category: "system",
+            description: "Mesure la qualité d’organisation collective.",
+          },
+          {
+            name: "informationQuality",
+            label: "Qualité des informations",
+            type: "number",
+            initial: 2,
+            category: "system",
+            description: "Mesure la qualité des informations disponibles.",
+          },
+          {
+            name: "containment",
+            label: "Containment",
+            type: "number",
+            initial: 1,
+            category: "system",
+            description: "Mesure la capacité à contenir la crise.",
+          },
+          {
+            name: "trust",
+            label: "Confiance",
+            type: "number",
+            initial: 2,
+            category: "system",
+            description: "Mesure la confiance dans la gestion de la situation.",
+          },
+          {
+            name: "fatigue",
+            label: "Fatigue",
+            type: "number",
+            initial: 1,
+            category: "system",
+            description: "Mesure l’usure du collectif ou du système.",
+          },
+        ],
+        learning: [
+          {
+            name: "learning",
+            label: "Apprentissage",
+            type: "number",
+            initial: 0,
+            category: "system",
+            description: "Mesure la progression globale d’apprentissage.",
+          },
+          {
+            name: "confidence",
+            label: "Confiance",
+            type: "number",
+            initial: 2,
+            category: "system",
+            description: "Mesure l’assurance dans l’action.",
+          },
+          { name: "method", label: "Méthode", type: "number", initial: 1, category: "system", description: "Mesure la structuration de l’approche." },
+          {
+            name: "feedbackUse",
+            label: "Utilisation des retours",
+            type: "number",
+            initial: 0,
+            category: "system",
+            description: "Mesure l’usage des feedbacks.",
+          },
+          { name: "errors", label: "Erreurs", type: "number", initial: 0, category: "system", description: "Mesure les erreurs accumulées." },
+          {
+            name: "progress",
+            label: "Progression",
+            type: "number",
+            initial: 0,
+            category: "system",
+            description: "Mesure la progression du parcours.",
+          },
+          {
+            name: "understanding",
+            label: "Compréhension",
+            type: "number",
+            initial: 1,
+            category: "system",
+            description: "Mesure la compréhension de la situation ou de la méthode.",
+          },
+        ],
+      };
+
+      const BASE_STRUCTURES = {
+        decision: {
+          short: ["intro", "context_gap", "decision_1", "signal_1", "critical_turn", "correction_1", "ending", "diagnostic_collapse"],
+          standard: [
+            "intro",
+            "context_gap",
+            "organization",
+            "decision_1",
+            "signal_1",
+            "tension_1",
+            "decision_2",
+            "accumulation",
+            "critical_turn",
+            "correction_1",
+            "ending",
+            "diagnostic_collapse",
+          ],
+          advanced: [
+            "intro",
+            "context_gap",
+            "organization",
+            "decision_1",
+            "signal_1",
+            "tension_1",
+            "decision_2",
+            "accumulation",
+            "tension_2",
+            "decision_3",
+            "critical_turn",
+            "correction_1",
+            "stabilization",
+            "ending",
+            "diagnostic_collapse",
+          ],
+        },
+        crisis: {
+          short: ["intro", "qualification", "decision_1", "signal_1", "critical_turn", "correction_1", "ending", "diagnostic_collapse"],
+          standard: [
+            "intro",
+            "qualification",
+            "organization",
+            "decision_1",
+            "signal_1",
+            "tension_1",
+            "containment",
+            "critical_turn",
+            "correction_1",
+            "ending",
+            "diagnostic_collapse",
+          ],
+          advanced: [
+            "intro",
+            "qualification",
+            "organization",
+            "decision_1",
+            "signal_1",
+            "spread",
+            "tension_1",
+            "decision_2",
+            "containment",
+            "critical_turn",
+            "correction_1",
+            "stabilization",
+            "ending",
+            "diagnostic_collapse",
+          ],
+        },
+        learning: {
+          short: ["intro", "attempt_1", "feedback_1", "decision_1", "attempt_2", "correction_1", "ending", "diagnostic_collapse"],
+          standard: [
+            "intro",
+            "attempt_1",
+            "feedback_1",
+            "decision_1",
+            "difficulty_1",
+            "adjustment",
+            "attempt_2",
+            "consolidation",
+            "ending",
+            "diagnostic_collapse",
+          ],
+          advanced: [
+            "intro",
+            "attempt_1",
+            "feedback_1",
+            "decision_1",
+            "difficulty_1",
+            "adjustment",
+            "attempt_2",
+            "difficulty_2",
+            "decision_2",
+            "consolidation",
+            "attempt_3",
+            "ending",
+            "diagnostic_collapse",
+          ],
+        },
+      };
+
+      const SCENE_LIBRARY = {
+        intro: {
+          chapter: "Prologue",
+          role: "Installer le contexte et la responsabilité du joueur.",
+          functionLabel: "Entrée dans la situation",
+          family: "install",
+          defaultType: "normal",
+        },
+        context_gap: {
+          chapter: "Étape 1",
+          role: "Montrer que certaines informations manquent.",
+          functionLabel: "Contexte incomplet",
+          family: "install",
+          defaultType: "normal",
+        },
+        organization: {
+          chapter: "Étape 2",
+          role: "Structurer l’action ou l’organisation.",
+          functionLabel: "Organisation initiale",
+          family: "decision",
+          defaultType: "normal",
+        },
+        qualification: {
+          chapter: "Étape 1",
+          role: "Qualifier la situation et ses contours.",
+          functionLabel: "Qualification initiale",
+          family: "install",
+          defaultType: "normal",
+        },
+        decision_1: {
+          chapter: "Étape 3",
+          role: "Première décision structurante.",
+          functionLabel: "Premier arbitrage",
+          family: "decision",
+          defaultType: "normal",
+        },
+        decision_2: {
+          chapter: "Étape 5",
+          role: "Deuxième décision sous contraintes.",
+          functionLabel: "Deuxième arbitrage",
+          family: "decision",
+          defaultType: "normal",
+        },
+        decision_3: {
+          chapter: "Étape 7",
+          role: "Décision supplémentaire dans une trajectoire complexe.",
+          functionLabel: "Arbitrage avancé",
+          family: "critical",
+          defaultType: "normal",
+        },
+        signal_1: {
+          chapter: "Étape 4",
+          role: "Introduire un signal faible ou une alerte.",
+          functionLabel: "Signal faible",
+          family: "tension",
+          defaultType: "normal",
+        },
+        tension_1: {
+          chapter: "Étape 5",
+          role: "Faire émerger une tension visible.",
+          functionLabel: "Première tension",
+          family: "tension",
+          defaultType: "normal",
+        },
+        tension_2: {
+          chapter: "Étape 8",
+          role: "Ajouter une tension supplémentaire.",
+          functionLabel: "Tension supplémentaire",
+          family: "critical",
+          defaultType: "normal",
+        },
+        accumulation: {
+          chapter: "Étape 6",
+          role: "Montrer l’effet cumulatif des choix.",
+          functionLabel: "Accumulation des effets",
+          family: "tension",
+          defaultType: "normal",
+        },
+        spread: {
+          chapter: "Étape 5",
+          role: "Montrer une propagation ou un élargissement du problème.",
+          functionLabel: "Risque de propagation",
+          family: "tension",
+          defaultType: "normal",
+        },
+        containment: {
+          chapter: "Étape 6",
+          role: "Chercher à contenir ou stabiliser la situation.",
+          functionLabel: "Containment",
+          family: "decision",
+          defaultType: "normal",
+        },
+        attempt_1: {
+          chapter: "Étape 1",
+          role: "Première tentative ou premier essai.",
+          functionLabel: "Première tentative",
+          family: "decision",
+          defaultType: "normal",
+        },
+        attempt_2: {
+          chapter: "Étape 4",
+          role: "Nouvelle tentative après retour ou ajustement.",
+          functionLabel: "Nouvelle tentative",
+          family: "decision",
+          defaultType: "normal",
+        },
+        attempt_3: {
+          chapter: "Étape 6",
+          role: "Tentative avancée de consolidation.",
+          functionLabel: "Tentative avancée",
+          family: "decision",
+          defaultType: "normal",
+        },
+        feedback_1: {
+          chapter: "Étape 2",
+          role: "Introduire un retour d’expérience ou un feedback.",
+          functionLabel: "Retour disponible",
+          family: "tension",
+          defaultType: "normal",
+        },
+        difficulty_1: {
+          chapter: "Étape 3",
+          role: "Introduire une nouvelle difficulté.",
+          functionLabel: "Difficulté nouvelle",
+          family: "tension",
+          defaultType: "normal",
+        },
+        difficulty_2: {
+          chapter: "Étape 5",
+          role: "Élever le niveau de difficulté.",
+          functionLabel: "Difficulté renforcée",
+          family: "critical",
+          defaultType: "normal",
+        },
+        adjustment: {
+          chapter: "Étape 4",
+          role: "Permettre un ajustement ou une réorientation.",
+          functionLabel: "Ajustement",
+          family: "correction",
+          defaultType: "normal",
+        },
+        consolidation: {
+          chapter: "Étape 5",
+          role: "Consolider ce qui a été appris ou stabilisé.",
+          functionLabel: "Consolidation",
+          family: "correction",
+          defaultType: "normal",
+        },
+        critical_turn: {
+          chapter: "Moment critique",
+          role: "Créer un point de bascule décisionnel.",
+          functionLabel: "Point critique",
+          family: "critical",
+          defaultType: "normal",
+        },
+        correction_1: {
+          chapter: "Correction",
+          role: "Ouvrir une possibilité de remédiation.",
+          functionLabel: "Correction possible",
+          family: "correction",
+          defaultType: "remediation",
+        },
+        stabilization: {
+          chapter: "Stabilisation",
+          role: "Montrer une amélioration ou un redressement partiel.",
+          functionLabel: "Stabilisation",
+          family: "correction",
+          defaultType: "normal",
+        },
+        ending: {
+          chapter: "Finale",
+          role: "Donner une issue au parcours.",
+          functionLabel: "Issue",
+          family: "ending",
+          defaultType: "ending",
+        },
+        diagnostic_collapse: {
+          chapter: "Diagnostic",
+          role: "Analyser le parcours en fin de partie.",
+          functionLabel: "Diagnostic final",
+          family: "ending",
+          defaultType: "diagnosis",
+        },
+      };
+
+      const DECISION_EFFECTS = {
+        analyze_act: {
+          label: "Analyser / agir",
+          options: [
+            {
+              title: "Analyser d’abord la situation",
+              desc: "Vous cherchez à clarifier avant d’agir.",
+              effectPairs: [
+                ["clarity", +1],
+                ["timePressure", +1],
+                ["risk", -1],
+              ],
+            },
+            {
+              title: "Agir immédiatement",
+              desc: "Vous privilégiez la rapidité d’action.",
+              effectPairs: [
+                ["timePressure", -1],
+                ["risk", +1],
+                ["clarity", -1],
+              ],
+            },
+          ],
+        },
+        consult_decide_alone: {
+          label: "Consulter / décider seul",
+          options: [
+            {
+              title: "Consulter les acteurs concernés",
+              desc: "Vous cherchez à enrichir la décision.",
+              effectPairs: [
+                ["alignment", +1],
+                ["trust", +1],
+                ["timePressure", +1],
+              ],
+            },
+            {
+              title: "Décider seul",
+              desc: "Vous avancez plus vite, avec moins de concertation.",
+              effectPairs: [
+                ["confidence", +1],
+                ["alignment", -1],
+                ["timePressure", -1],
+              ],
+            },
+          ],
+        },
+        correct_continue: {
+          label: "Corriger / continuer",
+          options: [
+            {
+              title: "Corriger la trajectoire",
+              desc: "Vous acceptez d’ajuster le parcours.",
+              effectPairs: [
+                ["risk", -1],
+                ["learning", +1],
+                ["timePressure", +1],
+              ],
+            },
+            {
+              title: "Continuer dans la même logique",
+              desc: "Vous maintenez le cap déjà engagé.",
+              effectPairs: [
+                ["confidence", +1],
+                ["risk", +1],
+                ["learning", -1],
+              ],
+            },
+          ],
+        },
+        secure_accelerate: {
+          label: "Sécuriser / accélérer",
+          options: [
+            {
+              title: "Sécuriser l’action",
+              desc: "Vous privilégiez la robustesse.",
+              effectPairs: [
+                ["risk", -1],
+                ["clarity", +1],
+                ["timePressure", +1],
+              ],
+            },
+            {
+              title: "Accélérer la mise en œuvre",
+              desc: "Vous privilégiez la vitesse.",
+              effectPairs: [
+                ["timePressure", -1],
+                ["risk", +1],
+                ["clarity", -1],
+              ],
+            },
+          ],
+        },
+        standardize_adapt: {
+          label: "Standardiser / adapter",
+          options: [
+            {
+              title: "Appliquer un cadre standard",
+              desc: "Vous cherchez la cohérence commune.",
+              effectPairs: [
+                ["alignment", +1],
+                ["clarity", +1],
+                ["confidence", -1],
+              ],
+            },
+            {
+              title: "Adapter au contexte local",
+              desc: "Vous privilégiez l’ajustement fin.",
+              effectPairs: [
+                ["confidence", +1],
+                ["alignment", -1],
+                ["clarity", -1],
+              ],
+            },
+          ],
+        },
+        anticipate_react: {
+          label: "Anticiper / réagir",
+          options: [
+            {
+              title: "Anticiper la suite",
+              desc: "Vous préparez les étapes suivantes.",
+              effectPairs: [
+                ["clarity", +1],
+                ["risk", -1],
+                ["timePressure", +1],
+              ],
+            },
+            {
+              title: "Réagir au fil de l’eau",
+              desc: "Vous ajustez en temps réel.",
+              effectPairs: [
+                ["timePressure", -1],
+                ["confidence", +1],
+                ["risk", +1],
+              ],
+            },
+          ],
+        },
+      };
+
+      const TENSION_SCENE_TEXTS = {
+        time_pressure: {
+          titleSuffix: "sous pression temporelle",
+          extraText: "Le temps devient ici un facteur structurant de la décision.",
+        },
+        lack_of_information: {
+          titleSuffix: "avec informations incomplètes",
+          extraText: "Le manque d’information complique l’arbitrage.",
+        },
+        disagreement: {
+          titleSuffix: "avec désaccord entre acteurs",
+          extraText: "Des positions divergentes apparaissent et doivent être gérées.",
+        },
+        weak_signal: {
+          titleSuffix: "avec signal faible",
+          extraText: "Un indice discret peut annoncer une difficulté plus large.",
+        },
+        fatigue: {
+          titleSuffix: "dans un contexte de fatigue",
+          extraText: "L’usure du système ou des personnes pèse sur la décision.",
+        },
+        progressive_error: {
+          titleSuffix: "avec erreur progressive",
+          extraText: "Les petits écarts commencent à produire des effets cumulatifs.",
+        },
+        lack_of_method: {
+          titleSuffix: "sans méthode stabilisée",
+          extraText: "L’absence de méthode explicite fragilise la trajectoire.",
+        },
+      };
+
+      const els = {
+        typeSelect: document.getElementById("typeSelect"),
+        contextInput: document.getElementById("contextInput"),
+        roleInput: document.getElementById("roleInput"),
+        objectiveInput: document.getElementById("objectiveInput"),
+        lengthSelect: document.getElementById("lengthSelect"),
+        variablesSelect: document.getElementById("variablesSelect"),
+        endingSelect: document.getElementById("endingSelect"),
+        tensionsBox: document.getElementById("tensionsBox"),
+        decisionsBox: document.getElementById("decisionsBox"),
+        generateBtn: document.getElementById("generateBtn"),
+        resetBtn: document.getElementById("resetBtn"),
+        copyJsonBtn: document.getElementById("copyJsonBtn"),
+        downloadJsonBtn: document.getElementById("downloadJsonBtn"),
+        structureStats: document.getElementById("structureStats"),
+        structurePills: document.getElementById("structurePills"),
+        structureList: document.getElementById("structureList"),
+        summaryBox: document.getElementById("summaryBox"),
+        variablesSummary: document.getElementById("variablesSummary"),
+        rulesSummary: document.getElementById("rulesSummary"),
+        diagnosticsSummary: document.getElementById("diagnosticsSummary"),
+        jsonBox: document.getElementById("jsonBox"),
+        estimateText: document.getElementById("estimateText"),
+        openGlobalHelpBtn: document.getElementById("openGlobalHelpBtn"),
+        globalHelpModal: document.getElementById("globalHelpModal"),
+        closeGlobalHelpBtn: document.getElementById("closeGlobalHelpBtn"),
+      };
+
+      let currentProject = null;
+      let currentStructureMeta = [];
+
+      const EMPTY_MESSAGE = "Choisissez un type de parcours dans les paramètres, configurez votre template, puis cliquez sur Générer la structure.";
+
+      function renderEmptyState() {
+        currentProject = null;
+        currentStructureMeta = [];
+
+        els.structureStats.innerHTML = "";
+        els.structurePills.innerHTML = "";
+        els.structureList.innerHTML = `<div class="notice">${escapeHtml(EMPTY_MESSAGE)}</div>`;
+
+        els.summaryBox.innerHTML = escapeHtml(EMPTY_MESSAGE);
+        els.variablesSummary.innerHTML = "";
+        els.rulesSummary.innerHTML = "";
+        els.diagnosticsSummary.innerHTML = "";
+
+        els.jsonBox.textContent = EMPTY_MESSAGE;
+
+        els.estimateText.textContent = "Choisissez d’abord un type de parcours pour estimer la structure.";
       }
-    };
-    
-    const TENSION_SCENE_TEXTS = {
-      time_pressure: {
-        titleSuffix: "sous pression temporelle",
-        extraText: "Le temps devient ici un facteur structurant de la décision."
-      },
-      lack_of_information: {
-        titleSuffix: "avec informations incomplètes",
-        extraText: "Le manque d’information complique l’arbitrage."
-      },
-      disagreement: {
-        titleSuffix: "avec désaccord entre acteurs",
-        extraText: "Des positions divergentes apparaissent et doivent être gérées."
-      },
-      weak_signal: {
-        titleSuffix: "avec signal faible",
-        extraText: "Un indice discret peut annoncer une difficulté plus large."
-      },
-      fatigue: {
-        titleSuffix: "dans un contexte de fatigue",
-        extraText: "L’usure du système ou des personnes pèse sur la décision."
-      },
-      progressive_error: {
-        titleSuffix: "avec erreur progressive",
-        extraText: "Les petits écarts commencent à produire des effets cumulatifs."
-      },
-      lack_of_method: {
-        titleSuffix: "sans méthode stabilisée",
-        extraText: "L’absence de méthode explicite fragilise la trajectoire."
+
+      function slugify(input) {
+        return (
+          String(input || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "_")
+            .replace(/^_+|_+$/g, "")
+            .slice(0, 60) || "template"
+        );
       }
-    };
 
-    const els = {
-      typeSelect: document.getElementById("typeSelect"),
-      contextInput: document.getElementById("contextInput"),
-      roleInput: document.getElementById("roleInput"),
-      objectiveInput: document.getElementById("objectiveInput"),
-      lengthSelect: document.getElementById("lengthSelect"),
-      variablesSelect: document.getElementById("variablesSelect"),
-      endingSelect: document.getElementById("endingSelect"),
-      tensionsBox: document.getElementById("tensionsBox"),
-      decisionsBox: document.getElementById("decisionsBox"),
-      generateBtn: document.getElementById("generateBtn"),
-      resetBtn: document.getElementById("resetBtn"),
-      copyJsonBtn: document.getElementById("copyJsonBtn"),
-      downloadJsonBtn: document.getElementById("downloadJsonBtn"),
-      structureStats: document.getElementById("structureStats"),
-      structurePills: document.getElementById("structurePills"),
-      structureList: document.getElementById("structureList"),
-      summaryBox: document.getElementById("summaryBox"),
-      variablesSummary: document.getElementById("variablesSummary"),
-      rulesSummary: document.getElementById("rulesSummary"),
-      diagnosticsSummary: document.getElementById("diagnosticsSummary"),
-      jsonBox: document.getElementById("jsonBox"),
-      estimateText: document.getElementById("estimateText"),
-      openGlobalHelpBtn: document.getElementById("openGlobalHelpBtn"),
-      globalHelpModal: document.getElementById("globalHelpModal"),
-      closeGlobalHelpBtn: document.getElementById("closeGlobalHelpBtn")
-    };
+      function deepClone(obj) {
+        return JSON.parse(JSON.stringify(obj));
+      }
 
-    let currentProject = null;
-    let currentStructureMeta = [];
-
-    function slugify(input) {
-      return String(input || "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_+|_+$/g, "")
-        .slice(0, 60) || "template";
-    }
-
-    function deepClone(obj) {
-      return JSON.parse(JSON.stringify(obj));
-    }
-
-    function makeCheckboxList(container, items, groupName) {
-      container.innerHTML = items.map(item => `
+      function makeCheckboxList(container, items, groupName) {
+        container.innerHTML = items
+          .map(
+            (item) => `
         <label class="checkboxItem">
           <input type="checkbox" name="${groupName}" value="${item.id}" ${item.defaultChecked ? "checked" : ""} />
           <span class="meta">
@@ -1435,805 +1729,771 @@
             <span>${escapeHtml(item.desc)}</span>
           </span>
         </label>
-      `).join("");
-    }
-    
-    function getCheckedValues(groupName) {
-      return Array.from(document.querySelectorAll(`input[name="${groupName}"]:checked`)).map(el => el.value);
-    }
-
-    function buildBrief() {
-      const tensions = getCheckedValues("tension");
-      const decisions = getCheckedValues("decision");
-
-      return {
-        type: els.typeSelect.value,
-        context: els.contextInput.value.trim() || "contexte générique",
-        role: els.roleInput.value.trim() || "acteur",
-        objective: els.objectiveInput.value.trim() || "Comprendre les effets d’une série de décisions.",
-        length: els.lengthSelect.value,
-        variablesCount: Number(els.variablesSelect.value),
-        tensions,
-        decisions,
-        endingType: els.endingSelect.value
-      };
-    }
-
-    function selectVariables(type, count) {
-      return deepClone(VARIABLE_LIBRARY[type].slice(0, count));
-    }
-
-    function getBaseStructure(type, length) {
-      return deepClone(BASE_STRUCTURES[type][length]);
-    }
-
-    function applyTensionsToStructure(structure, tensions) {
-      let updated = [...structure];
-      const insertAfterMap = {
-        time_pressure: "decision_1",
-        lack_of_information: "context_gap",
-        disagreement: "organization",
-        weak_signal: "signal_1",
-        fatigue: "tension_1",
-        progressive_error: "accumulation",
-        lack_of_method: "organization"
-      };
-
-      tensions.forEach(tension => {
-        const anchor = insertAfterMap[tension];
-        const customId = `tension_${tension}`;
-        if (updated.includes(customId)) return;
-
-        const index = updated.indexOf(anchor);
-        if (index !== -1) {
-          updated.splice(index + 1, 0, customId);
-        } else {
-          const fallbackIndex = Math.max(1, updated.length - 3);
-          updated.splice(fallbackIndex, 0, customId);
-        }
-      });
-
-      return updated;
-    }
-
-    function inferSceneInfo(sceneId) {
-      if (SCENE_LIBRARY[sceneId]) {
-        return deepClone(SCENE_LIBRARY[sceneId]);
+      `,
+          )
+          .join("");
       }
 
-      if (sceneId.startsWith("tension_")) {
-        const tensionId = sceneId.replace("tension_", "");
-        const tensionMeta = TENSION_SCENE_TEXTS[tensionId] || null;
+      function getCheckedValues(groupName) {
+        return Array.from(document.querySelectorAll(`input[name="${groupName}"]:checked`)).map((el) => el.value);
+      }
+
+      function buildBrief() {
+        const tensions = getCheckedValues("tension");
+        const decisions = getCheckedValues("decision");
+
         return {
-          chapter: "Tension",
-          role: tensionMeta ? tensionMeta.extraText : "Introduire une tension supplémentaire.",
-          functionLabel: tensionMeta ? `Tension : ${tensionMeta.titleSuffix}` : "Tension générée",
-          family: "tension",
-          defaultType: "normal"
+          type: els.typeSelect.value,
+          context: els.contextInput.value.trim() || "contexte générique",
+          role: els.roleInput.value.trim() || "acteur",
+          objective: els.objectiveInput.value.trim() || "Comprendre les effets d’une série de décisions.",
+          length: els.lengthSelect.value,
+          variablesCount: Number(els.variablesSelect.value),
+          tensions,
+          decisions,
+          endingType: els.endingSelect.value,
         };
       }
-      
-      return {
-        chapter: "Étape",
-        role: "Scène générée automatiquement.",
-        functionLabel: sceneId,
-        family: "decision",
-        defaultType: "normal"
-      };
-    }
 
-    function assignDecisionTypes(structure, selectedDecisions) {
-      const defaults = selectedDecisions.length ? selectedDecisions : ["analyze_act", "correct_continue"];
-      let cursor = 0;
-      const assignment = {};
+      function selectVariables(type, count) {
+        return deepClone(VARIABLE_LIBRARY[type].slice(0, count));
+      }
 
-      structure.forEach(sceneId => {
-        if (/decision|critical|organization|containment|attempt|adjustment|consolidation|correction/.test(sceneId)) {
-          assignment[sceneId] = defaults[cursor % defaults.length];
-          cursor += 1;
+      function getBaseStructure(type, length) {
+        return deepClone(BASE_STRUCTURES[type][length]);
+      }
+
+      function applyTensionsToStructure(structure, tensions) {
+        let updated = [...structure];
+        const insertAfterMap = {
+          time_pressure: "decision_1",
+          lack_of_information: "context_gap",
+          disagreement: "organization",
+          weak_signal: "signal_1",
+          fatigue: "tension_1",
+          progressive_error: "accumulation",
+          lack_of_method: "organization",
+        };
+
+        tensions.forEach((tension) => {
+          const anchor = insertAfterMap[tension];
+          const customId = `tension_${tension}`;
+          if (updated.includes(customId)) return;
+
+          const index = updated.indexOf(anchor);
+          if (index !== -1) {
+            updated.splice(index + 1, 0, customId);
+          } else {
+            const fallbackIndex = Math.max(1, updated.length - 3);
+            updated.splice(fallbackIndex, 0, customId);
+          }
+        });
+
+        return updated;
+      }
+
+      function inferSceneInfo(sceneId) {
+        if (SCENE_LIBRARY[sceneId]) {
+          return deepClone(SCENE_LIBRARY[sceneId]);
         }
-      });
 
-      return assignment;
-    }
-
-    function getSceneTitle(sceneId, info, brief) {
-      if (sceneId === "intro") return "Entrée dans la situation";
-      if (sceneId === "diagnostic_collapse") return "Diagnostic final";
-      if (sceneId === "ending") {
-        if (brief.endingType === "multiple_endings") return "Issue du parcours";
-        return "Résultat du parcours";
-      }
-      return info.functionLabel;
-    }
-
-    function getSceneText(sceneId, info, brief) {
-      const role = brief.role;
-      const context = brief.context;
-
-      const generic = {
-        intro: [
-          `Vous intervenez ici comme ${role} dans un contexte de ${context}.`,
-          `La situation nécessite plusieurs décisions successives, avec des informations et des contraintes qui ne sont pas entièrement stabilisées.`
-        ],
-        context_gap: [
-          `Une partie du contexte reste floue ou incomplète.`,
-          `Avant d’avancer, il est possible de clarifier certains éléments ou de choisir d’agir malgré l’incertitude.`
-        ],
-        organization: [
-          `La manière d’organiser l’action influencera la suite du parcours.`,
-          `Vous devez choisir un premier cadre d’intervention ou de structuration.`
-        ],
-        qualification: [
-          `Il faut d’abord qualifier la situation avant de décider d’une réponse.`,
-          `Cette phase peut améliorer la compréhension, mais elle consomme aussi du temps.`
-        ],
-        signal_1: [
-          `Un signal faible apparaît.`,
-          `Il peut s’agir d’un indice utile ou d’un bruit secondaire. Votre interprétation influencera la suite.`
-        ],
-        accumulation: [
-          `Les effets des choix précédents commencent à se combiner.`,
-          `La trajectoire devient plus lisible, mais aussi plus difficile à corriger.`
-        ],
-        critical_turn: [
-          `Vous arrivez à un moment critique du parcours.`,
-          `La décision prise ici pèsera fortement sur l’issue finale.`
-        ],
-        correction_1: [
-          `Une correction ou un réajustement reste possible.`,
-          `Tout ne peut pas être effacé, mais certaines décisions peuvent encore améliorer la trajectoire.`
-        ],
-        stabilization: [
-          `Le système peut maintenant être consolidé ou rester fragile.`,
-          `Les choix faits ici influencent la qualité finale de la stabilisation.`
-        ],
-        ending: [
-          `Le parcours aboutit à un état final plus ou moins robuste selon la qualité des arbitrages réalisés.`
-        ],
-        diagnostic_collapse: [
-          `Ce diagnostic relit votre trajectoire à partir des variables les plus structurantes.`,
-          `Il ne s’agit pas seulement d’une issue, mais d’une analyse de la logique suivie.`
-        ]
-      };
-
-      if (generic[sceneId]) return generic[sceneId];
-
-      if (sceneId.startsWith("tension_")) {
-        const tensionId = sceneId.replace("tension_", "");
-        const meta = TENSION_SCENE_TEXTS[tensionId];
-        if (meta) {
-          return [
-            `Une tension liée au parcours apparaît : ${meta.titleSuffix}.`,
-            meta.extraText
-          ];
-        }
-      }
-      
-      return [
-        `${info.functionLabel} dans un contexte de ${context}.`,
-        info.role
-      ];
-    }
-
-    function existingVariableNames(selectedVariables) {
-      return selectedVariables.map(v => v.name);
-    }
-
-    function filterEffectPairs(effectPairs, selectedVarNames) {
-      return effectPairs.filter(([name]) => selectedVarNames.includes(name));
-    }
-
-    function fallbackDecisionOptions(sceneId, selectedVarNames) {
-      const sceneNature = /signal/.test(sceneId)
-        ? "signal"
-        : /critical/.test(sceneId)
-          ? "critical"
-          : /correction|adjustment|consolidation/.test(sceneId)
-            ? "correction"
-            : "generic";
-
-      const library = {
-        signal: [
-          {
-            title: "Investiguer le signal",
-            desc: "Vous cherchez à comprendre ce qui se joue réellement.",
-            effectPairs: [
-              ["informationQuality", +1],
-              ["clarity", +1],
-              ["timePressure", +1],
-              ["risk", -1]
-            ]
-          },
-          {
-            title: "Considérer le signal comme secondaire",
-            desc: "Vous choisissez de ne pas lui donner trop de place pour l’instant.",
-            effectPairs: [
-              ["timePressure", -1],
-              ["risk", +1],
-              ["clarity", -1]
-            ]
-          }
-        ],
-        critical: [
-          {
-            title: "Réorganiser avant d’aller plus loin",
-            desc: "Vous ralentissez pour restaurer un cadre plus solide.",
-            effectPairs: [
-              ["risk", -1],
-              ["clarity", +1],
-              ["timePressure", +1]
-            ]
-          },
-          {
-            title: "Accélérer malgré les fragilités",
-            desc: "Vous cherchez à gagner du temps immédiatement.",
-            effectPairs: [
-              ["timePressure", -1],
-              ["risk", +1],
-              ["confidence", +1]
-            ]
-          }
-        ],
-        correction: [
-          {
-            title: "Réajuster la trajectoire",
-            desc: "Vous corrigez partiellement ce qui peut encore l’être.",
-            effectPairs: [
-              ["learning", +1],
-              ["risk", -1],
-              ["timePressure", +1],
-              ["alignment", +1]
-            ]
-          },
-          {
-            title: "Limiter les changements",
-            desc: "Vous préférez conserver une forme de stabilité.",
-            effectPairs: [
-              ["confidence", +1],
-              ["clarity", +1],
-              ["learning", -1]
-            ]
-          }
-        ],
-        generic: [
-          {
-            title: "Approche structurée",
-            desc: "Vous privilégiez une action plus méthodique.",
-            effectPairs: [
-              ["clarity", +1],
-              ["risk", -1],
-              ["timePressure", +1]
-            ]
-          },
-          {
-            title: "Approche plus directe",
-            desc: "Vous privilégiez l’avancement immédiat.",
-            effectPairs: [
-              ["timePressure", -1],
-              ["confidence", +1],
-              ["risk", +1]
-            ]
-          }
-        ]
-      };
-
-      return library[sceneNature].map(option => ({
-        ...option,
-        effectPairs: filterEffectPairs(option.effectPairs, selectedVarNames)
-      }));
-    }
-    
-    function buildChoiceEffects(effectPairs, selectedVarNames, stepDelta = 1) {
-      const effects = {
-        score: 0,
-        risk: 0,
-        stepDelta,
-        setFlags: {},
-        bumpFlags: {},
-        logs: [],
-        inventory: [],
-        salvage: false,
-        fatal: false
-      };
-
-      let positiveCount = 0;
-      let negativeCount = 0;
-
-      effectPairs.forEach(([varName, value]) => {
-        if (!selectedVarNames.includes(varName)) return;
-        if (varName === "risk") {
-          effects.risk += value;
-        } else {
-          effects.bumpFlags[varName] = (effects.bumpFlags[varName] || 0) + value;
-        }
-        if (value > 0) positiveCount++;
-        if (value < 0) negativeCount++;
-      });
-
-      effects.score += positiveCount - negativeCount;
-      return effects;
-    }
-
-    function buildChoicesForScene(sceneId, info, brief, decisionAssignments, selectedVariables, nextSceneId, altSceneId) {
-      const selectedVarNames = existingVariableNames(selectedVariables);
-
-      if (sceneId === "ending") {
-        return [
-          {
-            title: "Voir l’analyse finale",
-            desc: "Accéder au diagnostic du parcours.",
-            decisionLog: "Vous passez à l’analyse finale du parcours.",
-            goto: "diagnostic_collapse",
-            effects: {
-              score: 0,
-              risk: 0,
-              stepDelta: 0,
-              setFlags: {},
-              bumpFlags: {},
-              logs: ["Vous consultez la lecture finale du parcours."],
-              inventory: [],
-              salvage: false,
-              fatal: false
-            }
-          }
-        ];
-      }
-
-      if (sceneId === "diagnostic_collapse") {
-        return [];
-      }
-
-      const decisionType = decisionAssignments[sceneId];
-      let options = null;
-
-      if (decisionType && DECISION_EFFECTS[decisionType]) {
-        options = DECISION_EFFECTS[decisionType].options.map(option => ({
-          ...option,
-          effectPairs: filterEffectPairs(option.effectPairs, selectedVarNames)
-        }));
-      } else {
-        options = fallbackDecisionOptions(sceneId, selectedVarNames);
-      }
-
-      const finalOptions = options.length ? options : fallbackDecisionOptions(sceneId, selectedVarNames);
-
-      return finalOptions.slice(0, 2).map((option, index) => {
-        const goto = index === 0
-          ? (nextSceneId || "ending")
-          : (altSceneId || nextSceneId || "ending");
-
-        const effects = buildChoiceEffects(option.effectPairs, selectedVarNames, sceneId === "ending" ? 0 : 1);
-
-        if (/correction|adjustment|consolidation/.test(sceneId) && index === 0) {
-          effects.salvage = true;
-          effects.logs.push("Vous engagez une correction ou une consolidation de la trajectoire.");
-        } else {
-          effects.logs.push(`Conséquence de l’option choisie dans la scène '${info.functionLabel}'.`);
+        if (sceneId.startsWith("tension_")) {
+          const tensionId = sceneId.replace("tension_", "");
+          const tensionMeta = TENSION_SCENE_TEXTS[tensionId] || null;
+          return {
+            chapter: "Tension",
+            role: tensionMeta ? tensionMeta.extraText : "Introduire une tension supplémentaire.",
+            functionLabel: tensionMeta ? `Tension : ${tensionMeta.titleSuffix}` : "Tension générée",
+            family: "tension",
+            defaultType: "normal",
+          };
         }
 
         return {
-          title: option.title,
-          desc: option.desc,
-          decisionLog: `Vous avez choisi : ${option.title}.`,
-          goto,
-          effects
+          chapter: "Étape",
+          role: "Scène générée automatiquement.",
+          functionLabel: sceneId,
+          family: "decision",
+          defaultType: "normal",
         };
-      });
-    }
-    
-    function generateDiagnostics(type, selectedVariables, brief) {
-      const diagnostics = [];
+      }
 
-      selectedVariables.forEach(variable => {
-        if (variable.name === "risk" || variable.name === "errors") {
-          diagnostics.push({
-            id: `diag_${variable.name}`,
-            title: `${variable.label} élevé`,
-            text: `La variable '${variable.label}' indique une trajectoire plus fragile ou plus coûteuse que prévu.`,
-            operator: "AND",
-            conditions: [
-              { variable: variable.name, operator: ">=", value: 4 }
-            ]
-          });
-        } else {
-          diagnostics.push({
-            id: `diag_${variable.name}`,
-            title: `${variable.label} à observer`,
-            text: `La variable '${variable.label}' permet d’interpréter la qualité du parcours au regard de l’objectif suivant : ${brief.objective}`,
-            operator: "AND",
-            conditions: [
-              { variable: variable.name, operator: ">", value: 0 }
-            ]
-          });
+      function assignDecisionTypes(structure, selectedDecisions) {
+        const defaults = selectedDecisions.length ? selectedDecisions : ["analyze_act", "correct_continue"];
+        let cursor = 0;
+        const assignment = {};
+
+        structure.forEach((sceneId) => {
+          if (/decision|critical|organization|containment|attempt|adjustment|consolidation|correction/.test(sceneId)) {
+            assignment[sceneId] = defaults[cursor % defaults.length];
+            cursor += 1;
+          }
+        });
+
+        return assignment;
+      }
+
+      function getSceneTitle(sceneId, info, brief) {
+        if (sceneId === "intro") return "Entrée dans la situation";
+        if (sceneId === "diagnostic_collapse") return "Diagnostic final";
+        if (sceneId === "ending") {
+          if (brief.endingType === "multiple_endings") return "Issue du parcours";
+          return "Résultat du parcours";
         }
-      });
-
-      return diagnostics.slice(0, Math.max(3, Math.min(5, diagnostics.length)));
-    }
-
-    function generateCollapseRules(type, selectedVariables) {
-      const rules = [];
-      const varNames = selectedVariables.map(v => v.name);
-
-      if (varNames.includes("risk")) {
-        rules.push({
-          id: "rule_risk_high",
-          name: "Risque élevé",
-          operator: "AND",
-          goto: "diagnostic_collapse",
-          conditions: [
-            { variable: "risk", operator: ">=", value: 7 }
-          ]
-        });
+        return info.functionLabel;
       }
 
-      if (varNames.includes("alignment")) {
-        rules.push({
-          id: "rule_alignment_low",
-          name: "Alignement faible",
-          operator: "AND",
-          goto: "diagnostic_collapse",
-          conditions: [
-            { variable: "alignment", operator: "<=", value: 0 }
-          ]
-        });
-      }
+      function getSceneText(sceneId, info, brief) {
+        const role = brief.role;
+        const context = brief.context;
 
-      if (varNames.includes("timePressure")) {
-        rules.push({
-          id: "rule_time_pressure_high",
-          name: "Pression temporelle trop élevée",
-          operator: "AND",
-          goto: "diagnostic_collapse",
-          conditions: [
-            { variable: "timePressure", operator: ">=", value: 6 }
-          ]
-        });
-      }
+        const generic = {
+          intro: [
+            `Vous intervenez ici comme ${role} dans un contexte de ${context}.`,
+            `La situation nécessite plusieurs décisions successives, avec des informations et des contraintes qui ne sont pas entièrement stabilisées.`,
+          ],
+          context_gap: [
+            `Une partie du contexte reste floue ou incomplète.`,
+            `Avant d’avancer, il est possible de clarifier certains éléments ou de choisir d’agir malgré l’incertitude.`,
+          ],
+          organization: [
+            `La manière d’organiser l’action influencera la suite du parcours.`,
+            `Vous devez choisir un premier cadre d’intervention ou de structuration.`,
+          ],
+          qualification: [
+            `Il faut d’abord qualifier la situation avant de décider d’une réponse.`,
+            `Cette phase peut améliorer la compréhension, mais elle consomme aussi du temps.`,
+          ],
+          signal_1: [
+            `Un signal faible apparaît.`,
+            `Il peut s’agir d’un indice utile ou d’un bruit secondaire. Votre interprétation influencera la suite.`,
+          ],
+          accumulation: [
+            `Les effets des choix précédents commencent à se combiner.`,
+            `La trajectoire devient plus lisible, mais aussi plus difficile à corriger.`,
+          ],
+          critical_turn: [`Vous arrivez à un moment critique du parcours.`, `La décision prise ici pèsera fortement sur l’issue finale.`],
+          correction_1: [
+            `Une correction ou un réajustement reste possible.`,
+            `Tout ne peut pas être effacé, mais certaines décisions peuvent encore améliorer la trajectoire.`,
+          ],
+          stabilization: [
+            `Le système peut maintenant être consolidé ou rester fragile.`,
+            `Les choix faits ici influencent la qualité finale de la stabilisation.`,
+          ],
+          ending: [`Le parcours aboutit à un état final plus ou moins robuste selon la qualité des arbitrages réalisés.`],
+          diagnostic_collapse: [
+            `Ce diagnostic relit votre trajectoire à partir des variables les plus structurantes.`,
+            `Il ne s’agit pas seulement d’une issue, mais d’une analyse de la logique suivie.`,
+          ],
+        };
 
-      if (varNames.includes("errors")) {
-        rules.push({
-          id: "rule_errors_high",
-          name: "Erreurs accumulées",
-          operator: "AND",
-          goto: "diagnostic_collapse",
-          conditions: [
-            { variable: "errors", operator: ">=", value: 5 }
-          ]
-        });
-      }
+        if (generic[sceneId]) return generic[sceneId];
 
-      if (!rules.length) {
-        rules.push({
-          id: "rule_default",
-          name: "Fragilité globale",
-          operator: "AND",
-          goto: "diagnostic_collapse",
-          conditions: [
-            { variable: selectedVariables[0].name, operator: ">=", value: 5 }
-          ]
-        });
-      }
-
-      return rules;
-    }
-
-    function buildHelp(brief) {
-      const messages = {
-        decision: [
-          "Ce parcours met l’accent sur la chaîne des arbitrages et leurs conséquences cumulées.",
-          "Les choix proposés cherchent à faire apparaître les compromis entre vitesse, clarté, coordination et robustesse."
-        ],
-        crisis: [
-          "Ce parcours met l’accent sur la gestion d’une situation tendue, incomplète et évolutive.",
-          "Les choix proposés cherchent à faire apparaître les compromis entre containment, coordination, confiance et pression temporelle."
-        ],
-        learning: [
-          "Ce parcours met l’accent sur la progression, les erreurs normales et les ajustements successifs.",
-          "Les choix proposés cherchent à faire apparaître les effets de la méthode, du feedback et de la répétition."
-        ]
-      };
-
-      return {
-        title: "Comment utiliser ce parcours",
-        content: [
-          `Vous jouez ici le rôle de ${brief.role} dans un contexte de ${brief.context}.`,
-          `Objectif du parcours : ${brief.objective}`,
-          ...(messages[brief.type] || [])
-        ]
-      };
-    }
-    
-    function buildUI() {
-      return {
-        openHelpOnStart: true,
-        labels: {
-          restart: "Rejouer",
-          undo: "Revenir d’un pas",
-          inventoryEmpty: "Aucune information retenue",
-          logEmpty: "Aucun événement notable pour le moment.",
-          decisionEmpty: "Aucune décision enregistrée pour le moment.",
-          noWarning: "Aucune alerte majeure pour l’instant."
+        if (sceneId.startsWith("tension_")) {
+          const tensionId = sceneId.replace("tension_", "");
+          const meta = TENSION_SCENE_TEXTS[tensionId];
+          if (meta) {
+            return [`Une tension liée au parcours apparaît : ${meta.titleSuffix}.`, meta.extraText];
+          }
         }
-      };
-    }
 
-    function buildMeta(brief, structure) {
-      const id = `${brief.type}_${slugify(brief.context)}_${brief.length}`;
-      const titleMap = {
-        decision: "Template décision",
-        crisis: "Template crise",
-        learning: "Template apprentissage"
-      };
+        return [`${info.functionLabel} dans un contexte de ${context}.`, info.role];
+      }
 
-      return {
-        id,
-        title: `${titleMap[brief.type] || "Template"} — ${brief.context}`,
-        subtitle: `Parcours généré pour un rôle de ${brief.role}`,
-        version: "1.0",
-        author: "Générateur V1",
-        description: `Template généré automatiquement à partir d’un brief de type ${brief.type}.`,
-        startScene: "intro",
-        totalSteps: structure.filter(id => id !== "ending" && id !== "diagnostic_collapse").length
-      };
-    }
+      function existingVariableNames(selectedVariables) {
+        return selectedVariables.map((v) => v.name);
+      }
 
-    function buildSceneObjects(structure, brief, selectedVariables, decisionAssignments) {
-      const scenes = {};
-      const structureMeta = [];
+      function filterEffectPairs(effectPairs, selectedVarNames) {
+        return effectPairs.filter(([name]) => selectedVarNames.includes(name));
+      }
 
-      structure.forEach((sceneId, index) => {
-        const info = inferSceneInfo(sceneId);
-        const nextSceneId = structure[index + 1] || "ending";
-        const altSceneId = structure[index + 2] || nextSceneId;
-        const title = getSceneTitle(sceneId, info, brief);
-        const text = getSceneText(sceneId, info, brief);
-        const type = info.defaultType === "ending"
-          ? "ending"
-          : info.defaultType === "diagnosis"
-            ? "diagnosis"
-            : info.defaultType === "remediation"
-              ? "remediation"
-              : "normal";
+      function fallbackDecisionOptions(sceneId, selectedVarNames) {
+        const sceneNature = /signal/.test(sceneId)
+          ? "signal"
+          : /critical/.test(sceneId)
+            ? "critical"
+            : /correction|adjustment|consolidation/.test(sceneId)
+              ? "correction"
+              : "generic";
 
-        const ending = sceneId === "ending" || type === "ending" || sceneId === "diagnostic_collapse";
-        const diagnosis = sceneId === "diagnostic_collapse" || type === "diagnosis";
-
-        const choices = buildChoicesForScene(
-          sceneId,
-          info,
-          brief,
-          decisionAssignments,
-          selectedVariables,
-          nextSceneId,
-          altSceneId
-        );
-
-        scenes[sceneId] = {
-          chapter: info.chapter,
-          title,
-          text,
-          type,
-          ending,
-          diagnosis,
-          choices
-        };
-
-        structureMeta.push({
-          id: sceneId,
-          index: index + 1,
-          chapter: info.chapter,
-          title,
-          role: info.role,
-          family: info.family,
-          decisionType: decisionAssignments[sceneId] || null,
-          nextScenes: choices.map(c => c.goto),
-          variableImpacts: summarizeChoiceEffects(choices)
-        });
-      });
-
-      if (brief.endingType === "multiple_endings") {
-        scenes.ending_success = {
-          chapter: "Finale",
-          title: "Issue positive",
-          text: [
-            "Cette issue représente une trajectoire globalement plus robuste ou plus maîtrisée."
-          ],
-          type: "ending",
-          ending: true,
-          diagnosis: false,
-          choices: [
+        const library = {
+          signal: [
             {
-              title: "Voir l’analyse finale",
-              desc: "Accéder au diagnostic du parcours.",
-              decisionLog: "Vous consultez l’analyse après une issue positive.",
-              goto: "diagnostic_collapse",
-              effects: {
-                score: 1,
-                risk: 0,
-                stepDelta: 0,
-                setFlags: {},
-                bumpFlags: {},
-                logs: ["Vous passez de l’issue à l’analyse."],
-                inventory: [],
-                salvage: false,
-                fatal: false
-              }
-            }
-          ]
-        };
-
-        scenes.ending_fragile = {
-          chapter: "Finale",
-          title: "Issue fragile",
-          text: [
-            "Cette issue représente une trajectoire tenue, mais avec des fragilités encore visibles."
-          ],
-          type: "ending",
-          ending: true,
-          diagnosis: false,
-          choices: [
-            {
-              title: "Voir l’analyse finale",
-              desc: "Accéder au diagnostic du parcours.",
-              decisionLog: "Vous consultez l’analyse après une issue fragile.",
-              goto: "diagnostic_collapse",
-              effects: {
-                score: 0,
-                risk: 0,
-                stepDelta: 0,
-                setFlags: {},
-                bumpFlags: {},
-                logs: ["Vous passez de l’issue à l’analyse."],
-                inventory: [],
-                salvage: false,
-                fatal: false
-              }
-            }
-          ]
-        };
-
-        if (scenes.ending) {
-          scenes.ending.choices = [
-            {
-              title: "Conclure sur une issue positive",
-              desc: "Bascule vers une conclusion plus favorable.",
-              decisionLog: "Vous orientez la conclusion vers une issue positive.",
-              goto: "ending_success",
-              effects: {
-                score: 1,
-                risk: -1,
-                stepDelta: 0,
-                setFlags: {},
-                bumpFlags: {},
-                logs: ["Une issue positive est rendue visible."],
-                inventory: [],
-                salvage: false,
-                fatal: false
-              }
+              title: "Investiguer le signal",
+              desc: "Vous cherchez à comprendre ce qui se joue réellement.",
+              effectPairs: [
+                ["informationQuality", +1],
+                ["clarity", +1],
+                ["timePressure", +1],
+                ["risk", -1],
+              ],
             },
             {
-              title: "Conclure sur une issue fragile",
-              desc: "Bascule vers une conclusion plus incertaine.",
-              decisionLog: "Vous orientez la conclusion vers une issue fragile.",
-              goto: "ending_fragile",
+              title: "Considérer le signal comme secondaire",
+              desc: "Vous choisissez de ne pas lui donner trop de place pour l’instant.",
+              effectPairs: [
+                ["timePressure", -1],
+                ["risk", +1],
+                ["clarity", -1],
+              ],
+            },
+          ],
+          critical: [
+            {
+              title: "Réorganiser avant d’aller plus loin",
+              desc: "Vous ralentissez pour restaurer un cadre plus solide.",
+              effectPairs: [
+                ["risk", -1],
+                ["clarity", +1],
+                ["timePressure", +1],
+              ],
+            },
+            {
+              title: "Accélérer malgré les fragilités",
+              desc: "Vous cherchez à gagner du temps immédiatement.",
+              effectPairs: [
+                ["timePressure", -1],
+                ["risk", +1],
+                ["confidence", +1],
+              ],
+            },
+          ],
+          correction: [
+            {
+              title: "Réajuster la trajectoire",
+              desc: "Vous corrigez partiellement ce qui peut encore l’être.",
+              effectPairs: [
+                ["learning", +1],
+                ["risk", -1],
+                ["timePressure", +1],
+                ["alignment", +1],
+              ],
+            },
+            {
+              title: "Limiter les changements",
+              desc: "Vous préférez conserver une forme de stabilité.",
+              effectPairs: [
+                ["confidence", +1],
+                ["clarity", +1],
+                ["learning", -1],
+              ],
+            },
+          ],
+          generic: [
+            {
+              title: "Approche structurée",
+              desc: "Vous privilégiez une action plus méthodique.",
+              effectPairs: [
+                ["clarity", +1],
+                ["risk", -1],
+                ["timePressure", +1],
+              ],
+            },
+            {
+              title: "Approche plus directe",
+              desc: "Vous privilégiez l’avancement immédiat.",
+              effectPairs: [
+                ["timePressure", -1],
+                ["confidence", +1],
+                ["risk", +1],
+              ],
+            },
+          ],
+        };
+
+        return library[sceneNature].map((option) => ({
+          ...option,
+          effectPairs: filterEffectPairs(option.effectPairs, selectedVarNames),
+        }));
+      }
+
+      function buildChoiceEffects(effectPairs, selectedVarNames, stepDelta = 1) {
+        const effects = {
+          score: 0,
+          risk: 0,
+          stepDelta,
+          setFlags: {},
+          bumpFlags: {},
+          logs: [],
+          inventory: [],
+          salvage: false,
+          fatal: false,
+        };
+
+        let positiveCount = 0;
+        let negativeCount = 0;
+
+        effectPairs.forEach(([varName, value]) => {
+          if (!selectedVarNames.includes(varName)) return;
+          if (varName === "risk") {
+            effects.risk += value;
+          } else {
+            effects.bumpFlags[varName] = (effects.bumpFlags[varName] || 0) + value;
+          }
+          if (value > 0) positiveCount++;
+          if (value < 0) negativeCount++;
+        });
+
+        effects.score += positiveCount - negativeCount;
+        return effects;
+      }
+
+      function buildChoicesForScene(sceneId, info, brief, decisionAssignments, selectedVariables, nextSceneId, altSceneId) {
+        const selectedVarNames = existingVariableNames(selectedVariables);
+
+        if (sceneId === "ending") {
+          return [
+            {
+              title: "Voir l’analyse finale",
+              desc: "Accéder au diagnostic du parcours.",
+              decisionLog: "Vous passez à l’analyse finale du parcours.",
+              goto: "diagnostic_collapse",
               effects: {
                 score: 0,
                 risk: 0,
                 stepDelta: 0,
                 setFlags: {},
                 bumpFlags: {},
-                logs: ["Une issue fragile est rendue visible."],
+                logs: ["Vous consultez la lecture finale du parcours."],
                 inventory: [],
                 salvage: false,
-                fatal: false
-              }
-            }
+                fatal: false,
+              },
+            },
           ];
         }
-      }
 
-      if (brief.endingType === "diagnostic_only" && scenes.ending) {
-        scenes.ending.choices = [
-          {
-            title: "Aller directement au diagnostic",
-            desc: "Passer à l’analyse finale.",
-            decisionLog: "Vous basculez directement vers le diagnostic.",
-            goto: "diagnostic_collapse",
-            effects: {
-              score: 0,
-              risk: 0,
-              stepDelta: 0,
-              setFlags: {},
-              bumpFlags: {},
-              logs: ["Vous choisissez une lecture directement analytique du parcours."],
-              inventory: [],
-              salvage: false,
-              fatal: false
-            }
+        if (sceneId === "diagnostic_collapse") {
+          return [];
+        }
+
+        const decisionType = decisionAssignments[sceneId];
+        let options = null;
+
+        if (decisionType && DECISION_EFFECTS[decisionType]) {
+          options = DECISION_EFFECTS[decisionType].options.map((option) => ({
+            ...option,
+            effectPairs: filterEffectPairs(option.effectPairs, selectedVarNames),
+          }));
+        } else {
+          options = fallbackDecisionOptions(sceneId, selectedVarNames);
+        }
+
+        const finalOptions = options.length ? options : fallbackDecisionOptions(sceneId, selectedVarNames);
+
+        return finalOptions.slice(0, 2).map((option, index) => {
+          const goto = index === 0 ? nextSceneId || "ending" : altSceneId || nextSceneId || "ending";
+
+          const effects = buildChoiceEffects(option.effectPairs, selectedVarNames, sceneId === "ending" ? 0 : 1);
+
+          if (/correction|adjustment|consolidation/.test(sceneId) && index === 0) {
+            effects.salvage = true;
+            effects.logs.push("Vous engagez une correction ou une consolidation de la trajectoire.");
+          } else {
+            effects.logs.push(`Conséquence de l’option choisie dans la scène '${info.functionLabel}'.`);
           }
-        ];
+
+          return {
+            title: option.title,
+            desc: option.desc,
+            decisionLog: `Vous avez choisi : ${option.title}.`,
+            goto,
+            effects,
+          };
+        });
       }
 
-      return { scenes, structureMeta };
-    }
-    
-    function summarizeChoiceEffects(choices) {
-      const parts = [];
-      choices.forEach(choice => {
-        const effects = [];
-        if (choice.effects.risk) effects.push(`risk ${formatSigned(choice.effects.risk)}`);
-        Object.entries(choice.effects.bumpFlags || {}).forEach(([k, v]) => {
-          effects.push(`${k} ${formatSigned(v)}`);
+      function generateDiagnostics(type, selectedVariables, brief) {
+        const diagnostics = [];
+
+        selectedVariables.forEach((variable) => {
+          if (variable.name === "risk" || variable.name === "errors") {
+            diagnostics.push({
+              id: `diag_${variable.name}`,
+              title: `${variable.label} élevé`,
+              text: `La variable '${variable.label}' indique une trajectoire plus fragile ou plus coûteuse que prévu.`,
+              operator: "AND",
+              conditions: [{ variable: variable.name, operator: ">=", value: 4 }],
+            });
+          } else {
+            diagnostics.push({
+              id: `diag_${variable.name}`,
+              title: `${variable.label} à observer`,
+              text: `La variable '${variable.label}' permet d’interpréter la qualité du parcours au regard de l’objectif suivant : ${brief.objective}`,
+              operator: "AND",
+              conditions: [{ variable: variable.name, operator: ">", value: 0 }],
+            });
+          }
         });
-        parts.push({
-          title: choice.title,
-          desc: choice.desc,
-          effects
+
+        return diagnostics.slice(0, Math.max(3, Math.min(5, diagnostics.length)));
+      }
+
+      function generateCollapseRules(type, selectedVariables) {
+        const rules = [];
+        const varNames = selectedVariables.map((v) => v.name);
+
+        if (varNames.includes("risk")) {
+          rules.push({
+            id: "rule_risk_high",
+            name: "Risque élevé",
+            operator: "AND",
+            goto: "diagnostic_collapse",
+            conditions: [{ variable: "risk", operator: ">=", value: 7 }],
+          });
+        }
+
+        if (varNames.includes("alignment")) {
+          rules.push({
+            id: "rule_alignment_low",
+            name: "Alignement faible",
+            operator: "AND",
+            goto: "diagnostic_collapse",
+            conditions: [{ variable: "alignment", operator: "<=", value: 0 }],
+          });
+        }
+
+        if (varNames.includes("timePressure")) {
+          rules.push({
+            id: "rule_time_pressure_high",
+            name: "Pression temporelle trop élevée",
+            operator: "AND",
+            goto: "diagnostic_collapse",
+            conditions: [{ variable: "timePressure", operator: ">=", value: 6 }],
+          });
+        }
+
+        if (varNames.includes("errors")) {
+          rules.push({
+            id: "rule_errors_high",
+            name: "Erreurs accumulées",
+            operator: "AND",
+            goto: "diagnostic_collapse",
+            conditions: [{ variable: "errors", operator: ">=", value: 5 }],
+          });
+        }
+
+        if (!rules.length) {
+          rules.push({
+            id: "rule_default",
+            name: "Fragilité globale",
+            operator: "AND",
+            goto: "diagnostic_collapse",
+            conditions: [{ variable: selectedVariables[0].name, operator: ">=", value: 5 }],
+          });
+        }
+
+        return rules;
+      }
+
+      function buildHelp(brief) {
+        const messages = {
+          decision: [
+            "Ce parcours met l’accent sur la chaîne des arbitrages et leurs conséquences cumulées.",
+            "Les choix proposés cherchent à faire apparaître les compromis entre vitesse, clarté, coordination et robustesse.",
+          ],
+          crisis: [
+            "Ce parcours met l’accent sur la gestion d’une situation tendue, incomplète et évolutive.",
+            "Les choix proposés cherchent à faire apparaître les compromis entre containment, coordination, confiance et pression temporelle.",
+          ],
+          learning: [
+            "Ce parcours met l’accent sur la progression, les erreurs normales et les ajustements successifs.",
+            "Les choix proposés cherchent à faire apparaître les effets de la méthode, du feedback et de la répétition.",
+          ],
+        };
+
+        return {
+          title: "Comment utiliser ce parcours",
+          content: [
+            `Vous jouez ici le rôle de ${brief.role} dans un contexte de ${brief.context}.`,
+            `Objectif du parcours : ${brief.objective}`,
+            ...(messages[brief.type] || []),
+          ],
+        };
+      }
+
+      function buildUI() {
+        return {
+          openHelpOnStart: true,
+          labels: {
+            restart: "Rejouer",
+            undo: "Revenir d’un pas",
+            inventoryEmpty: "Aucune information retenue",
+            logEmpty: "Aucun événement notable pour le moment.",
+            decisionEmpty: "Aucune décision enregistrée pour le moment.",
+            noWarning: "Aucune alerte majeure pour l’instant.",
+          },
+        };
+      }
+
+      function buildMeta(brief, structure) {
+        const id = `${brief.type}_${slugify(brief.context)}_${brief.length}`;
+        const titleMap = {
+          decision: "Template décision",
+          crisis: "Template crise",
+          learning: "Template apprentissage",
+        };
+
+        return {
+          id,
+          title: `${titleMap[brief.type] || "Template"} — ${brief.context}`,
+          subtitle: `Parcours généré pour un rôle de ${brief.role}`,
+          version: "1.0",
+          author: "Générateur V1",
+          description: `Template généré automatiquement à partir d’un brief de type ${brief.type}.`,
+          startScene: "intro",
+          totalSteps: structure.filter((id) => id !== "ending" && id !== "diagnostic_collapse").length,
+        };
+      }
+
+      function buildSceneObjects(structure, brief, selectedVariables, decisionAssignments) {
+        const scenes = {};
+        const structureMeta = [];
+
+        structure.forEach((sceneId, index) => {
+          const info = inferSceneInfo(sceneId);
+          const nextSceneId = structure[index + 1] || "ending";
+          const altSceneId = structure[index + 2] || nextSceneId;
+          const title = getSceneTitle(sceneId, info, brief);
+          const text = getSceneText(sceneId, info, brief);
+          const type =
+            info.defaultType === "ending"
+              ? "ending"
+              : info.defaultType === "diagnosis"
+                ? "diagnosis"
+                : info.defaultType === "remediation"
+                  ? "remediation"
+                  : "normal";
+
+          const ending = sceneId === "ending" || type === "ending" || sceneId === "diagnostic_collapse";
+          const diagnosis = sceneId === "diagnostic_collapse" || type === "diagnosis";
+
+          const choices = buildChoicesForScene(sceneId, info, brief, decisionAssignments, selectedVariables, nextSceneId, altSceneId);
+
+          scenes[sceneId] = {
+            chapter: info.chapter,
+            title,
+            text,
+            type,
+            ending,
+            diagnosis,
+            choices,
+          };
+
+          structureMeta.push({
+            id: sceneId,
+            index: index + 1,
+            chapter: info.chapter,
+            title,
+            role: info.role,
+            family: info.family,
+            decisionType: decisionAssignments[sceneId] || null,
+            nextScenes: choices.map((c) => c.goto),
+            variableImpacts: summarizeChoiceEffects(choices),
+          });
         });
-      });
-      return parts;
-    }
 
-    function formatSigned(value) {
-      return value > 0 ? `+${value}` : `${value}`;
-    }
+        if (brief.endingType === "multiple_endings") {
+          scenes.ending_success = {
+            chapter: "Finale",
+            title: "Issue positive",
+            text: ["Cette issue représente une trajectoire globalement plus robuste ou plus maîtrisée."],
+            type: "ending",
+            ending: true,
+            diagnosis: false,
+            choices: [
+              {
+                title: "Voir l’analyse finale",
+                desc: "Accéder au diagnostic du parcours.",
+                decisionLog: "Vous consultez l’analyse après une issue positive.",
+                goto: "diagnostic_collapse",
+                effects: {
+                  score: 1,
+                  risk: 0,
+                  stepDelta: 0,
+                  setFlags: {},
+                  bumpFlags: {},
+                  logs: ["Vous passez de l’issue à l’analyse."],
+                  inventory: [],
+                  salvage: false,
+                  fatal: false,
+                },
+              },
+            ],
+          };
 
-    function generateTemplate(brief) {
-      const selectedVariables = selectVariables(brief.type, brief.variablesCount);
-      let structure = getBaseStructure(brief.type, brief.length);
-      structure = applyTensionsToStructure(structure, brief.tensions);
-      structure = dedupeStructure(structure);
+          scenes.ending_fragile = {
+            chapter: "Finale",
+            title: "Issue fragile",
+            text: ["Cette issue représente une trajectoire tenue, mais avec des fragilités encore visibles."],
+            type: "ending",
+            ending: true,
+            diagnosis: false,
+            choices: [
+              {
+                title: "Voir l’analyse finale",
+                desc: "Accéder au diagnostic du parcours.",
+                decisionLog: "Vous consultez l’analyse après une issue fragile.",
+                goto: "diagnostic_collapse",
+                effects: {
+                  score: 0,
+                  risk: 0,
+                  stepDelta: 0,
+                  setFlags: {},
+                  bumpFlags: {},
+                  logs: ["Vous passez de l’issue à l’analyse."],
+                  inventory: [],
+                  salvage: false,
+                  fatal: false,
+                },
+              },
+            ],
+          };
 
-      if (!structure.includes("ending")) structure.push("ending");
-      if (!structure.includes("diagnostic_collapse")) structure.push("diagnostic_collapse");
+          if (scenes.ending) {
+            scenes.ending.choices = [
+              {
+                title: "Conclure sur une issue positive",
+                desc: "Bascule vers une conclusion plus favorable.",
+                decisionLog: "Vous orientez la conclusion vers une issue positive.",
+                goto: "ending_success",
+                effects: {
+                  score: 1,
+                  risk: -1,
+                  stepDelta: 0,
+                  setFlags: {},
+                  bumpFlags: {},
+                  logs: ["Une issue positive est rendue visible."],
+                  inventory: [],
+                  salvage: false,
+                  fatal: false,
+                },
+              },
+              {
+                title: "Conclure sur une issue fragile",
+                desc: "Bascule vers une conclusion plus incertaine.",
+                decisionLog: "Vous orientez la conclusion vers une issue fragile.",
+                goto: "ending_fragile",
+                effects: {
+                  score: 0,
+                  risk: 0,
+                  stepDelta: 0,
+                  setFlags: {},
+                  bumpFlags: {},
+                  logs: ["Une issue fragile est rendue visible."],
+                  inventory: [],
+                  salvage: false,
+                  fatal: false,
+                },
+              },
+            ];
+          }
+        }
 
-      const decisionAssignments = assignDecisionTypes(structure, brief.decisions);
-      const { scenes, structureMeta } = buildSceneObjects(structure, brief, selectedVariables, decisionAssignments);
-      const rules = generateCollapseRules(brief.type, selectedVariables);
-      const diagnostics = generateDiagnostics(brief.type, selectedVariables, brief);
+        if (brief.endingType === "diagnostic_only" && scenes.ending) {
+          scenes.ending.choices = [
+            {
+              title: "Aller directement au diagnostic",
+              desc: "Passer à l’analyse finale.",
+              decisionLog: "Vous basculez directement vers le diagnostic.",
+              goto: "diagnostic_collapse",
+              effects: {
+                score: 0,
+                risk: 0,
+                stepDelta: 0,
+                setFlags: {},
+                bumpFlags: {},
+                logs: ["Vous choisissez une lecture directement analytique du parcours."],
+                inventory: [],
+                salvage: false,
+                fatal: false,
+              },
+            },
+          ];
+        }
 
-      const project = {
-        meta: buildMeta(brief, structure),
-        ui: buildUI(),
-        help: buildHelp(brief),
-        variables: selectedVariables,
-        rules: {
-          collapse: rules
-        },
-        diagnostics,
-        scenes
-      };
+        return { scenes, structureMeta };
+      }
 
-      return { project, structureMeta };
-    }
+      function summarizeChoiceEffects(choices) {
+        const parts = [];
+        choices.forEach((choice) => {
+          const effects = [];
+          if (choice.effects.risk) effects.push(`risk ${formatSigned(choice.effects.risk)}`);
+          Object.entries(choice.effects.bumpFlags || {}).forEach(([k, v]) => {
+            effects.push(`${k} ${formatSigned(v)}`);
+          });
+          parts.push({
+            title: choice.title,
+            desc: choice.desc,
+            effects,
+          });
+        });
+        return parts;
+      }
 
-    function dedupeStructure(arr) {
-      const out = [];
-      arr.forEach(item => {
-        if (!out.includes(item)) out.push(item);
-      });
-      return out;
-    }
+      function formatSigned(value) {
+        return value > 0 ? `+${value}` : `${value}`;
+      }
 
-    function renderStructure(structureMeta, project, brief) {
-      els.structureStats.innerHTML = `
+      function generateTemplate(brief) {
+        const selectedVariables = selectVariables(brief.type, brief.variablesCount);
+        let structure = getBaseStructure(brief.type, brief.length);
+        structure = applyTensionsToStructure(structure, brief.tensions);
+        structure = dedupeStructure(structure);
+
+        if (!structure.includes("ending")) structure.push("ending");
+        if (!structure.includes("diagnostic_collapse")) structure.push("diagnostic_collapse");
+
+        const decisionAssignments = assignDecisionTypes(structure, brief.decisions);
+        const { scenes, structureMeta } = buildSceneObjects(structure, brief, selectedVariables, decisionAssignments);
+        const rules = generateCollapseRules(brief.type, selectedVariables);
+        const diagnostics = generateDiagnostics(brief.type, selectedVariables, brief);
+
+        const project = {
+          meta: buildMeta(brief, structure),
+          ui: buildUI(),
+          help: buildHelp(brief),
+          variables: selectedVariables,
+          rules: {
+            collapse: rules,
+          },
+          diagnostics,
+          scenes,
+        };
+
+        return { project, structureMeta };
+      }
+
+      function dedupeStructure(arr) {
+        const out = [];
+        arr.forEach((item) => {
+          if (!out.includes(item)) out.push(item);
+        });
+        return out;
+      }
+
+      function renderStructure(structureMeta, project, brief) {
+        els.structureStats.innerHTML = `
         <div class="stat"><div class="k">Scènes</div><div class="v">${Object.keys(project.scenes).length}</div></div>
         <div class="stat"><div class="k">Variables</div><div class="v">${project.variables.length}</div></div>
         <div class="stat"><div class="k">Diagnostics</div><div class="v">${project.diagnostics.length}</div></div>
         <div class="stat"><div class="k">Règles collapse</div><div class="v">${project.rules.collapse.length}</div></div>
       `;
 
-      els.structurePills.innerHTML = [
-        `<span class="pill">Type : ${escapeHtml(typeLabel(brief.type))}</span>`,
-        `<span class="pill">Contexte : ${escapeHtml(brief.context)}</span>`,
-        `<span class="pill">Rôle : ${escapeHtml(brief.role)}</span>`,
-        `<span class="pill">Longueur : ${escapeHtml(lengthLabel(brief.length))}</span>`,
-        `<span class="pill">Issue : ${escapeHtml(endingLabel(brief.endingType))}</span>`
-      ].join("");
+        els.structurePills.innerHTML = [
+          `<span class="pill">Type : ${escapeHtml(typeLabel(brief.type))}</span>`,
+          `<span class="pill">Contexte : ${escapeHtml(brief.context)}</span>`,
+          `<span class="pill">Rôle : ${escapeHtml(brief.role)}</span>`,
+          `<span class="pill">Longueur : ${escapeHtml(lengthLabel(brief.length))}</span>`,
+          `<span class="pill">Issue : ${escapeHtml(endingLabel(brief.endingType))}</span>`,
+        ].join("");
 
-      els.structureList.innerHTML = structureMeta.map(scene => `
+        els.structureList.innerHTML = structureMeta
+          .map(
+            (scene) => `
         <div class="sceneCard">
           <div class="sceneTop">
             <div class="titleBlock">
@@ -2256,30 +2516,36 @@
 
             <div class="miniBlock">
               <strong>Transitions possibles</strong>
-              <div class="content">${scene.nextScenes.map(id => escapeHtml(id)).join(" → ") || "Aucune"}</div>
+              <div class="content">${scene.nextScenes.map((id) => escapeHtml(id)).join(" → ") || "Aucune"}</div>
             </div>
 
             <div class="miniBlock">
               <strong>Choix et impacts</strong>
               <div class="choicePreview">
-                ${scene.variableImpacts.map(choice => `
+                ${scene.variableImpacts
+                  .map(
+                    (choice) => `
                   <div class="choiceLine">
                     <div><strong>${escapeHtml(choice.title)}</strong></div>
                     <div class="desc">${escapeHtml(choice.desc || "")}</div>
-                    <div class="desc">${choice.effects.length ? choice.effects.map(e => escapeHtml(e)).join(" • ") : "Effets minimes ou de transition."}</div>
+                    <div class="desc">${choice.effects.length ? choice.effects.map((e) => escapeHtml(e)).join(" • ") : "Effets minimes ou de transition."}</div>
                   </div>
-                `).join("")}
+                `,
+                  )
+                  .join("")}
               </div>
             </div>
           </div>
         </div>
-      `).join("");
-    }
+      `,
+          )
+          .join("");
+      }
 
-    function renderSummary(project, brief) {
-      const totalChoices = Object.values(project.scenes).reduce((acc, scene) => acc + (scene.choices?.length || 0), 0);
+      function renderSummary(project, brief) {
+        const totalChoices = Object.values(project.scenes).reduce((acc, scene) => acc + (scene.choices?.length || 0), 0);
 
-      els.summaryBox.innerHTML = `
+        els.summaryBox.innerHTML = `
         <strong>Template généré</strong><br>
         Type : ${escapeHtml(typeLabel(brief.type))}<br>
         Contexte : ${escapeHtml(brief.context)}<br>
@@ -2290,274 +2556,323 @@
         Objectif : ${escapeHtml(brief.objective)}
       `;
 
-      els.variablesSummary.innerHTML = project.variables.map(v => `
+        els.variablesSummary.innerHTML = project.variables
+          .map(
+            (v) => `
         <span class="pill">${escapeHtml(v.name)} · ${escapeHtml(v.label)}</span>
-      `).join("");
+      `,
+          )
+          .join("");
 
-      els.rulesSummary.innerHTML = project.rules.collapse.map(rule => `
+        els.rulesSummary.innerHTML = project.rules.collapse
+          .map(
+            (rule) => `
         <div class="notice">
           <strong>${escapeHtml(rule.name)}</strong><br>
-          ${rule.conditions.map(c => `${escapeHtml(c.variable)} ${escapeHtml(c.operator)} ${escapeHtml(String(c.value))}`).join(` ${escapeHtml(rule.operator)} `)}<br>
+          ${rule.conditions.map((c) => `${escapeHtml(c.variable)} ${escapeHtml(c.operator)} ${escapeHtml(String(c.value))}`).join(` ${escapeHtml(rule.operator)} `)}<br>
           Destination : ${escapeHtml(rule.goto)}
         </div>
-      `).join("");
+      `,
+          )
+          .join("");
 
-      els.diagnosticsSummary.innerHTML = project.diagnostics.map(diag => `
+        els.diagnosticsSummary.innerHTML = project.diagnostics
+          .map(
+            (diag) => `
         <div class="notice">
           <strong>${escapeHtml(diag.title)}</strong><br>
           ${escapeHtml(diag.text)}
         </div>
-      `).join("");
-    }
-
-    function renderJson(project) {
-      els.jsonBox.textContent = JSON.stringify(project, null, 2);
-    }
-
-    function typeLabel(type) {
-      return {
-        decision: "Prise de décision",
-        crisis: "Gestion de crise",
-        learning: "Apprentissage progressif"
-      }[type] || type;
-    }
-
-    function lengthLabel(length) {
-      return {
-        short: "Court",
-        standard: "Standard",
-        advanced: "Avancé"
-      }[length] || length;
-    }
-
-    function endingLabel(value) {
-      return {
-        diagnostic_only: "Diagnostic uniquement",
-        ending_and_diagnostic: "Issue + diagnostic",
-        multiple_endings: "Plusieurs issues + diagnostic"
-      }[value] || value;
-    }
-
-    function familyLabel(family) {
-      return {
-        install: "Installation",
-        decision: "Décision",
-        tension: "Tension",
-        critical: "Critique",
-        correction: "Correction",
-        ending: "Conclusion"
-      }[family] || family;
-    }
-
-    function escapeHtml(str) {
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;");
-    }
-
-    function downloadFile(filename, content, type = "application/json;charset=utf-8") {
-      const blob = new Blob([content], { type });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-    
-    async function copyToClipboard(text) {
-      try {
-        await navigator.clipboard.writeText(text);
-        alert("JSON copié dans le presse-papiers.");
-      } catch (error) {
-        alert("Copie impossible dans ce navigateur. Utilisez le téléchargement du fichier.");
-      }
-    }
-
-    function updateEstimate() {
-      const brief = buildBrief();
-      const base = getBaseStructure(brief.type, brief.length);
-      const estimatedScenes = dedupeStructure(applyTensionsToStructure(base, brief.tensions));
-      const sceneCount = estimatedScenes.length;
-      const selectedDecisions = brief.decisions.length || 2;
-      const estimatedChoices = sceneCount <= 2 ? 0 : (sceneCount - 2) * 2;
-      let complexity = "faible";
-
-      if (brief.variablesCount >= 5 || brief.tensions.length >= 3 || brief.decisions.length >= 3 || brief.length === "advanced") {
-        complexity = "moyenne";
-      }
-      if (brief.variablesCount >= 7 || brief.tensions.length >= 4 || brief.decisions.length >= 4) {
-        complexity = "élevée";
+      `,
+          )
+          .join("");
       }
 
-      els.estimateText.textContent =
-        `Structure estimée : ${sceneCount} scènes, environ ${estimatedChoices} choix, ${brief.variablesCount} variables, complexité ${complexity}.`;
-    }
-
-    function renderAll() {
-      const brief = buildBrief();
-      const { project, structureMeta } = generateTemplate(brief);
-      currentProject = project;
-      currentStructureMeta = structureMeta;
-
-      renderStructure(structureMeta, project, brief);
-      renderSummary(project, brief);
-      renderJson(project);
-      updateEstimate();
-    }
-
-    function setDefaults() {
-      makeCheckboxList(els.tensionsBox, TENSIONS.map(t => ({
-        ...t,
-        defaultChecked: ["time_pressure", "lack_of_information", "weak_signal"].includes(t.id)
-      })), "tension");
-
-      makeCheckboxList(els.decisionsBox, DECISION_TYPES.map(d => ({
-        ...d,
-        defaultChecked: ["analyze_act", "consult_decide_alone", "correct_continue"].includes(d.id)
-      })), "decision");
-    }
-
-    function resetForm() {
-      els.typeSelect.value = "decision";
-      els.contextInput.value = "organisation";
-      els.roleInput.value = "responsable";
-      els.objectiveInput.value = "Comprendre les effets cumulés de décisions prises dans un contexte imparfaitement stabilisé.";
-      els.lengthSelect.value = "standard";
-      els.variablesSelect.value = "5";
-      els.endingSelect.value = "ending_and_diagnostic";
-
-      document.querySelectorAll('input[name="tension"]').forEach(input => {
-        input.checked = ["time_pressure", "lack_of_information", "weak_signal"].includes(input.value);
-      });
-
-      document.querySelectorAll('input[name="decision"]').forEach(input => {
-        input.checked = ["analyze_act", "consult_decide_alone", "correct_continue"].includes(input.value);
-      });
-
-      renderAll();
-    }
-
-    function closeAllHelpPopovers() {
-      document.querySelectorAll(".help-popover").forEach(pop => {
-        pop.hidden = true;
-      });
-
-      document.querySelectorAll(".help-toggle").forEach(btn => {
-        btn.setAttribute("aria-expanded", "false");
-      });
-    }
-
-    function openGlobalHelpModal() {
-      els.globalHelpModal.classList.add("open");
-      els.globalHelpModal.setAttribute("aria-hidden", "false");
-      document.body.classList.add("modal-open");
-      els.closeGlobalHelpBtn.focus();
-    }
-
-    function closeGlobalHelpModal() {
-      els.globalHelpModal.classList.remove("open");
-      els.globalHelpModal.setAttribute("aria-hidden", "true");
-      document.body.classList.remove("modal-open");
-      els.openGlobalHelpBtn.focus();
-    }
-
-    document.querySelectorAll(".tabBtn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".tabBtn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-
-        document.getElementById("structureTab").style.display = btn.dataset.tab === "structure" ? "block" : "none";
-        document.getElementById("summaryTab").style.display = btn.dataset.tab === "summary" ? "block" : "none";
-        document.getElementById("jsonTab").style.display = btn.dataset.tab === "json" ? "block" : "none";
-      });
-    });
-
-    els.generateBtn.addEventListener("click", renderAll);
-    els.resetBtn.addEventListener("click", resetForm);
-
-    els.copyJsonBtn.addEventListener("click", () => {
-      if (!currentProject) return;
-      copyToClipboard(JSON.stringify(currentProject, null, 2));
-    });
-    
-    els.downloadJsonBtn.addEventListener("click", () => {
-      if (!currentProject) return;
-      const filename = `${currentProject.meta.id || "template"}.json`;
-      downloadFile(filename, JSON.stringify(currentProject, null, 2));
-    });
-
-    els.openGlobalHelpBtn.addEventListener("click", openGlobalHelpModal);
-    els.closeGlobalHelpBtn.addEventListener("click", closeGlobalHelpModal);
-
-    els.globalHelpModal.addEventListener("click", (event) => {
-      if (event.target === els.globalHelpModal) {
-        closeGlobalHelpModal();
+      function renderJson(project) {
+        els.jsonBox.textContent = JSON.stringify(project, null, 2);
       }
-    });
 
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        closeAllHelpPopovers();
-        if (els.globalHelpModal.classList.contains("open")) {
+      function typeLabel(type) {
+        return (
+          {
+            decision: "Prise de décision",
+            crisis: "Gestion de crise",
+            learning: "Apprentissage progressif",
+          }[type] || type
+        );
+      }
+
+      function lengthLabel(length) {
+        return (
+          {
+            short: "Court",
+            standard: "Standard",
+            advanced: "Avancé",
+          }[length] || length
+        );
+      }
+
+      function endingLabel(value) {
+        return (
+          {
+            diagnostic_only: "Diagnostic uniquement",
+            ending_and_diagnostic: "Issue + diagnostic",
+            multiple_endings: "Plusieurs issues + diagnostic",
+          }[value] || value
+        );
+      }
+
+      function familyLabel(family) {
+        return (
+          {
+            install: "Installation",
+            decision: "Décision",
+            tension: "Tension",
+            critical: "Critique",
+            correction: "Correction",
+            ending: "Conclusion",
+          }[family] || family
+        );
+      }
+
+      function escapeHtml(str) {
+        return String(str ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+      }
+
+      function downloadFile(filename, content, type = "application/json;charset=utf-8") {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      async function copyToClipboard(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          alert("JSON copié dans le presse-papiers.");
+        } catch (error) {
+          alert("Copie impossible dans ce navigateur. Utilisez le téléchargement du fichier.");
+        }
+      }
+
+      function updateEstimate() {
+        const brief = buildBrief();
+
+        if (!brief.type) {
+          els.estimateText.textContent = "Choisissez d’abord un type de parcours pour estimer la structure.";
+          return;
+        }
+
+        const base = getBaseStructure(brief.type, brief.length);
+        const estimatedScenes = dedupeStructure(applyTensionsToStructure(base, brief.tensions));
+        const sceneCount = estimatedScenes.length;
+        const estimatedChoices = sceneCount <= 2 ? 0 : (sceneCount - 2) * 2;
+        let complexity = "faible";
+
+        if (brief.variablesCount >= 5 || brief.tensions.length >= 3 || brief.decisions.length >= 3 || brief.length === "advanced") {
+          complexity = "moyenne";
+        }
+        if (brief.variablesCount >= 7 || brief.tensions.length >= 4 || brief.decisions.length >= 4) {
+          complexity = "élevée";
+        }
+
+        els.estimateText.textContent = `Structure estimée : ${sceneCount} scènes, environ ${estimatedChoices} choix, ${brief.variablesCount} variables, complexité ${complexity}.`;
+      }
+
+      function renderAll() {
+        const brief = buildBrief();
+
+        if (!brief.type) {
+          renderEmptyState();
+          return;
+        }
+
+        const { project, structureMeta } = generateTemplate(brief);
+        currentProject = project;
+        currentStructureMeta = structureMeta;
+
+        renderStructure(structureMeta, project, brief);
+        renderSummary(project, brief);
+        renderJson(project);
+        updateEstimate();
+      }
+
+      function setDefaults() {
+        makeCheckboxList(
+          els.tensionsBox,
+          TENSIONS.map((t) => ({
+            ...t,
+            defaultChecked: ["time_pressure", "lack_of_information", "weak_signal"].includes(t.id),
+          })),
+          "tension",
+        );
+
+        makeCheckboxList(
+          els.decisionsBox,
+          DECISION_TYPES.map((d) => ({
+            ...d,
+            defaultChecked: ["analyze_act", "consult_decide_alone", "correct_continue"].includes(d.id),
+          })),
+          "decision",
+        );
+      }
+
+      function resetForm() {
+        els.typeSelect.value = "";
+        els.contextInput.value = "organisation";
+        els.roleInput.value = "responsable";
+        els.objectiveInput.value = "Comprendre les effets cumulés de décisions prises dans un contexte imparfaitement stabilisé.";
+        els.lengthSelect.value = "standard";
+        els.variablesSelect.value = "5";
+        els.endingSelect.value = "ending_and_diagnostic";
+
+        document.querySelectorAll('input[name="tension"]').forEach((input) => {
+          input.checked = ["time_pressure", "lack_of_information", "weak_signal"].includes(input.value);
+        });
+
+        document.querySelectorAll('input[name="decision"]').forEach((input) => {
+          input.checked = ["analyze_act", "consult_decide_alone", "correct_continue"].includes(input.value);
+        });
+
+        renderEmptyState();
+        updateEstimate();
+      }
+
+      function closeAllHelpPopovers() {
+        document.querySelectorAll(".help-popover").forEach((pop) => {
+          pop.hidden = true;
+        });
+
+        document.querySelectorAll(".help-toggle").forEach((btn) => {
+          btn.setAttribute("aria-expanded", "false");
+        });
+      }
+
+      function openGlobalHelpModal() {
+        els.globalHelpModal.classList.add("open");
+        els.globalHelpModal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+        els.closeGlobalHelpBtn.focus();
+      }
+
+      function closeGlobalHelpModal() {
+        els.globalHelpModal.classList.remove("open");
+        els.globalHelpModal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+        els.openGlobalHelpBtn.focus();
+      }
+
+      document.querySelectorAll(".tabBtn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tabBtn").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          document.getElementById("structureTab").style.display = btn.dataset.tab === "structure" ? "block" : "none";
+          document.getElementById("summaryTab").style.display = btn.dataset.tab === "summary" ? "block" : "none";
+          document.getElementById("jsonTab").style.display = btn.dataset.tab === "json" ? "block" : "none";
+        });
+      });
+
+      els.generateBtn.addEventListener("click", renderAll);
+      els.resetBtn.addEventListener("click", resetForm);
+
+      els.copyJsonBtn.addEventListener("click", () => {
+        if (!currentProject) return;
+        copyToClipboard(JSON.stringify(currentProject, null, 2));
+      });
+
+      els.downloadJsonBtn.addEventListener("click", () => {
+        if (!currentProject) return;
+        const filename = `${currentProject.meta.id || "template"}.json`;
+        downloadFile(filename, JSON.stringify(currentProject, null, 2));
+      });
+
+      els.openGlobalHelpBtn.addEventListener("click", openGlobalHelpModal);
+      els.closeGlobalHelpBtn.addEventListener("click", closeGlobalHelpModal);
+
+      els.globalHelpModal.addEventListener("click", (event) => {
+        if (event.target === els.globalHelpModal) {
           closeGlobalHelpModal();
         }
-      }
-    });
+      });
 
-    [
-      els.typeSelect,
-      els.contextInput,
-      els.roleInput,
-      els.objectiveInput,
-      els.lengthSelect,
-      els.variablesSelect,
-      els.endingSelect
-    ].forEach(el => el.addEventListener("change", renderAll));
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeAllHelpPopovers();
+          if (els.globalHelpModal.classList.contains("open")) {
+            closeGlobalHelpModal();
+          }
+        }
+      });
 
-    [
-      els.contextInput,
-      els.roleInput,
-      els.objectiveInput
-    ].forEach(el => el.addEventListener("input", () => {
-      clearTimeout(el._t);
-      el._t = setTimeout(renderAll, 250);
-    }));
+      [els.typeSelect, els.contextInput, els.roleInput, els.objectiveInput, els.lengthSelect, els.variablesSelect, els.endingSelect].forEach((el) =>
+        el.addEventListener("change", updateEstimate),
+      );
 
-    document.addEventListener("change", (event) => {
-      if (event.target.name === "tension" || event.target.name === "decision") {
-        renderAll();
-      }
-    });
+      [els.contextInput, els.roleInput, els.objectiveInput].forEach((el) =>
+        el.addEventListener("input", () => {
+          clearTimeout(el._t);
+          el._t = setTimeout(updateEstimate, 250);
+        }),
+      );
 
-    document.addEventListener("click", (event) => {
-      const toggle = event.target.closest(".help-toggle");
+      document.addEventListener("change", (event) => {
+        if (event.target.name === "tension" || event.target.name === "decision") {
+          updateEstimate();
+        }
+      });
 
-      if (toggle) {
-        const wrapper = toggle.closest(".label-help");
-        const popover = wrapper?.querySelector(".help-popover");
-        const isOpen = toggle.getAttribute("aria-expanded") === "true";
+      document.addEventListener("click", (event) => {
+        const toggle = event.target.closest(".help-toggle");
 
-        closeAllHelpPopovers();
+        if (toggle) {
+          const wrapper = toggle.closest(".label-help");
+          const popover = wrapper?.querySelector(".help-popover");
+          const isOpen = toggle.getAttribute("aria-expanded") === "true";
 
-        if (!isOpen && popover) {
-          popover.hidden = false;
-          toggle.setAttribute("aria-expanded", "true");
+          closeAllHelpPopovers();
+
+          if (!isOpen && popover) {
+            popover.hidden = false;
+            toggle.setAttribute("aria-expanded", "true");
+          }
+
+          return;
         }
 
-        return;
-      }
+        if (!event.target.closest(".label-help")) {
+          closeAllHelpPopovers();
+        }
+      });
 
-      if (!event.target.closest(".label-help")) {
-        closeAllHelpPopovers();
-      }
-    });
+      setDefaults();
+      renderEmptyState();
+      updateEstimate();
+    </script>
+    <script>
+      const favicon = `
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>
+<rect x='4' y='4' width='56' height='56' rx='14' fill='%231e3a8a'/>
+<circle cx='22' cy='20' r='5' fill='white'/>
+<circle cx='42' cy='20' r='5' fill='white'/>
+<circle cx='32' cy='44' r='5' fill='white'/>
+<path d='M22 25V31C22 33 24 35 26 36L32 40' stroke='white' stroke-width='5' stroke-linecap='round'/>
+<path d='M42 25V31C42 33 40 35 38 36L32 40' stroke='white' stroke-width='5' stroke-linecap='round'/>
+</svg>
+`;
 
-    setDefaults();
-    renderAll();
-  </script>
-</body>
+      const link = document.createElement("link");
+      link.rel = "icon";
+      link.href = "data:image/svg+xml," + encodeURIComponent(favicon);
+      document.head.appendChild(link);
+    </script>
+  </body>
 </html>

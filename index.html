@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Accueil outils</title>
+    <title>SCENE - Accueil</title>
     <style>
       :root {
         --bg: #0b1020;
@@ -248,16 +248,61 @@
         width: 100%;
         height: auto;
       }
+
+      .titleBlock {
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+      }
+
+      .logo svg {
+        display: block;
+        height: 90px;
+        width: auto;
+        color: currentColor;
+      }
+
+      .titleText {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .titleText h1 {
+        margin: 0;
+      }
+
+      .titleText p {
+        margin: 0;
+      }
     </style>
   </head>
   <body>
     <main class="page">
       <section class="hero">
-        <h1>Concepteur d'histoires interactives</h1>
-        <p>
-          Générez en quelques clics une base de travail à partir d’un template, et convevez un serious game narratif étape par étape avec l’outil
-          auteur.
-        </p>
+        <div class="titleBlock">
+          <div class="logo">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="8" width="48" height="48" rx="12" stroke="currentColor" stroke-width="4" />
+              <circle cx="22" cy="20" r="4" fill="currentColor" />
+              <circle cx="42" cy="20" r="4" fill="currentColor" />
+              <circle cx="32" cy="42" r="4" fill="currentColor" />
+              <path d="M22 24V30C22 32 23 33 25 34L32 38" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+              <path d="M42 24V30C42 32 41 33 39 34L32 38" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+            </svg>
+          </div>
+
+          <div class="titleText">
+            <h1>SCENE</h1>
+            <p style="font-size: 0.7em">Système de Création d'Expériences Narratives à Embranchements</p>
+            <p>L'outil dont VOUS êtes le héros</p>
+          </div>
+        </div>
       </section>
 
       <section class="workflowMobile">
@@ -357,23 +402,23 @@
         <details>
           <summary>Comprendre le workflow</summary>
           <div class="workflowBox">
-            <p>Deux outils complémentaires sont proposés ici : un générateur de templates, et un game designer.</p>
+            <p>Deux outils complémentaires sont proposés ici : un <strong>générateur de templates</strong>, et un <strong>builder</strong>.</p>
             <ol>
               <li>
                 Vous pouvez commencer par le générateur de template si vous voulez produire rapidement une structure initiale, un canevas de contenu
-                ou une base de départ que vous enrichirez ensuite dans le game designer.
+                ou une base de départ que vous enrichirez ensuite dans le builder.
               </li>
               <li>
-                Vous pouvez ensuite passer dans le game designer pour construire le parcours complet, organiser les scènes, les choix, les variables,
-                les règles d’effondrement et les diagnostics (tout cela est expliqué dans l'outil).
+                Vous pouvez ensuite passer dans le builder pour construire le parcours complet, organiser les scènes, les choix, les variables, les
+                règles d’effondrement et les diagnostics (tout cela est expliqué dans l'outil).
               </li>
               <li>
                 Comment choisir ?
                 <ul>
-                  <li>Si vous savez déjà précisément ce que vous voulez concevoir, vous pouvez ouvrir directement le game designer.</li>
+                  <li>Si vous savez déjà précisément ce que vous voulez concevoir, vous pouvez ouvrir directement le builder.</li>
                   <li>
                     Si vous avez d’abord besoin d’un cadre ou d’une trame, il est plus pertinent de commencer par le générateur de template : générez
-                    un scénario générique en indiquant au générateur vos préférences, exportez ce scénario, puis importez-le dans le game designer.
+                    un scénario générique en indiquant au générateur vos préférences, exportez ce scénario, puis importez-le dans le builder.
                   </li>
                 </ul>
               </li>
@@ -384,8 +429,8 @@
 
       <section class="cards">
         <article class="card">
-          <span class="badge">🤖 Génération assistée</span>
           <h2>Générateur de template</h2>
+          <span class="badge">🤖 Génération assistée</span>
           <p>
             Générez rapidement une structure de départ pour préparer votre travail. Cet outil vous aide à produire un cadre initial cohérent,
             réutilisable et facile à adapter ensuite selon votre besoin.
@@ -396,11 +441,11 @@
         </article>
 
         <article class="card">
+          <h2>Builder</h2>
           <span class="badge">⌨️ Conception auteur</span>
-          <h2>Serious game designer</h2>
           <p>
-            Construisez votre serious game scène par scène. Cet outil vous permet de concevoir les choix, les effets, les variables, les règles et les
-            diagnostics pour produire une simulation narrative interactive complète.
+            Construisez votre histoire interactive scène par scène. Cet outil vous permet de concevoir les choix, les effets, les variables, les
+            règles et les diagnostics pour produire une simulation narrative interactive complète.
           </p>
           <div class="actions">
             <a class="btn" href="gameDesigner.html">Accéder</a>
@@ -408,5 +453,22 @@
         </article>
       </section>
     </main>
+    <script>
+      const favicon = `
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>
+<rect x='4' y='4' width='56' height='56' rx='14' fill='%231e3a8a'/>
+<circle cx='22' cy='20' r='5' fill='white'/>
+<circle cx='42' cy='20' r='5' fill='white'/>
+<circle cx='32' cy='44' r='5' fill='white'/>
+<path d='M22 25V31C22 33 24 35 26 36L32 40' stroke='white' stroke-width='5' stroke-linecap='round'/>
+<path d='M42 25V31C42 33 40 35 38 36L32 40' stroke='white' stroke-width='5' stroke-linecap='round'/>
+</svg>
+`;
+
+      const link = document.createElement("link");
+      link.rel = "icon";
+      link.href = "data:image/svg+xml," + encodeURIComponent(favicon);
+      document.head.appendChild(link);
+    </script>
   </body>
 </html>
