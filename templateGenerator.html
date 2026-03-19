@@ -3674,10 +3674,11 @@ Comprendre les effets cumulés de décisions prises dans un contexte imparfaitem
         return false;
       }
 
-      function reserveLabelRect(candidateRects, pathPoints) {
+            function reserveLabelRect(candidateRects, pathPoints) {
         const candidates = Array.isArray(candidateRects)
           ? candidateRects
           : [candidateRects];
+
         const searchOffsets = [
           { dx: 0, dy: 0 },
           { dx: 0, dy: 24 },
@@ -3692,6 +3693,10 @@ Comprendre les effets cumulés de décisions prises dans un contexte imparfaitem
           { dx: -48, dy: 0 },
           { dx: 0, dy: 48 },
           { dx: 0, dy: -48 },
+          { dx: 72, dy: 0 },
+          { dx: -72, dy: 0 },
+          { dx: 0, dy: 72 },
+          { dx: 0, dy: -72 },
         ];
 
         let bestRect = null;
@@ -3708,9 +3713,9 @@ Comprendre les effets cumulés de décisions prises dans un contexte imparfaitem
 
             let score = 0;
 
-            if (rectIntersectsAnyScene(rect)) score += 5000;
-            if (rectIntersectsAnyReservedLabel(rect)) score += 3000;
-            if (rectIntersectsPath(rect, pathPoints)) score += 4000;
+            if (rectIntersectsAnyScene(rect)) score += 6000;
+            if (rectIntersectsAnyReservedLabel(rect)) score += 3500;
+            if (rectIntersectsPath(rect, pathPoints)) score += 9000;
 
             score += Math.abs(dx) + Math.abs(dy) * 0.8;
 
@@ -3725,7 +3730,7 @@ Comprendre les effets cumulés de décisions prises dans un contexte imparfaitem
         return bestRect;
       }
 
-      function getLabelCandidates(pathPoints, width, height) {
+            function getLabelCandidates(pathPoints, width, height) {
         const minSegmentLength = 18;
         let chosenSegment = null;
 
@@ -3766,18 +3771,10 @@ Comprendre les effets cumulés de décisions prises dans un contexte imparfaitem
           candidates.push(
             { x: anchorX, y: y - height - 8, width, height },
             { x: anchorX, y: y + 8, width, height },
-            {
-              x: Math.min(maxX + 10, svgWidth - width - 8),
-              y: y - Math.round(height / 2),
-              width,
-              height,
-            },
-            {
-              x: Math.max(minX - width - 10, 8),
-              y: y - Math.round(height / 2),
-              width,
-              height,
-            },
+            { x: Math.min(maxX + 12, svgWidth - width - 8), y: y - Math.round(height / 2), width, height },
+            { x: Math.max(minX - width - 12, 8), y: y - Math.round(height / 2), width, height },
+            { x: Math.min(maxX + 48, svgWidth - width - 8), y: y - Math.round(height / 2), width, height },
+            { x: Math.max(minX - width - 48, 8), y: y - Math.round(height / 2), width, height }
           );
 
           return candidates;
@@ -3797,18 +3794,10 @@ Comprendre les effets cumulés de décisions prises dans un contexte imparfaitem
         candidates.push(
           { x: a.x + 8, y: anchorY, width, height },
           { x: a.x - width - 8, y: anchorY, width, height },
-          {
-            x: a.x - Math.round(width / 2),
-            y: Math.max(minY - height - 10, 8),
-            width,
-            height,
-          },
-          {
-            x: a.x - Math.round(width / 2),
-            y: Math.min(maxY + 10, svgHeight - height - 8),
-            width,
-            height,
-          },
+          { x: a.x + 40, y: anchorY, width, height },
+          { x: a.x - width - 40, y: anchorY, width, height },
+          { x: a.x - Math.round(width / 2), y: Math.max(minY - height - 10, 8), width, height },
+          { x: a.x - Math.round(width / 2), y: Math.min(maxY + 10, svgHeight - height - 8), width, height }
         );
 
         return candidates;
