@@ -4006,10 +4006,10 @@
           .join("");
       }
 
-      function renderScenesList() {
+            function renderScenesList() {
         const ids = Object.keys(project.scenes);
         els.scenesList.innerHTML = ids
-          .map((id) => {
+          .map((id, idx) => {
             const scene = project.scenes[id];
             const isActive = id === selectedSceneId;
             const choiceCount = scene.choices?.length || 0;
@@ -4028,6 +4028,22 @@
               </div>
               <div class="itemActions">
                 <button data-action="selectScene" data-scene="${escapeAttr(id)}">${isActive ? "Ouverte" : "Éditer"}</button>
+                <button
+                  data-action="moveSceneUp"
+                  data-scene="${escapeAttr(id)}"
+                  ${idx === 0 ? "disabled" : ""}
+                  title="Monter la scène"
+                >
+                  ↑
+                </button>
+                <button
+                  data-action="moveSceneDown"
+                  data-scene="${escapeAttr(id)}"
+                  ${idx === ids.length - 1 ? "disabled" : ""}
+                  title="Descendre la scène"
+                >
+                  ↓
+                </button>
               </div>
             </div>
             <div class="inlineBtns">
@@ -4095,11 +4111,29 @@
             (choice, idx) => `
         <details open class="choiceBlock">
           <summary>Choix ${idx + 1} — ${escapeHtml(choice.title || "Sans titre")}</summary>
-          <div class="itemActions" style="padding: 0 12px 12px;">
-  <button type="button" class="bad" data-action="deleteChoice" data-index="${idx}">
-    Supprimer ce choix
-  </button>
-</div>
+                    <div class="itemActions" style="padding: 0 12px 12px;">
+            <button
+              type="button"
+              data-action="moveChoiceUp"
+              data-index="${idx}"
+              ${idx === 0 ? "disabled" : ""}
+              title="Monter ce choix"
+            >
+              ↑ Monter
+            </button>
+            <button
+              type="button"
+              data-action="moveChoiceDown"
+              data-index="${idx}"
+              ${idx === scene.choices.length - 1 ? "disabled" : ""}
+              title="Descendre ce choix"
+            >
+              ↓ Descendre
+            </button>
+            <button type="button" class="bad" data-action="deleteChoice" data-index="${idx}">
+              Supprimer ce choix
+            </button>
+          </div>
           <div class="detailsBody stack">
             <div class="itemActions sceneEditorMobileActions">
   <button id="duplicateSceneBtnMobile" type="button" class="secondary">Dupliquer</button>
@@ -5091,6 +5125,39 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
   `,
           )
           .join("");
+      }
+
+            function moveSceneByOffset(sceneId, offset) {
+        const ids = Object.keys(project.scenes);
+        const currentIndex = ids.indexOf(sceneId);
+        if (currentIndex === -1) return;
+
+        const targetIndex = currentIndex + offset;
+        if (targetIndex < 0 || targetIndex >= ids.length) return;
+
+        const reorderedIds = [...ids];
+        [reorderedIds[currentIndex], reorderedIds[targetIndex]] = [reorderedIds[targetIndex], reorderedIds[currentIndex]];
+
+        const reorderedScenes = {};
+        reorderedIds.forEach((id) => {
+          reorderedScenes[id] = project.scenes[id];
+        });
+
+        project.scenes = reorderedScenes;
+        selectedSceneId = sceneId;
+        renderAll();
+      }
+
+      function moveChoiceByOffset(index, offset) {
+        const scene = project.scenes[selectedSceneId];
+        if (!scene) return;
+
+        const targetIndex = index + offset;
+        if (targetIndex < 0 || targetIndex >= scene.choices.length) return;
+
+        const [movedChoice] = scene.choices.splice(index, 1);
+        scene.choices.splice(targetIndex, 0, movedChoice);
+        renderAll();
       }
 
       function duplicateChoice(index) {
@@ -6774,7 +6841,7 @@ if (document.readyState === "loading") {
           renderAll();
         }
 
-        if (action === "selectScene") {
+               if (action === "selectScene") {
           selectedSceneId = btn.dataset.scene;
           renderAll();
 
@@ -6783,8 +6850,24 @@ if (document.readyState === "loading") {
           }
         }
 
+        if (action === "moveSceneUp") {
+          moveSceneByOffset(btn.dataset.scene, -1);
+        }
+
+        if (action === "moveSceneDown") {
+          moveSceneByOffset(btn.dataset.scene, 1);
+        }
+
         if (action === "closeSceneModal") {
           closeSceneEditorModal();
+        }
+
+        if (action === "moveChoiceUp") {
+          moveChoiceByOffset(idx, -1);
+        }
+
+        if (action === "moveChoiceDown") {
+          moveChoiceByOffset(idx, 1);
         }
 
         if (action === "duplicateChoice") {
