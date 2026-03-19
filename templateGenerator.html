@@ -5008,21 +5008,19 @@ Comprendre les effets cumulés de décisions prises dans un contexte imparfaitem
       }
     });
 
-    els.graphModalViewport.addEventListener(
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-          closeAllHelpPopovers();
+    document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeAllHelpPopovers();
 
-          if (els.graphModal.classList.contains("open")) {
-            closeGraphModal();
-          }
+    if (els.graphModal.classList.contains("open")) {
+      closeGraphModal();
+    }
 
-          if (els.globalHelpModal.classList.contains("open")) {
-            closeGlobalHelpModal();
-          }
-        }
-      }),
-    );
+    if (els.globalHelpModal.classList.contains("open")) {
+      closeGlobalHelpModal();
+    }
+  }
+});
 
     window.addEventListener("blur", endGraphDrag);
 
