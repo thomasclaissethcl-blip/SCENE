@@ -2153,12 +2153,13 @@
         };
       }
 
-      function choiceTemplate(sceneIds) {
+           function choiceTemplate(sceneIds) {
         return {
           title: "Nouveau choix",
           desc: "",
           decisionLog: "",
           goto: sceneIds[0] || "",
+          showIf: "",
           effects: {
             score: 0,
             risk: 0,
@@ -4002,6 +4003,22 @@
                   ${sceneIds.map((id) => `<option value="${escapeAttr(id)}" ${choice.goto === id ? "selected" : ""}>${escapeHtml(id)}</option>`).join("")}
                 </select>
               </div>
+<div>
+  <div class="fieldLabel">
+    <label>Condition d’affichage</label>
+    <button type="button" class="helpIcon" data-help-toggle="help-choiceShowIf-${idx}" aria-label="Aide sur la condition d’affichage" aria-expanded="false">?</button>
+  </div>
+  <div class="helpBubble" id="help-choiceShowIf-${idx}" role="note">
+    <strong>Condition d’affichage</strong>
+    Laissez ce champ vide pour afficher le choix par défaut. Sinon, saisissez une ou plusieurs conditions (variables et valeurs) séparées par <code>&amp;&amp;</code>.
+    <br /><br />
+    Exemples valides :<br />
+    <code>porteOuverte</code><br />
+    <code>nbCles &gt;= 2</code><br />
+    <code>porteOuverte &amp;&amp; nbCles &gt;= 2</code>
+  </div>
+  <input data-action="choiceShowIf" data-index="${idx}" value="${escapeAttr(choice.showIf || "")}" placeholder="Ex. : porteOuverte && nbCles >= 2" />
+</div>
             </div>
 
             <div class="fieldGrid three">
@@ -5144,6 +5161,38 @@ font-style:italic;
         return conditions.every(cond => evaluateCondition(state, cond));
       }
 
+            function parseChoiceCondition(conditionText) {
+        const text = String(conditionText || "").trim();
+        if (!text) return null;
+
+        const match = text.match(/^([A-Za-z_][\w]*)\s*(==|!=|>=|<=|>|<)?\s*(.*)$/);
+        if (!match) return null;
+
+        const [, variable, operatorRaw, valueRaw] = match;
+        const operator = operatorRaw || "==";
+        const value = operatorRaw ? valueRaw.trim() : true;
+
+        return { variable, operator, value };
+      }
+
+      function evaluateChoiceVisibility(state, showIf) {
+        const raw = String(showIf || "").trim();
+        if (!raw) return true;
+
+        const parts = raw
+          .split("&&")
+          .map((part) => part.trim())
+          .filter(Boolean);
+
+        if (!parts.length) return true;
+
+        return parts.every((part) => {
+          const condition = parseChoiceCondition(part);
+          if (!condition) return false;
+          return evaluateCondition(state, condition);
+        });
+      }
+
       function buildDiagnosisItems(flags, state) {
         return (project.diagnostics || [])
           .filter(diag => evaluateConditions(state, diag.conditions || [], diag.operator || "AND"))
@@ -5419,8 +5468,8 @@ function addDecision(text) {
 
   
 
-      function visible(choice) {
-        return true;
+            function visible(choice) {
+        return evaluateChoiceVisibility(state, choice?.showIf);
       }
 
       function applyEffects(effects = {}, choice = null) {
@@ -6387,8 +6436,11 @@ if (document.readyState === "loading") {
           if (action === "choiceTitle") choice.title = el.value;
           else if (action === "choiceDesc") choice.desc = el.value;
           else if (action === "choiceDecisionLog") choice.decisionLog = el.value;
-          else if (action === "choiceGoto") {
+                   else if (action === "choiceGoto") {
             choice.goto = el.value;
+            needsFullRender = true;
+          } else if (action === "choiceShowIf") {
+            choice.showIf = el.value;
             needsFullRender = true;
           } else if (action === "choiceScore") choice.effects.score = Number(el.value) || 0;
           else if (action === "choiceRisk") choice.effects.risk = Number(el.value) || 0;
