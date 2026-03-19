@@ -1040,6 +1040,102 @@
       .titleText p {
         margin: 0;
       }
+
+      .graphToolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .graphControls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .graphViewport {
+        position: relative;
+        min-height: 720px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background:
+          radial-gradient(circle at top left, rgba(124, 200, 255, 0.08), transparent 32%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0.03));
+        cursor: grab;
+      }
+
+      .graphViewport.dragging {
+        cursor: grabbing;
+      }
+
+      .graphSvg {
+        width: 100%;
+        height: 720px;
+        display: block;
+      }
+
+      .graphEmpty {
+        display: grid;
+        place-items: center;
+        min-height: 240px;
+        text-align: center;
+      }
+
+      .graphHint {
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .graphNode {
+        cursor: pointer;
+      }
+
+      .graphNode rect {
+        fill: rgba(26, 35, 67, 0.94);
+        stroke: rgba(255, 255, 255, 0.14);
+        stroke-width: 1.25;
+        rx: 16;
+      }
+
+      .graphNode.active rect {
+        stroke: rgba(124, 200, 255, 0.9);
+        stroke-width: 2;
+        filter: drop-shadow(0 10px 18px rgba(124, 200, 255, 0.18));
+      }
+
+      .graphNode text {
+        fill: var(--text);
+        font-size: 15px;
+        font-weight: 600;
+        pointer-events: none;
+      }
+
+      .graphNode .graphNodeSub {
+        fill: var(--muted);
+        font-size: 11px;
+        font-weight: 500;
+      }
+
+      .graphEdgePath {
+        fill: none;
+        stroke: rgba(184, 194, 223, 0.55);
+        stroke-width: 1.5;
+      }
+
+      .graphEdgeLabel text {
+        fill: var(--muted);
+        font-size: 11px;
+      }
+
+      .graphEdgeLabel rect {
+        fill: rgba(11, 16, 32, 0.86);
+        stroke: rgba(255, 255, 255, 0.06);
+        rx: 8;
+      }
     </style>
   </head>
 
@@ -1080,6 +1176,7 @@
           <button class="tabBtn active" data-tab="editor">Éditeur</button>
           <button class="tabBtn" data-tab="preview">Prévisualisation</button>
           <button class="tabBtn" data-tab="json" data-simple-hide="advanced">Analyse structure</button>
+          <button class="tabBtn" data-tab="graph" data-simple-hide="advanced">Graphe des scènes</button>
         </div>
         <div class="panel">
           <div id="editorTab" class="tabPanel">
@@ -2086,6 +2183,53 @@
               <pre id="jsonPreview" class="jsonPreview"></pre>
             </div>
           </div>
+
+          <div id="graphTab" class="tabPanel" style="display: none" data-simple-hide="advanced">
+            <div class="stack">
+              <div class="itemHead">
+                <div>
+                  <div class="fieldLabel">
+                    <h2 style="margin: 0">Graphe des scènes</h2>
+                    <button
+                      type="button"
+                      class="helpIcon"
+                      data-help-toggle="help-graph-section"
+                      aria-label="Aide sur le graphe des scènes"
+                      aria-expanded="false"
+                    >
+                      ?
+                    </button>
+                  </div>
+                  <div class="helpBubble" id="help-graph-section" role="note">
+                    <strong>À quoi sert cet espace</strong>
+                    Cette vue montre les liaisons entre les scènes qui sont réellement connectées entre elles.
+                    <br /><br />
+                    <strong>Comment l’utiliser</strong>
+                    Faites glisser pour vous déplacer, utilisez la molette pour zoomer, puis cliquez sur une scène pour l’ouvrir dans l’éditeur.
+                    <br /><br />
+                    <strong>Bon usage</strong>
+                    Utilisez ce graphe pour vérifier rapidement la structure d’embranchement, les impasses et les scènes très sollicitées.
+                  </div>
+                  <p class="muted small">Seules les scènes reliées à au moins une autre scène sont affichées.</p>
+                </div>
+                <div class="graphControls">
+                  <button id="graphZoomOutBtn" type="button" class="secondary">Zoom -</button>
+                  <button id="graphResetViewBtn" type="button" class="secondary">Réinitialiser la vue</button>
+                  <button id="graphZoomInBtn" type="button" class="secondary">Zoom +</button>
+                </div>
+              </div>
+
+              <div id="graphViewport" class="graphViewport">
+                <div id="graphEmptyState" class="graphEmpty" style="display: none">
+                  <div>
+                    <div class="notice">Aucune liaison entre scènes à afficher pour le moment.</div>
+                    <p class="graphHint">Ajoutez au moins un choix menant vers une autre scène pour voir apparaître le graphe.</p>
+                  </div>
+                </div>
+                <svg id="graphSvg" class="graphSvg" viewBox="0 0 1400 900" aria-label="Graphe des scènes" role="img"></svg>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -2597,6 +2741,13 @@
       let lastEditorSectionsResponsiveMode = null;
       let currentDesktopEditorTab = "project";
       let desktopLeftPaneWidth = 460;
+      const graphView = {
+        scale: 1,
+        x: 80,
+        y: 70,
+        minScale: 0.45,
+        maxScale: 2.2,
+      };
 
       const els = {
         metaTitle: document.getElementById("metaTitle"),
@@ -2646,6 +2797,12 @@
 
         jsonPreview: document.getElementById("jsonPreview"),
         validationBox: document.getElementById("validationBox"),
+        graphViewport: document.getElementById("graphViewport"),
+        graphSvg: document.getElementById("graphSvg"),
+        graphEmptyState: document.getElementById("graphEmptyState"),
+        graphZoomInBtn: document.getElementById("graphZoomInBtn"),
+        graphZoomOutBtn: document.getElementById("graphZoomOutBtn"),
+        graphResetViewBtn: document.getElementById("graphResetViewBtn"),
 
         previewFrame: document.getElementById("previewFrame"),
         themePresetSelect: document.getElementById("themePresetSelect"),
@@ -3938,6 +4095,11 @@
             (choice, idx) => `
         <details open class="choiceBlock">
           <summary>Choix ${idx + 1} — ${escapeHtml(choice.title || "Sans titre")}</summary>
+          <div class="itemActions" style="padding: 0 12px 12px;">
+  <button type="button" class="bad" data-action="deleteChoice" data-index="${idx}">
+    Supprimer ce choix
+  </button>
+</div>
           <div class="detailsBody stack">
             <div class="itemActions sceneEditorMobileActions">
   <button id="duplicateSceneBtnMobile" type="button" class="secondary">Dupliquer</button>
@@ -4229,6 +4391,253 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         els.previewFrame.srcdoc = html;
       }
 
+      function clampGraphScale(scale) {
+        return Math.max(graphView.minScale, Math.min(graphView.maxScale, scale));
+      }
+
+      function resetStructureGraphView() {
+        graphView.scale = 1;
+        graphView.x = 80;
+        graphView.y = 70;
+        applyGraphTransform();
+      }
+
+      function applyGraphTransform() {
+        const graphInner = document.getElementById("graphInner");
+        if (!graphInner) return;
+        graphInner.setAttribute("transform", `translate(${graphView.x} ${graphView.y}) scale(${graphView.scale})`);
+      }
+
+      function truncateGraphText(text, maxLength) {
+        const normalized = String(text || "").replace(/\s+/g, " ").trim();
+        if (!normalized) return "";
+        if (normalized.length <= maxLength) return normalized;
+        return `${normalized.slice(0, Math.max(1, maxLength - 1)).trim()}…`;
+      }
+
+      function getGraphSceneTitle(text) {
+        return truncateGraphText(text, 24) || "Scène";
+      }
+
+      function getGraphLabelPreview(text) {
+        return truncateGraphText(text, 9) || "Choix";
+      }
+
+      function getConnectedSceneGraphData() {
+        const nodesById = new Map();
+        const edges = [];
+
+        Object.entries(project.scenes).forEach(([sourceId, scene]) => {
+          (scene.choices || []).forEach((choice, choiceIndex) => {
+            const targetId = choice.goto;
+            if (!targetId || !project.scenes[targetId]) return;
+
+            if (!nodesById.has(sourceId)) {
+              nodesById.set(sourceId, {
+                id: sourceId,
+                title: project.scenes[sourceId]?.title || sourceId,
+                chapter: project.scenes[sourceId]?.chapter || "",
+                incoming: 0,
+                outgoing: 0,
+              });
+            }
+
+            if (!nodesById.has(targetId)) {
+              nodesById.set(targetId, {
+                id: targetId,
+                title: project.scenes[targetId]?.title || targetId,
+                chapter: project.scenes[targetId]?.chapter || "",
+                incoming: 0,
+                outgoing: 0,
+              });
+            }
+
+            nodesById.get(sourceId).outgoing += 1;
+            nodesById.get(targetId).incoming += 1;
+
+            edges.push({
+              id: `${sourceId}__${choiceIndex}__${targetId}`,
+              source: sourceId,
+              target: targetId,
+              label: getGraphLabelPreview(choice.title || choice.desc || choice.decisionLog || `Choix ${choiceIndex + 1}`),
+            });
+          });
+        });
+
+        return {
+          nodes: [...nodesById.values()],
+          edges,
+        };
+      }
+
+      function buildStructureGraphLayout(data) {
+        const columnGap = 300;
+        const rowGap = 120;
+        const nodeWidth = 220;
+        const nodeHeight = 64;
+        const columns = [];
+        const levelById = new Map();
+        const adjacency = new Map();
+        const indegree = new Map();
+
+        data.nodes.forEach((node) => {
+          adjacency.set(node.id, []);
+          indegree.set(node.id, 0);
+        });
+
+        data.edges.forEach((edge) => {
+          adjacency.get(edge.source)?.push(edge.target);
+          indegree.set(edge.target, (indegree.get(edge.target) || 0) + 1);
+        });
+
+        const roots = data.nodes
+          .filter((node) => indegree.get(node.id) === 0)
+          .map((node) => node.id)
+          .sort((a, b) => a.localeCompare(b, "fr"));
+
+        if (project.meta.startScene && data.nodes.some((node) => node.id === project.meta.startScene)) {
+          roots.unshift(project.meta.startScene);
+        }
+
+        const queue = [...new Set(roots.length ? roots : data.nodes.map((node) => node.id))];
+
+        queue.forEach((id) => levelById.set(id, 0));
+
+        for (let index = 0; index < queue.length; index += 1) {
+          const currentId = queue[index];
+          const nextLevel = (levelById.get(currentId) || 0) + 1;
+          (adjacency.get(currentId) || []).forEach((targetId) => {
+            if (!levelById.has(targetId) || nextLevel > levelById.get(targetId)) {
+              levelById.set(targetId, nextLevel);
+            }
+            if (!queue.includes(targetId)) {
+              queue.push(targetId);
+            }
+          });
+        }
+
+        data.nodes.forEach((node) => {
+          if (!levelById.has(node.id)) {
+            levelById.set(node.id, columns.length);
+          }
+          const level = levelById.get(node.id) || 0;
+          if (!columns[level]) columns[level] = [];
+          columns[level].push(node);
+        });
+
+        const positionedNodes = [];
+
+        columns.forEach((nodes, level) => {
+          nodes.sort((a, b) => a.id.localeCompare(b.id, "fr"));
+          const totalHeight = Math.max(0, (nodes.length - 1) * rowGap);
+          const startY = 80 + Math.max(0, 260 - totalHeight / 2);
+          nodes.forEach((node, rowIndex) => {
+            positionedNodes.push({
+              ...node,
+              x: 80 + level * columnGap,
+              y: startY + rowIndex * rowGap,
+              width: nodeWidth,
+              height: nodeHeight,
+            });
+          });
+        });
+
+        return {
+          nodes: positionedNodes,
+          edges: data.edges,
+          width: Math.max(1200, 240 + columns.length * columnGap),
+          height: Math.max(900, 220 + Math.max(...columns.map((col) => (col?.length || 0) * rowGap), 0)),
+        };
+      }
+
+      function renderStructureGraph() {
+        const data = getConnectedSceneGraphData();
+
+        if (!data.nodes.length || !data.edges.length) {
+          els.graphSvg.innerHTML = "";
+          els.graphEmptyState.style.display = "grid";
+          return;
+        }
+
+        els.graphEmptyState.style.display = "none";
+
+        const layout = buildStructureGraphLayout(data);
+        const nodeMap = new Map(layout.nodes.map((node) => [node.id, node]));
+        const defs = `
+          <defs>
+            <marker id="graphArrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+              <path d="M 1 1 L 11 6 L 1 11 z" fill="rgba(184, 194, 223, 0.72)"></path>
+            </marker>
+          </defs>
+        `;
+
+        const edgesMarkup = layout.edges
+          .map((edge) => {
+            const source = nodeMap.get(edge.source);
+            const target = nodeMap.get(edge.target);
+            if (!source || !target) return "";
+            const startX = source.x + source.width;
+            const startY = source.y + source.height / 2;
+            const endX = target.x;
+            const endY = target.y + target.height / 2;
+            const midX = (startX + endX) / 2;
+            const midY = (startY + endY) / 2;
+            const curve = Math.max(50, Math.abs(endX - startX) * 0.35);
+            const labelWidth = Math.max(56, Math.min(120, edge.label.length * 7.4 + 18));
+            return `
+              <g class="graphEdge">
+                <path class="graphEdgePath" marker-end="url(#graphArrow)" d="M ${startX} ${startY} C ${startX + curve} ${startY}, ${endX - curve} ${endY}, ${endX} ${endY}"></path>
+                <g class="graphEdgeLabel" transform="translate(${midX - labelWidth / 2} ${midY - 15})">
+                  <rect width="${labelWidth}" height="22"></rect>
+                  <text x="${labelWidth / 2}" y="14" text-anchor="middle">${escapeHtml(edge.label)}</text>
+                </g>
+              </g>
+            `;
+          })
+          .join("");
+
+        const nodesMarkup = layout.nodes
+          .map((node) => {
+            const title = escapeHtml(getGraphSceneTitle(node.title || node.id));
+            const sub = escapeHtml(node.id);
+            const fullTitle = escapeAttr(node.title || node.id);
+            const activeClass = node.id === selectedSceneId ? "active" : "";
+            return `
+              <g class="graphNode ${activeClass}" data-scene="${escapeAttr(node.id)}" transform="translate(${node.x} ${node.y})">
+                <title>${fullTitle}</title>
+                <rect width="${node.width}" height="${node.height}"></rect>
+                <text x="16" y="28">${title}</text>
+                <text class="graphNodeSub" x="16" y="46">${sub}</text>
+              </g>
+            `;
+          })
+          .join("");
+
+        els.graphSvg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
+        els.graphSvg.innerHTML = `${defs}<g id="graphInner">${edgesMarkup}${nodesMarkup}</g>`;
+        applyGraphTransform();
+
+        els.graphSvg.querySelectorAll(".graphNode").forEach((nodeEl) => {
+          nodeEl.addEventListener("click", () => {
+            const sceneId = nodeEl.dataset.scene;
+            if (!sceneId) return;
+            selectedSceneId = sceneId;
+            renderAll();
+            switchTab("editor");
+            if (isMobileSceneEditorMode()) {
+              openSceneEditorModal();
+            }
+          });
+        });
+      }
+
+      function zoomStructureGraph(factor) {
+        const nextScale = clampGraphScale(graphView.scale * factor);
+        if (nextScale === graphView.scale) return;
+        graphView.scale = nextScale;
+        applyGraphTransform();
+      }
+
       function setupCustomTextareaResize(root = document) {
         const RESIZE_HOLD_DELAY = 300;
         const MIN_HEIGHT = 90;
@@ -4360,6 +4769,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         renderSceneEditor();
         renderJsonPreview();
         renderValidation();
+        renderStructureGraph();
         setupCustomTextareaResize();
         if (!isMobileSceneEditorMode()) {
           applyDesktopPaneWidth(desktopLeftPaneWidth);
@@ -4496,6 +4906,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         document.getElementById("editorTab").style.display = tab === "editor" ? "block" : "none";
         document.getElementById("previewTab").style.display = tab === "preview" ? "block" : "none";
         document.getElementById("jsonTab").style.display = tab === "json" ? "block" : "none";
+        document.getElementById("graphTab").style.display = tab === "graph" ? "block" : "none";
 
         if (tab === "preview") {
           renderPreview();
@@ -4503,6 +4914,10 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         if (tab === "json") {
           renderJsonPreview();
           renderValidation();
+        }
+        if (tab === "graph") {
+          renderStructureGraph();
+          applyGraphTransform();
         }
       }
 
@@ -6032,6 +6447,11 @@ if (document.readyState === "loading") {
       });
 
       window.addEventListener("resize", syncSceneEditorPlacement);
+      window.addEventListener("resize", () => {
+        if (currentTab === "graph") {
+          renderStructureGraph();
+        }
+      });
 
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && els.sceneEditorModal?.classList.contains("open")) {
@@ -6045,6 +6465,9 @@ if (document.readyState === "loading") {
       });
 
       document.getElementById("refreshPreviewBtn").addEventListener("click", renderPreview);
+      els.graphZoomInBtn?.addEventListener("click", () => zoomStructureGraph(1.12));
+      els.graphZoomOutBtn?.addEventListener("click", () => zoomStructureGraph(1 / 1.12));
+      els.graphResetViewBtn?.addEventListener("click", resetStructureGraphView);
       document.getElementById("openPreviewNewTabBtn").addEventListener("click", openPreviewInNewTab);
       els.previewFrame?.addEventListener("load", applyThemeToPreviewFrame);
 
@@ -6537,6 +6960,61 @@ if (document.readyState === "loading") {
             closeCurrentHelp();
           }
         });
+      }
+
+      if (els.graphViewport) {
+        let graphDragActive = false;
+        let graphDragStartX = 0;
+        let graphDragStartY = 0;
+        let graphOriginX = 0;
+        let graphOriginY = 0;
+
+        els.graphViewport.addEventListener("pointerdown", (event) => {
+          if (event.target.closest(".graphNode")) return;
+          graphDragActive = true;
+          graphDragStartX = event.clientX;
+          graphDragStartY = event.clientY;
+          graphOriginX = graphView.x;
+          graphOriginY = graphView.y;
+          els.graphViewport.classList.add("dragging");
+        });
+
+        window.addEventListener("pointermove", (event) => {
+          if (!graphDragActive) return;
+          graphView.x = graphOriginX + (event.clientX - graphDragStartX);
+          graphView.y = graphOriginY + (event.clientY - graphDragStartY);
+          applyGraphTransform();
+        });
+
+        window.addEventListener("pointerup", () => {
+          graphDragActive = false;
+          els.graphViewport.classList.remove("dragging");
+        });
+
+        els.graphViewport.addEventListener(
+          "wheel",
+          (event) => {
+            if (currentTab !== "graph") return;
+            event.preventDefault();
+
+            const graphInner = document.getElementById("graphInner");
+            if (!graphInner) return;
+
+            const rect = els.graphViewport.getBoundingClientRect();
+            const cursorX = event.clientX - rect.left;
+            const cursorY = event.clientY - rect.top;
+            const worldX = (cursorX - graphView.x) / graphView.scale;
+            const worldY = (cursorY - graphView.y) / graphView.scale;
+            const factor = event.deltaY < 0 ? 1.08 : 1 / 1.08;
+            const nextScale = clampGraphScale(graphView.scale * factor);
+
+            graphView.x = cursorX - worldX * nextScale;
+            graphView.y = cursorY - worldY * nextScale;
+            graphView.scale = nextScale;
+            applyGraphTransform();
+          },
+          { passive: false },
+        );
       }
 
       setupContextHelp();
