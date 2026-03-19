@@ -276,6 +276,7 @@ Pensé pour les concepteurs pédagogiques.
 - éditeur de scènes
 - gestion des variables
 - règles conditionnelles
+- visualisation graphique des embranchements
 - diagnostics structurels
 - export HTML autonome
 - import/export JSON
@@ -286,7 +287,6 @@ Pensé pour les concepteurs pédagogiques.
 
 Extensions envisagées :
 
-- visualisation graphique des embranchements
 - éditeur avancé des variables
 - bibliothèque de templates
 
@@ -297,7 +297,7 @@ Extensions envisagées :
 - [x] Générateur de structure
 - [x] Éditeur narratif
 - [x] Export HTML
-- [ ] Visualisation graphique des branches
+- [x] Visualisation graphique des branches
 - [ ] Validation logique automatique
 - [ ] Export SCORM
 
