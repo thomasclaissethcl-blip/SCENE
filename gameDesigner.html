@@ -119,6 +119,19 @@
       background: #314071;
     }
 
+    button:disabled,
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    button:disabled:hover,
+    button:disabled:focus,
+    .btn:disabled:hover,
+    .btn:disabled:focus {
+      background: inherit;
+    }
+
     button.secondary {
       background: #202847;
     }
@@ -1261,19 +1274,13 @@
       </div>
       <div class="toolbar">
         <span id="modeIndicator" class="modeIndicator" aria-hidden="true">🐣</span>
-        <button id="simpleModeToggleBtn" class="secondary">
-          Passer en mode simple
-        </button>
-        <button id="emptyProjectBtn" class="secondary">
-          Nouveau projet vide
-        </button>
-        <button id="newProjectBtn" class="secondary">
-          Charger un exemple
-        </button>
+        <button id="undoEditorBtn" class="secondary" title="Annuler la dernière modification de l’éditeur">↶
+          Annuler</button>
+        <button id="simpleModeToggleBtn" class="secondary">Passer en mode simple</button>
+        <button id="emptyProjectBtn" class="secondary">Nouveau projet vide</button>
+        <button id="newProjectBtn" class="secondary">Charger un exemple</button>
         <button id="importJsonBtn" class="secondary">Importer projet</button>
-        <button id="exportJsonBtn" class="secondary">
-          Sauvegarder projet
-        </button>
+        <button id="exportJsonBtn" class="secondary">Sauvegarder projet</button>
         <button id="exportHtmlBtn" class="good">Exporter en HTML</button>
       </div>
     </section>
@@ -3074,6 +3081,8 @@
     let project = emptyProject();
     let selectedSceneId = "intro";
     let currentTab = "editor";
+    let lastEditorSnapshot = null;
+    let editorUndoFocusTarget = null;
     let lastEditorSectionsResponsiveMode = null;
     let currentDesktopEditorTab = "project";
     let desktopLeftPaneWidth = 460;
@@ -3097,6 +3106,7 @@
       helpTitle: document.getElementById("helpTitle"),
       helpContent: document.getElementById("helpContent"),
       openHelpOnStart: document.getElementById("openHelpOnStart"),
+      undoEditorBtn: document.getElementById("undoEditorBtn"),
       simpleModeToggleBtn: document.getElementById("simpleModeToggleBtn"),
       modeIndicator: document.getElementById("modeIndicator"),
 
@@ -3179,6 +3189,45 @@
         "actionFeedbackCloseBtn",
       ),
     };
+
+    function captureEditorSnapshot() {
+      lastEditorSnapshot = {
+        project: clone(project),
+        selectedSceneId,
+        currentDesktopEditorTab,
+      };
+      syncUndoEditorButton();
+    }
+
+    function restoreEditorSnapshot() {
+      if (!lastEditorSnapshot) return;
+
+      project = normalizeProject(clone(lastEditorSnapshot.project));
+      selectedSceneId = lastEditorSnapshot.selectedSceneId;
+      currentDesktopEditorTab = lastEditorSnapshot.currentDesktopEditorTab || currentDesktopEditorTab;
+      lastEditorSnapshot = null;
+      editorUndoFocusTarget = null;
+
+      renderAll();
+      syncUndoEditorButton();
+      showActionFeedback("La dernière modification a été annulée.");
+    }
+
+    function syncUndoEditorButton() {
+      if (!els.undoEditorBtn) return;
+      els.undoEditorBtn.disabled = !lastEditorSnapshot;
+    }
+
+    function captureEditorSnapshotOncePerFocus(target) {
+      if (!target) return;
+      if (editorUndoFocusTarget === target) return;
+      captureEditorSnapshot();
+      editorUndoFocusTarget = target;
+    }
+
+    function clearEditorUndoFocusTarget() {
+      editorUndoFocusTarget = null;
+    }
 
     function getAllVariableNames() {
       return [
@@ -3671,6 +3720,7 @@
     }
 
     function applyThemePreset(presetName) {
+      captureEditorSnapshot();
       const presets = getThemePresets();
       const preset = presets[presetName] || presets.default;
       project.ui.theme.preset = presetName;
@@ -3716,6 +3766,7 @@
     }
 
     function updateThemeColor(key, value) {
+      captureEditorSnapshotOncePerFocus(document.activeElement);
       project.ui.theme.colors[key] = value;
       project.ui.theme.preset = "custom";
       if (els.themePresetSelect) {
@@ -5343,6 +5394,8 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       if (currentTab === "preview") {
         renderPreview();
       }
+
+      syncUndoEditorButton();
     }
 
     function formatMap(obj) {
@@ -5511,17 +5564,18 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
     }
 
     function addScene() {
-      let id = uid("scene");
-      while (project.scenes[id]) {
-        id = uid("scene");
-      }
-      project.scenes[id] = sceneTemplate(id);
+      captureEditorSnapshot();
+      let id = `scene_${Object.keys(project.scenes).length + 1}`;
+      while (project.scenes[id]) id += "_x";
+      project.scenes[id] = sceneTemplate();
       selectedSceneId = id;
+      clearEditorUndoFocusTarget();
       renderAll();
     }
 
     function duplicateScene() {
       if (!selectedSceneId || !project.scenes[selectedSceneId]) return;
+      captureEditorSnapshot();
       let id = `${selectedSceneId}_copy`;
       let i = 2;
       while (project.scenes[id]) {
@@ -5529,6 +5583,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       }
       project.scenes[id] = clone(project.scenes[selectedSceneId]);
       selectedSceneId = id;
+      clearEditorUndoFocusTarget();
       renderAll();
     }
 
@@ -5541,13 +5596,12 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       }
       if (!confirm(`Supprimer la scène '${selectedSceneId}' ?`)) return;
 
+      captureEditorSnapshot();
+
       delete project.scenes[selectedSceneId];
       const nextId = Object.keys(project.scenes)[0];
       selectedSceneId = nextId;
-      if (
-        project.meta.startScene &&
-        !project.scenes[project.meta.startScene]
-      ) {
+      if (project.meta.startScene && !project.scenes[project.meta.startScene]) {
         project.meta.startScene = nextId;
       }
       Object.values(project.scenes).forEach((scene) => {
@@ -5557,6 +5611,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
           }
         });
       });
+      clearEditorUndoFocusTarget();
       renderAll();
     }
 
@@ -5568,6 +5623,8 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         renderAll();
         return;
       }
+
+      captureEditorSnapshot();
 
       const newScenes = {};
       Object.keys(project.scenes).forEach((id) => {
@@ -5594,13 +5651,16 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       });
 
       selectedSceneId = newId;
+      clearEditorUndoFocusTarget();
       renderAll();
     }
 
     function addChoice() {
       const scene = project.scenes[selectedSceneId];
       if (!scene) return;
+      captureEditorSnapshot();
       scene.choices.push(choiceTemplate(Object.keys(project.scenes)));
+      clearEditorUndoFocusTarget();
       renderAll();
     }
 
@@ -7031,44 +7091,49 @@ if (document.readyState === "loading") {
     });
 
     document.getElementById("newProjectBtn").addEventListener("click", () => {
-      if (
-        !confirm(
-          "Charger l'exemple de projet générique ? Le projet courant sera remplacé, sauvegardez d'abord !",
-        )
-      )
-        return;
+      if (!confirm("Charger l'exemple de projet générique ? Le projet courant sera remplacé, sauvegardez d'abord !")) return;
+      captureEditorSnapshot();
       project = defaultProject();
       selectedSceneId = "intro";
+      clearEditorUndoFocusTarget();
       renderAll();
       showActionFeedback("L’exemple de projet a bien été chargé.");
     });
 
-    document
-      .getElementById("emptyProjectBtn")
-      .addEventListener("click", () => {
-        if (
-          !confirm(
-            "Démarrer un projet vide ? Le projet courant sera remplacé, pensez d'abord à sauvegarder !",
-          )
-        )
-          return;
-        project = emptyProject();
-        selectedSceneId = "intro";
-        renderAll();
-        showActionFeedback("Un nouveau projet vide a bien été chargé.");
-      });
+    document.getElementById("emptyProjectBtn").addEventListener("click", () => {
+      if (!confirm("Démarrer un projet vide ? Le projet courant sera remplacé, pensez d'abord à sauvegarder !")) return;
+      captureEditorSnapshot();
+      project = emptyProject();
+      selectedSceneId = "intro";
+      clearEditorUndoFocusTarget();
+      renderAll();
+      showActionFeedback("Un nouveau projet vide a bien été chargé.");
+    });
 
     document
       .getElementById("addVariableBtn")
       .addEventListener("click", () => {
+        captureEditorSnapshot();
         project.variables.push(variableTemplate());
+        clearEditorUndoFocusTarget();
         renderAll();
       });
 
     document.getElementById("addRuleBtn").addEventListener("click", () => {
+      captureEditorSnapshot();
       project.rules.collapse.push(
         ruleTemplate(getAllVariableNames()[0] || "risk"),
       );
+      clearEditorUndoFocusTarget();
+      renderAll();
+    });
+
+    document.getElementById("addDiagBtn").addEventListener("click", () => {
+      captureEditorSnapshot();
+      project.diagnostics.push(
+        diagTemplate(getAllVariableNames()[0] || "risk"),
+      );
+      clearEditorUndoFocusTarget();
       renderAll();
     });
 
@@ -7096,7 +7161,9 @@ if (document.readyState === "loading") {
       if (!selectedSceneId) return;
       const sourceSceneId = els.incomingSceneSelect.value;
       if (!sourceSceneId) return;
+      captureEditorSnapshot();
       addIncomingScene(sourceSceneId, selectedSceneId);
+      clearEditorUndoFocusTarget();
     });
 
     els.closeSceneEditorModalBtn?.addEventListener(
@@ -7137,7 +7204,9 @@ if (document.readyState === "loading") {
     });
 
     els.simpleModeToggleBtn?.addEventListener("click", () => {
+      captureEditorSnapshot();
       project.ui.mode = isSimpleMode() ? "advanced" : "simple";
+      clearEditorUndoFocusTarget();
       renderAll();
     });
 
@@ -7160,24 +7229,30 @@ if (document.readyState === "loading") {
       const presetName = els.themePresetSelect.value;
       if (presetName === "custom") return;
       applyThemePreset(presetName);
+      clearEditorUndoFocusTarget();
       renderThemeEditor();
       renderPreview();
     });
 
     els.fontPresetSelect?.addEventListener("change", () => {
+      captureEditorSnapshot();
       project.ui.typography.preset = els.fontPresetSelect.value || "inter";
+      clearEditorUndoFocusTarget();
       renderThemeEditor();
       renderPreview();
     });
 
     els.sceneTransitionPresetSelect?.addEventListener("change", () => {
+      captureEditorSnapshot();
       project.ui.transitions.preset =
         els.sceneTransitionPresetSelect.value || "fade";
+      clearEditorUndoFocusTarget();
       renderPreview();
     });
 
     els.resetThemeBtn?.addEventListener("click", () => {
       applyThemePreset("default");
+      clearEditorUndoFocusTarget();
       renderThemeEditor();
       renderPreview();
     });
@@ -7243,6 +7318,10 @@ if (document.readyState === "loading") {
       showActionFeedback("Le jeu a bien été exporté en HTML.");
     });
 
+    els.undoEditorBtn?.addEventListener("click", () => {
+      restoreEditorSnapshot();
+    });
+
     document.getElementById("importJsonBtn").addEventListener("click", () => {
       els.hiddenJsonImport.click();
     });
@@ -7254,9 +7333,11 @@ if (document.readyState === "loading") {
       try {
         const text = await file.text();
         const parsed = JSON.parse(text);
+        captureEditorSnapshot();
         project = normalizeProject(parsed);
         selectedSceneId =
           project.meta.startScene || Object.keys(project.scenes)[0] || null;
+        clearEditorUndoFocusTarget();
         renderAll();
         showActionFeedback("Le projet a bien été importé.");
       } catch (error) {
@@ -7286,15 +7367,15 @@ if (document.readyState === "loading") {
     });
 
     els.metaStartScene.addEventListener("change", () => {
+      captureEditorSnapshot();
       project.meta.startScene = els.metaStartScene.value;
+      clearEditorUndoFocusTarget();
       renderAll();
     });
 
     els.metaTotalSteps.addEventListener("input", () => {
-      project.meta.totalSteps = Math.max(
-        1,
-        Number(els.metaTotalSteps.value) || 1,
-      );
+      captureEditorSnapshotOncePerFocus(els.metaTotalSteps);
+      project.meta.totalSteps = Math.max(1, Number(els.metaTotalSteps.value) || 1);
       renderAll();
     });
 
@@ -7323,7 +7404,9 @@ if (document.readyState === "loading") {
     });
 
     els.openHelpOnStart.addEventListener("change", () => {
+      captureEditorSnapshot();
       project.ui.openHelpOnStart = els.openHelpOnStart.checked;
+      clearEditorUndoFocusTarget();
       renderAll();
     });
 
@@ -7347,23 +7430,27 @@ if (document.readyState === "loading") {
 
     els.sceneType.addEventListener("change", () => {
       if (!project.scenes[selectedSceneId]) return;
+      captureEditorSnapshot();
       const scene = project.scenes[selectedSceneId];
       scene.type = els.sceneType.value;
       scene.ending = scene.type === "ending" || scene.ending;
       scene.diagnosis = scene.type === "diagnosis";
       if (scene.type === "ending") scene.ending = true;
+      clearEditorUndoFocusTarget();
       renderAll();
     });
 
     els.sceneEnding.addEventListener("change", () => {
       if (!project.scenes[selectedSceneId]) return;
-      project.scenes[selectedSceneId].ending =
-        els.sceneEnding.value === "true";
+      captureEditorSnapshot();
+      project.scenes[selectedSceneId].ending = els.sceneEnding.value === "true";
+      clearEditorUndoFocusTarget();
       renderAll();
     });
 
     els.sceneText.addEventListener("input", () => {
       if (!project.scenes[selectedSceneId]) return;
+      captureEditorSnapshotOncePerFocus(els.sceneText);
       project.scenes[selectedSceneId].text = splitParagraphs(
         els.sceneText.value,
       );
@@ -7373,6 +7460,7 @@ if (document.readyState === "loading") {
 
     els.sceneImageAlt.addEventListener("input", () => {
       if (!project.scenes[selectedSceneId]) return;
+      captureEditorSnapshotOncePerFocus(els.sceneImageAlt);
       if (!project.scenes[selectedSceneId].image) {
         project.scenes[selectedSceneId].image = { src: "", alt: "" };
       }
@@ -7396,6 +7484,8 @@ if (document.readyState === "loading") {
       const file = els.sceneImageFile.files && els.sceneImageFile.files[0];
       if (!file) return;
 
+      captureEditorSnapshot();
+
       try {
         const dataUrl = await resizeImageFileToDataUrl(file, 600, 0.82);
 
@@ -7410,6 +7500,7 @@ if (document.readyState === "loading") {
         els.sceneImagePreview.alt =
           project.scenes[selectedSceneId].image.alt || "";
 
+        clearEditorUndoFocusTarget();
         renderJsonPreview();
         renderValidation();
         if (currentTab === "preview") {
@@ -7426,6 +7517,8 @@ if (document.readyState === "loading") {
     els.removeSceneImageBtn.addEventListener("click", () => {
       if (!project.scenes[selectedSceneId]) return;
 
+      captureEditorSnapshot();
+
       project.scenes[selectedSceneId].image = { src: "", alt: "" };
       els.sceneImageAlt.value = "";
       els.sceneImagePreviewWrap.style.display = "none";
@@ -7433,10 +7526,37 @@ if (document.readyState === "loading") {
       els.sceneImagePreview.alt = "";
       els.sceneImageFile.value = "";
 
+      clearEditorUndoFocusTarget();
       renderJsonPreview();
       renderValidation();
       if (currentTab === "preview") {
         renderPreview();
+      }
+    });
+
+    document.body.addEventListener("focusin", (event) => {
+      const el = event.target;
+      if (!el || !(el instanceof HTMLElement)) return;
+
+      if (
+        el.matches(
+          "#metaTitle, #metaSubtitle, #metaAuthor, #metaTotalSteps, #uiScoreLabel, #uiRiskLabel, #uiInventoryLabel, #helpTitle, #helpContent, #sceneChapter, #sceneTitle, #sceneText, #sceneImageAlt, #themeBg, #themeBg2, #themePanel, #themePanel2, #themeText, #themeMuted, #themeAccent, #themeGood, #themeWarn, #themeBad, #themeBorder"
+        )
+      ) {
+        captureEditorSnapshotOncePerFocus(el);
+      }
+    });
+
+    document.body.addEventListener("focusout", (event) => {
+      const el = event.target;
+      if (!el || !(el instanceof HTMLElement)) return;
+
+      if (
+        el.matches(
+          "#metaTitle, #metaSubtitle, #metaAuthor, #metaTotalSteps, #uiScoreLabel, #uiRiskLabel, #uiInventoryLabel, #helpTitle, #helpContent, #sceneChapter, #sceneTitle, #sceneText, #sceneImageAlt, #themeBg, #themeBg2, #themePanel, #themePanel2, #themeText, #themeMuted, #themeAccent, #themeGood, #themeWarn, #themeBad, #themeBorder"
+        )
+      ) {
+        clearEditorUndoFocusTarget();
       }
     });
 
@@ -7454,61 +7574,79 @@ if (document.readyState === "loading") {
       const cIdx = Number(btn.dataset.cindex);
 
       if (action === "deleteVar") {
+        captureEditorSnapshot();
         project.variables.splice(idx, 1);
+        clearEditorUndoFocusTarget();
         renderAll();
       }
 
       if (action === "duplicateRule") {
+        captureEditorSnapshot();
         project.rules.collapse.splice(
           idx + 1,
           0,
           clone(project.rules.collapse[idx]),
         );
         project.rules.collapse[idx + 1].id = uid("rule");
+        clearEditorUndoFocusTarget();
         renderAll();
       }
 
       if (action === "deleteRule") {
+        captureEditorSnapshot();
         project.rules.collapse.splice(idx, 1);
+        clearEditorUndoFocusTarget();
         renderAll();
       }
 
       if (action === "addRuleCondition") {
+        captureEditorSnapshot();
         project.rules.collapse[idx].conditions.push(
           conditionTemplate(getAllVariableNames()[0] || "risk"),
         );
+        clearEditorUndoFocusTarget();
         renderAll();
       }
 
       if (action === "deleteRuleCondition") {
+        captureEditorSnapshot();
         project.rules.collapse[idx].conditions.splice(cIdx, 1);
+        clearEditorUndoFocusTarget();
         renderAll();
       }
 
       if (action === "duplicateDiag") {
+        captureEditorSnapshot();
         project.diagnostics.splice(
           idx + 1,
           0,
           clone(project.diagnostics[idx]),
         );
         project.diagnostics[idx + 1].id = uid("diag");
+        clearEditorUndoFocusTarget();
         renderAll();
       }
 
       if (action === "deleteDiag") {
+        captureEditorSnapshot();
         project.diagnostics.splice(idx, 1);
+        clearEditorUndoFocusTarget();
         renderAll();
       }
 
       if (action === "addDiagCondition") {
+        captureEditorSnapshot();
         project.diagnostics[idx].conditions.push(
           conditionTemplate(getAllVariableNames()[0] || "risk"),
         );
+        clearEditorUndoFocusTarget();
         renderAll();
       }
 
       if (action === "deleteDiagCondition") {
+        captureEditorSnapshot();
         project.diagnostics[idx].conditions.splice(cIdx, 1);
+        clearEditorUndoFocusTarget();
         renderAll();
       }
 
@@ -7522,16 +7660,21 @@ if (document.readyState === "loading") {
       }
 
       if (action === "moveSceneUp") {
+        captureEditorSnapshot();
         moveSceneByOffset(btn.dataset.scene, -1);
+        clearEditorUndoFocusTarget();
       }
 
       if (action === "moveSceneDown") {
+        captureEditorSnapshot();
         moveSceneByOffset(btn.dataset.scene, 1);
+        clearEditorUndoFocusTarget();
       }
 
       if (action === "duplicateSceneCard") {
         selectedSceneId = btn.dataset.scene;
         duplicateScene();
+        clearEditorUndoFocusTarget();
 
         if (isMobileSceneEditorMode()) {
           openSceneEditorModal();
@@ -7541,6 +7684,7 @@ if (document.readyState === "loading") {
       if (action === "deleteSceneCard") {
         selectedSceneId = btn.dataset.scene;
         deleteScene();
+        clearEditorUndoFocusTarget();
 
         if (isMobileSceneEditorMode() && project.scenes[selectedSceneId]) {
           openSceneEditorModal();
@@ -7552,19 +7696,27 @@ if (document.readyState === "loading") {
       }
 
       if (action === "moveChoiceUp") {
+        captureEditorSnapshot();
         moveChoiceByOffset(idx, -1);
+        clearEditorUndoFocusTarget();
       }
 
       if (action === "moveChoiceDown") {
+        captureEditorSnapshot();
         moveChoiceByOffset(idx, 1);
+        clearEditorUndoFocusTarget();
       }
 
       if (action === "duplicateChoice") {
+        captureEditorSnapshot();
         duplicateChoice(idx);
+        clearEditorUndoFocusTarget();
       }
 
       if (action === "deleteChoice") {
+        captureEditorSnapshot();
         deleteChoice(idx);
+        clearEditorUndoFocusTarget();
       }
     });
 
@@ -7572,6 +7724,8 @@ if (document.readyState === "loading") {
       const el = event.target;
       const action = el.dataset.action;
       if (!action) return;
+
+      captureEditorSnapshotOncePerFocus(el);
 
       if (action === "choiceSalvage" || action === "choiceFatal") {
         return;
@@ -7659,6 +7813,7 @@ if (document.readyState === "loading") {
       }
 
       if (needsFullRender) {
+        clearEditorUndoFocusTarget();
         renderAll();
       } else {
         renderJsonPreview();
@@ -7670,6 +7825,8 @@ if (document.readyState === "loading") {
       const el = event.target;
       const action = el.dataset.action;
       if (!action) return;
+
+      captureEditorSnapshot();
 
       const idx = Number(el.dataset.index);
       const scene = project.scenes[selectedSceneId];
@@ -7683,7 +7840,21 @@ if (document.readyState === "loading") {
         choice.effects.fatal = el.checked;
       }
 
+      clearEditorUndoFocusTarget();
       renderAll();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      const isUndoShortcut =
+        (event.ctrlKey || event.metaKey) &&
+        event.key.toLowerCase() === "z";
+
+      if (!isUndoShortcut) return;
+      if (currentTab !== "editor") return;
+      if (!lastEditorSnapshot) return;
+
+      event.preventDefault();
+      restoreEditorSnapshot();
     });
 
     function setupContextHelp() {
