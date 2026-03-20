@@ -860,7 +860,7 @@
 
     @media (max-width: 1170px) {
 
-            .tabBtn[data-tab="graph"] {
+      .tabBtn[data-tab="graph"] {
         display: none;
       }
 
@@ -1849,26 +1849,8 @@
                 </button>
 
                 <button class="tabBtn desktopEditorTabBtn desktopSidebarIconBtn" type="button" data-desktop-tab="rules"
-                  data-simple-hide="advanced" aria-label="Règles d’effondrement"
-                  data-sidebar-label="Règles d’effondrement">
-                  <span class="desktopSidebarIconFace" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"
-                      stroke-linejoin="round">
-                      <circle cx="8" cy="7" r="2" />
-                      <circle cx="16" cy="7" r="2" />
-                      <circle cx="12" cy="13" r="2" />
-                      <path d="M8 9v1.5c0 .8.4 1.5 1 1.9l2 1.2" />
-                      <path d="M16 9v1.5c0 .8-.4 1.5-1 1.9l-2 1.2" />
-                      <path d="M12 15v3" />
-                      <path d="M10.5 20h3" />
-                    </svg>
-                  </span>
-                  <span class="desktopSidebarIconLabel">Règles d’effondrement</span>
-                </button>
-
-                <button class="tabBtn desktopEditorTabBtn desktopSidebarIconBtn" type="button"
-                  data-desktop-tab="diagnostics" data-simple-hide="advanced" aria-label="Diagnostics"
-                  data-sidebar-label="Diagnostics">
+                  data-simple-hide="advanced" aria-label="Règles d'effondrement"
+                  data-sidebar-label="Règles d'effondrement">
                   <span class="desktopSidebarIconFace" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"
                       stroke-linejoin="round">
@@ -1876,6 +1858,33 @@
                       <path d="M12 8v5" />
                       <circle cx="12" cy="16.5" r="1" fill="currentColor" stroke="none" />
                     </svg>
+                  </span>
+                  <span class="desktopSidebarIconLabel">Effondrement</span>
+                </button>
+
+                <button class="tabBtn desktopEditorTabBtn desktopSidebarIconBtn" type="button"
+                  data-desktop-tab="diagnostics" data-simple-hide="advanced" aria-label="Diagnostics"
+                  data-sidebar-label="Diagnostics">
+                  <span class="desktopSidebarIconFace" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path fill="#ffffff" fill-rule="evenodd" d="
+    M27 8
+    A19 19 0 1 1 27 46
+    A19 19 0 1 1 27 8
+    Z
+
+    M27 16
+    A11 11 0 1 0 27 38
+    A11 11 0 1 0 27 16
+    Z
+
+    M40 40
+    L55 55
+    A3 3 0 0 1 51 59
+    L36 44
+    Z
+  "/>
+</svg>
                   </span>
                   <span class="desktopSidebarIconLabel">Diagnostics</span>
                 </button>
@@ -2407,7 +2416,7 @@
               <section class="card" data-simple-hide="advanced" data-desktop-section="rules">
                 <details class="editorSection">
                   <summary class="editorSectionSummary">
-                    Règles d’effondrement
+                    Règles d'effondrement
                   </summary>
                   <div class="section">
                     <div class="itemHead">
@@ -7160,7 +7169,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       );
     }
 
-       function switchTab(tab) {
+    function switchTab(tab) {
       if (tab === "graph" && window.innerWidth < 1170) {
         tab = "editor";
       }
@@ -8890,7 +8899,7 @@ if (document.readyState === "loading") {
     });
 
     window.addEventListener("resize", syncSceneEditorPlacement);
-       window.addEventListener("resize", () => {
+    window.addEventListener("resize", () => {
       if (window.innerWidth < 1170 && currentTab === "graph") {
         switchTab("editor");
         return;
