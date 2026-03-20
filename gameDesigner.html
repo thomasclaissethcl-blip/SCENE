@@ -3140,9 +3140,12 @@
                 </div>
 
                 <div id="graphContextMenu" class="graphContextMenu" style="display: none">
-                  <button id="graphContextGotoBtn" type="button" class="secondary">Aller à la scène</button>
-                  <button id="graphContextHighlightBtn" type="button" class="secondary">Afficher le chemin complet</button>
-                </div>
+  <button id="graphContextGotoBtn" type="button" class="secondary">Aller à la scène</button>
+  <button id="graphContextHighlightFullBtn" type="button" class="secondary">Afficher le chemin complet</button>
+  <button id="graphContextHighlightAncestorsBtn" type="button" class="secondary">Afficher les ancêtres</button>
+  <button id="graphContextHighlightDescendantsBtn" type="button" class="secondary">Afficher les descendants</button>
+  <button id="graphContextHighlightNearbyBtn" type="button" class="secondary">Afficher les liens immédiats</button>
+</div>
 
                 <svg id="graphSvg" class="graphSvg" viewBox="0 0 1400 900" aria-label="Graphe des scènes" role="img"></svg>
               </div>
@@ -4581,7 +4584,7 @@
       let selectedSceneId = "intro";
       let currentTab = "editor";
       let graphContextMenuState = null;
-      let graphHighlightSceneId = null;
+let graphHighlightState = null;
       let lastEditorSnapshot = null;
       let editorUndoFocusTarget = null;
       let lastEditorSectionsResponsiveMode = null;
@@ -4661,7 +4664,10 @@ graphSvg: document.getElementById("graphSvg"),
 graphEmptyState: document.getElementById("graphEmptyState"),
 graphContextMenu: document.getElementById("graphContextMenu"),
 graphContextGotoBtn: document.getElementById("graphContextGotoBtn"),
-graphContextHighlightBtn: document.getElementById("graphContextHighlightBtn"),
+graphContextHighlightFullBtn: document.getElementById("graphContextHighlightFullBtn"),
+graphContextHighlightAncestorsBtn: document.getElementById("graphContextHighlightAncestorsBtn"),
+graphContextHighlightDescendantsBtn: document.getElementById("graphContextHighlightDescendantsBtn"),
+graphContextHighlightNearbyBtn: document.getElementById("graphContextHighlightNearbyBtn"),
 graphZoomInBtn: document.getElementById("graphZoomInBtn"),
 graphZoomOutBtn: document.getElementById("graphZoomOutBtn"),
 graphResetViewBtn: document.getElementById("graphResetViewBtn"),
@@ -6804,44 +6810,87 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         return visited;
       }
 
-      function buildGraphHighlightState(data, focusSceneId) {
-        if (!focusSceneId) {
-          return {
-            highlightedNodeIds: null,
-            highlightedEdgeKeys: null,
-          };
-        }
+      function buildGraphAdjacencyMaps(data) {
+  const forwardMap = new Map();
+  const reverseMap = new Map();
 
-        const forwardMap = new Map();
-        const reverseMap = new Map();
+  data.nodes.forEach((node) => {
+    forwardMap.set(node.id, []);
+    reverseMap.set(node.id, []);
+  });
 
-        data.nodes.forEach((node) => {
-          forwardMap.set(node.id, []);
-          reverseMap.set(node.id, []);
-        });
+  data.edges.forEach((edge) => {
+    if (!forwardMap.has(edge.source)) forwardMap.set(edge.source, []);
+    if (!reverseMap.has(edge.target)) reverseMap.set(edge.target, []);
+    forwardMap.get(edge.source).push(edge.target);
+    reverseMap.get(edge.target).push(edge.source);
+  });
 
-        data.edges.forEach((edge) => {
-          if (!forwardMap.has(edge.source)) forwardMap.set(edge.source, []);
-          if (!reverseMap.has(edge.target)) reverseMap.set(edge.target, []);
-          forwardMap.get(edge.source).push(edge.target);
-          reverseMap.get(edge.target).push(edge.source);
-        });
+  return { forwardMap, reverseMap };
+}
 
-        const ancestors = collectReachableSceneIds(focusSceneId, reverseMap);
-        const descendants = collectReachableSceneIds(focusSceneId, forwardMap);
-        const highlightedNodeIds = new Set([...ancestors, ...descendants, focusSceneId]);
+function collectReachableSceneIdsWithDepth(startId, adjacencyMap, maxDepth = Infinity) {
+  const visited = new Set();
+  const queue = [{ id: startId, depth: 0 }];
 
-        const highlightedEdgeKeys = new Set(
-          data.edges
-            .filter((edge) => highlightedNodeIds.has(edge.source) && highlightedNodeIds.has(edge.target))
-            .map((edge) => `${edge.source}=>${edge.target}`),
-        );
+  while (queue.length) {
+    const { id, depth } = queue.shift();
+    if (!id || visited.has(id)) continue;
+    visited.add(id);
 
-        return {
-          highlightedNodeIds,
-          highlightedEdgeKeys,
-        };
+    if (depth >= maxDepth) continue;
+
+    const nextIds = adjacencyMap.get(id) || [];
+    nextIds.forEach((nextId) => {
+      if (!visited.has(nextId)) {
+        queue.push({ id: nextId, depth: depth + 1 });
       }
+    });
+  }
+
+  return visited;
+}
+
+function buildGraphHighlightState(data, highlightConfig) {
+  if (!highlightConfig?.sceneId || !highlightConfig?.mode) {
+    return {
+      highlightedNodeIds: null,
+      highlightedEdgeKeys: null,
+    };
+  }
+
+  const { sceneId, mode } = highlightConfig;
+  const { forwardMap, reverseMap } = buildGraphAdjacencyMaps(data);
+
+  let highlightedNodeIds = new Set();
+
+  if (mode === "full") {
+    const ancestors = collectReachableSceneIdsWithDepth(sceneId, reverseMap);
+    const descendants = collectReachableSceneIdsWithDepth(sceneId, forwardMap);
+    highlightedNodeIds = new Set([...ancestors, ...descendants, sceneId]);
+  } else if (mode === "ancestors") {
+    highlightedNodeIds = collectReachableSceneIdsWithDepth(sceneId, reverseMap);
+    highlightedNodeIds.add(sceneId);
+  } else if (mode === "descendants") {
+    highlightedNodeIds = collectReachableSceneIdsWithDepth(sceneId, forwardMap);
+    highlightedNodeIds.add(sceneId);
+  } else if (mode === "nearby") {
+    const ancestors = collectReachableSceneIdsWithDepth(sceneId, reverseMap, 2);
+    const descendants = collectReachableSceneIdsWithDepth(sceneId, forwardMap, 2);
+    highlightedNodeIds = new Set([...ancestors, ...descendants, sceneId]);
+  }
+
+  const highlightedEdgeKeys = new Set(
+    data.edges
+      .filter((edge) => highlightedNodeIds.has(edge.source) && highlightedNodeIds.has(edge.target))
+      .map((edge) => `${edge.source}=>${edge.target}`)
+  );
+
+  return {
+    highlightedNodeIds,
+    highlightedEdgeKeys,
+  };
+}
 
       function renderStructureGraph() {
         const data = getConnectedSceneGraphData();
@@ -6857,7 +6906,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
 
         const layout = buildStructureGraphLayout(data);
         const nodeMap = new Map(layout.nodes.map((node) => [node.id, node]));
-        const highlightState = buildGraphHighlightState(data, graphHighlightSceneId);
+        const highlightState = buildGraphHighlightState(data, graphHighlightState);
         const defs = `
           <defs>
             <marker id="graphArrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
@@ -9001,9 +9050,30 @@ if (document.readyState === "loading") {
   openGraphScene(graphContextMenuState.sceneId);
 });
 
-els.graphContextHighlightBtn?.addEventListener("click", () => {
+els.graphContextHighlightFullBtn?.addEventListener("click", () => {
   if (!graphContextMenuState?.sceneId) return;
-  graphHighlightSceneId = graphContextMenuState.sceneId;
+  graphHighlightState = { sceneId: graphContextMenuState.sceneId, mode: "full" };
+  closeGraphContextMenu();
+  renderStructureGraph();
+});
+
+els.graphContextHighlightAncestorsBtn?.addEventListener("click", () => {
+  if (!graphContextMenuState?.sceneId) return;
+  graphHighlightState = { sceneId: graphContextMenuState.sceneId, mode: "ancestors" };
+  closeGraphContextMenu();
+  renderStructureGraph();
+});
+
+els.graphContextHighlightDescendantsBtn?.addEventListener("click", () => {
+  if (!graphContextMenuState?.sceneId) return;
+  graphHighlightState = { sceneId: graphContextMenuState.sceneId, mode: "descendants" };
+  closeGraphContextMenu();
+  renderStructureGraph();
+});
+
+els.graphContextHighlightNearbyBtn?.addEventListener("click", () => {
+  if (!graphContextMenuState?.sceneId) return;
+  graphHighlightState = { sceneId: graphContextMenuState.sceneId, mode: "nearby" };
   closeGraphContextMenu();
   renderStructureGraph();
 });
@@ -9734,10 +9804,10 @@ const shouldResetHighlight = !graphDragMoved && !clickedSceneId && !releasedOnMe
 }
 
           if (shouldResetHighlight) {
-            graphHighlightSceneId = null;
-            closeGraphContextMenu();
-            renderStructureGraph();
-          }
+  graphHighlightState = null;
+  closeGraphContextMenu();
+  renderStructureGraph();
+}
         });
 
         window.addEventListener("pointercancel", (event) => {
