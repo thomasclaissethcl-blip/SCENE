@@ -6776,9 +6776,26 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
 
         const rect = els.graphViewport.getBoundingClientRect();
         const menuWidth = 220;
-        const menuHeight = 98;
-        const left = Math.min(Math.max(8, clientX - rect.left + 8), Math.max(8, rect.width - menuWidth - 8));
-        const top = Math.min(Math.max(8, clientY - rect.top + 8), Math.max(8, rect.height - menuHeight - 8));
+        const menuHeight = 170;
+        const margin = 8;
+        const offset = 8;
+
+        const clickX = clientX - rect.left;
+        const clickY = clientY - rect.top;
+
+        const left = Math.min(Math.max(margin, clickX + offset), Math.max(margin, rect.width - menuWidth - margin));
+
+        const spaceBelow = rect.height - clickY - margin;
+        const spaceAbove = clickY - margin;
+
+        let top;
+        if (spaceBelow >= menuHeight + offset) {
+          top = clickY + offset;
+        } else if (spaceAbove >= menuHeight + offset) {
+          top = clickY - menuHeight - offset;
+        } else {
+          top = Math.min(Math.max(margin, clickY + offset), Math.max(margin, rect.height - menuHeight - margin));
+        }
 
         graphContextMenuState = {
           sceneId,
