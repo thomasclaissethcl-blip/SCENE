@@ -9278,7 +9278,6 @@ if (document.readyState === "loading") {
 
         if (action === "varName") {
           project.variables[idx].name = el.value;
-          needsFullRender = true;
         } else if (action === "varLabel") {
           project.variables[idx].label = el.value;
         } else if (action === "varType") {
@@ -9331,7 +9330,7 @@ if (document.readyState === "loading") {
             needsFullRender = true;
           } else if (action === "choiceShowIf") {
             choice.showIf = el.value;
-            needsFullRender = true;
+            
           } else if (action === "choiceScore") choice.effects.score = Number(el.value) || 0;
           else if (action === "choiceRisk") choice.effects.risk = Number(el.value) || 0;
           else if (action === "choiceStepDelta") choice.effects.stepDelta = Number(el.value) || 0;
