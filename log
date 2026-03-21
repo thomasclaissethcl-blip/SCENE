@@ -1,3 +1,6 @@
+20260321
+> Ajouté une fonction de détection des boucles, avec mise en évidence sur le graphe.
+
 20260320
 >Corriger : replier un details de choix, écrire dans un autre choix, puis valider ce qui est écrit, rouvre tous les details de choix.
 >Dans le jeu exporté, quand on arrive dans une scène, si une variable a changé et qu'elle est affichée, à côté de la variable on affiche une flèche descendante si elle a baissé, ou une flèche ascendante si elle a monté.
