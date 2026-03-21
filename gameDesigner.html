@@ -1273,14 +1273,14 @@
     }
 
     @media (min-width: 1170px) {
-  .sceneEditorModal {
-    display: none !important;
-  }
+      .sceneEditorModal {
+        display: none !important;
+      }
 
-  #graphScenePreviewModal.open {
-    display: block !important;
-  }
-}
+      #graphScenePreviewModal.open {
+        display: block !important;
+      }
+    }
 
     body.simple-mode [data-simple-hide="advanced"] {
       display: none !important;
@@ -1943,25 +1943,25 @@
     }
 
     .graphMenuIcon {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
-  display: inline-block;
-  vertical-align: middle;
-  color: currentColor;
-}
+      width: 16px;
+      height: 16px;
+      flex: 0 0 16px;
+      display: inline-block;
+      vertical-align: middle;
+      color: currentColor;
+    }
 
-.graphContextMenu button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+    .graphContextMenu button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-.graphContextMenu button svg {
-  width: 16px;
-  height: 16px;
-  stroke: currentColor;
-}
+    .graphContextMenu button svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+    }
   </style>
 </head>
 
@@ -3370,66 +3370,73 @@
               </div>
 
               <div id="graphContextMenu" class="graphContextMenu" style="display: none">
-  <button id="graphContextGotoBtn" type="button" class="secondary">
-  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <path d="M4 20h4l10.5-10.5a2.121 2.121 0 0 0-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M14.5 6.5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <span>Éditer la scène</span>
-</button>
+                <button id="graphContextGotoBtn" type="button" class="secondary">
+                  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M4 20h4l10.5-10.5a2.121 2.121 0 0 0-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M14.5 6.5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                      stroke-linejoin="round" />
+                  </svg>
+                  <span>Éditer la scène</span>
+                </button>
 
-<button id="graphContextPreviewBtn" type="button" class="secondary">
-  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/>
-  </svg>
-  <span>Voir un aperçu</span>
-</button>
+                <button id="graphContextPreviewBtn" type="button" class="secondary">
+                  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z" stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8" />
+                  </svg>
+                  <span>Voir un aperçu</span>
+                </button>
 
-<button id="graphContextHighlightFullBtn" type="button" class="secondary">
-  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <circle cx="5" cy="6" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="19" cy="6" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="19" cy="18" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <path d="M6.7 7.2l3.6 3.6M13.7 10.8l3.6-3.6M13.4 13.4l4.2 3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <span>Afficher le chemin complet</span>
-</button>
+                <button id="graphContextHighlightFullBtn" type="button" class="secondary">
+                  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="5" cy="6" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="19" cy="6" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="19" cy="18" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <path d="M6.7 7.2l3.6 3.6M13.7 10.8l3.6-3.6M13.4 13.4l4.2 3.2" stroke="currentColor"
+                      stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span>Afficher le chemin complet</span>
+                </button>
 
-<button id="graphContextHighlightAncestorsBtn" type="button" class="secondary">
-  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <circle cx="12" cy="18" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="7" cy="11" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="17" cy="11" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="12" cy="5" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <path d="M10.8 16.3l-2.6-3.3M13.2 16.3l2.6-3.3M8.8 9.5l2.1-2.7M15.2 9.5l-2.1-2.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <span>Afficher les ancêtres</span>
-</button>
+                <button id="graphContextHighlightAncestorsBtn" type="button" class="secondary">
+                  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="18" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="7" cy="11" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="17" cy="11" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="12" cy="5" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <path d="M10.8 16.3l-2.6-3.3M13.2 16.3l2.6-3.3M8.8 9.5l2.1-2.7M15.2 9.5l-2.1-2.7"
+                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span>Afficher les ancêtres</span>
+                </button>
 
-<button id="graphContextHighlightDescendantsBtn" type="button" class="secondary">
-  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <circle cx="12" cy="6" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="7" cy="13" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="17" cy="13" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="12" cy="19" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <path d="M10.8 7.7l-2.6 3.3M13.2 7.7l2.6 3.3M8.8 14.5l2.1 2.7M15.2 14.5l-2.1 2.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <span>Afficher les descendants</span>
-</button>
+                <button id="graphContextHighlightDescendantsBtn" type="button" class="secondary">
+                  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="6" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="7" cy="13" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="17" cy="13" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="12" cy="19" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <path d="M10.8 7.7l-2.6 3.3M13.2 7.7l2.6 3.3M8.8 14.5l2.1 2.7M15.2 14.5l-2.1 2.7"
+                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span>Afficher les descendants</span>
+                </button>
 
-<button id="graphContextHighlightNearbyBtn" type="button" class="secondary">
-  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="6" cy="8" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="18" cy="8" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="18" cy="16" r="2" stroke="currentColor" stroke-width="1.8"/>
-    <path d="M9.9 10.6l-2.2-1.5M14.1 10.6l2.2-1.5M14.3 13.3l1.9 1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <span>Afficher les liens immédiats</span>
-</button>
-</div>
+                <button id="graphContextHighlightNearbyBtn" type="button" class="secondary">
+                  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="6" cy="8" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="18" cy="8" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="18" cy="16" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <path d="M9.9 10.6l-2.2-1.5M14.1 10.6l2.2-1.5M14.3 13.3l1.9 1.4" stroke="currentColor"
+                      stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span>Afficher les liens immédiats</span>
+                </button>
+              </div>
 
               <svg id="graphSvg" class="graphSvg" viewBox="0 0 1400 900" aria-label="Graphe des scènes"
                 role="img"></svg>
@@ -3537,36 +3544,36 @@
   </div>
 
   <div id="graphScenePreviewModal" class="sceneEditorModal" aria-hidden="true" role="dialog" aria-modal="true"
-  aria-labelledby="graphScenePreviewModalTitle">
-  <div class="sceneEditorModalOverlay" data-action="closeGraphScenePreviewModal"></div>
+    aria-labelledby="graphScenePreviewModalTitle">
+    <div class="sceneEditorModalOverlay" data-action="closeGraphScenePreviewModal"></div>
 
-  <div class="sceneEditorModalDialog">
-    <div class="sceneEditorModalHeader">
-      <div>
-        <h2 id="graphScenePreviewModalTitle" style="margin: 0">
-          Aperçu de la scène
-        </h2>
-        <p id="graphScenePreviewModalSubtitle" class="muted small" style="margin: 6px 0 0">
-          Vérifiez les informations principales avant d’ouvrir l’éditeur.
-        </p>
+    <div class="sceneEditorModalDialog">
+      <div class="sceneEditorModalHeader">
+        <div>
+          <h2 id="graphScenePreviewModalTitle" style="margin: 0">
+            Aperçu de la scène
+          </h2>
+          <p id="graphScenePreviewModalSubtitle" class="muted small" style="margin: 6px 0 0">
+            Vérifiez les informations principales avant d’ouvrir l’éditeur.
+          </p>
+        </div>
+
+        <div class="itemActions">
+          <button id="graphScenePreviewOpenEditorBtn" type="button" class="good">
+            Éditer la scène
+          </button>
+          <button id="closeGraphScenePreviewModalBtn" type="button" class="secondary"
+            data-action="closeGraphScenePreviewModal">
+            Fermer
+          </button>
+        </div>
       </div>
 
-      <div class="itemActions">
-        <button id="graphScenePreviewOpenEditorBtn" type="button" class="good">
-          Éditer la scène
-        </button>
-        <button id="closeGraphScenePreviewModalBtn" type="button" class="secondary"
-          data-action="closeGraphScenePreviewModal">
-          Fermer
-        </button>
+      <div class="sceneEditorModalContent">
+        <div id="graphScenePreviewContent" class="stack"></div>
       </div>
-    </div>
-
-    <div class="sceneEditorModalContent">
-      <div id="graphScenePreviewContent" class="stack"></div>
     </div>
   </div>
-</div>
 
   <input id="hiddenJsonImport" type="file" accept=".json,application/json" style="display: none" />
   <div id="actionFeedbackModal" class="actionFeedbackModal" aria-hidden="true" role="status" aria-live="polite">
@@ -4994,77 +5001,77 @@
       ),
 
       sceneEditor: document.getElementById("sceneEditor"),
-sceneEditorEmpty: document.getElementById("sceneEditorEmpty"),
-selectedScenePill: document.getElementById("selectedScenePill"),
-sceneEditorModal: document.getElementById("sceneEditorModal"),
-sceneEditorModalContent: document.getElementById(
-  "sceneEditorModalContent",
-),
-closeSceneEditorModalBtn: document.getElementById(
-  "closeSceneEditorModalBtn",
-),
-duplicateSceneBtnMobile: document.getElementById(
-  "duplicateSceneBtnMobile",
-),
-deleteSceneBtnMobile: document.getElementById("deleteSceneBtnMobile"),
-graphScenePreviewModal: document.getElementById("graphScenePreviewModal"),
-graphScenePreviewContent: document.getElementById(
-  "graphScenePreviewContent",
-),
-graphScenePreviewModalSubtitle: document.getElementById(
-  "graphScenePreviewModalSubtitle",
-),
-graphScenePreviewOpenEditorBtn: document.getElementById(
-  "graphScenePreviewOpenEditorBtn",
-),
-closeGraphScenePreviewModalBtn: document.getElementById(
-  "closeGraphScenePreviewModalBtn",
-),
-desktopEditorDivider: document.getElementById("desktopEditorDivider"),
+      sceneEditorEmpty: document.getElementById("sceneEditorEmpty"),
+      selectedScenePill: document.getElementById("selectedScenePill"),
+      sceneEditorModal: document.getElementById("sceneEditorModal"),
+      sceneEditorModalContent: document.getElementById(
+        "sceneEditorModalContent",
+      ),
+      closeSceneEditorModalBtn: document.getElementById(
+        "closeSceneEditorModalBtn",
+      ),
+      duplicateSceneBtnMobile: document.getElementById(
+        "duplicateSceneBtnMobile",
+      ),
+      deleteSceneBtnMobile: document.getElementById("deleteSceneBtnMobile"),
+      graphScenePreviewModal: document.getElementById("graphScenePreviewModal"),
+      graphScenePreviewContent: document.getElementById(
+        "graphScenePreviewContent",
+      ),
+      graphScenePreviewModalSubtitle: document.getElementById(
+        "graphScenePreviewModalSubtitle",
+      ),
+      graphScenePreviewOpenEditorBtn: document.getElementById(
+        "graphScenePreviewOpenEditorBtn",
+      ),
+      closeGraphScenePreviewModalBtn: document.getElementById(
+        "closeGraphScenePreviewModalBtn",
+      ),
+      desktopEditorDivider: document.getElementById("desktopEditorDivider"),
 
-sceneId: document.getElementById("sceneId"),
-sceneChapter: document.getElementById("sceneChapter"),
-sceneTitle: document.getElementById("sceneTitle"),
-sceneType: document.getElementById("sceneType"),
-sceneEnding: document.getElementById("sceneEnding"),
-sceneText: document.getElementById("sceneText"),
-sceneImageFile: document.getElementById("sceneImageFile"),
-sceneImageAlt: document.getElementById("sceneImageAlt"),
-sceneImagePreviewWrap: document.getElementById("sceneImagePreviewWrap"),
-sceneImagePreview: document.getElementById("sceneImagePreview"),
-removeSceneImageBtn: document.getElementById("removeSceneImageBtn"),
-incomingSceneSelect: document.getElementById("incomingSceneSelect"),
-addIncomingSceneBtn: document.getElementById("addIncomingSceneBtn"),
-incomingScenesList: document.getElementById("incomingScenesList"),
-choicesList: document.getElementById("choicesList"),
+      sceneId: document.getElementById("sceneId"),
+      sceneChapter: document.getElementById("sceneChapter"),
+      sceneTitle: document.getElementById("sceneTitle"),
+      sceneType: document.getElementById("sceneType"),
+      sceneEnding: document.getElementById("sceneEnding"),
+      sceneText: document.getElementById("sceneText"),
+      sceneImageFile: document.getElementById("sceneImageFile"),
+      sceneImageAlt: document.getElementById("sceneImageAlt"),
+      sceneImagePreviewWrap: document.getElementById("sceneImagePreviewWrap"),
+      sceneImagePreview: document.getElementById("sceneImagePreview"),
+      removeSceneImageBtn: document.getElementById("removeSceneImageBtn"),
+      incomingSceneSelect: document.getElementById("incomingSceneSelect"),
+      addIncomingSceneBtn: document.getElementById("addIncomingSceneBtn"),
+      incomingScenesList: document.getElementById("incomingScenesList"),
+      choicesList: document.getElementById("choicesList"),
 
-jsonPreview: document.getElementById("jsonPreview"),
-validationBox: document.getElementById("validationBox"),
-refreshJsonAnalysisBtn: document.getElementById(
-  "refreshJsonAnalysisBtn",
-),
-graphViewport: document.getElementById("graphViewport"),
-graphSvg: document.getElementById("graphSvg"),
-graphEmptyState: document.getElementById("graphEmptyState"),
-graphContextMenu: document.getElementById("graphContextMenu"),
-graphContextGotoBtn: document.getElementById("graphContextGotoBtn"),
-graphContextPreviewBtn: document.getElementById("graphContextPreviewBtn"),
-graphContextHighlightFullBtn: document.getElementById(
-  "graphContextHighlightFullBtn",
-),
-graphContextHighlightAncestorsBtn: document.getElementById(
-  "graphContextHighlightAncestorsBtn",
-),
-graphContextHighlightDescendantsBtn: document.getElementById(
-  "graphContextHighlightDescendantsBtn",
-),
-graphContextHighlightNearbyBtn: document.getElementById(
-  "graphContextHighlightNearbyBtn",
-),
-refreshGraphBtn: document.getElementById("refreshGraphBtn"),
-graphZoomInBtn: document.getElementById("graphZoomInBtn"),
-graphZoomOutBtn: document.getElementById("graphZoomOutBtn"),
-graphResetViewBtn: document.getElementById("graphResetViewBtn"),
+      jsonPreview: document.getElementById("jsonPreview"),
+      validationBox: document.getElementById("validationBox"),
+      refreshJsonAnalysisBtn: document.getElementById(
+        "refreshJsonAnalysisBtn",
+      ),
+      graphViewport: document.getElementById("graphViewport"),
+      graphSvg: document.getElementById("graphSvg"),
+      graphEmptyState: document.getElementById("graphEmptyState"),
+      graphContextMenu: document.getElementById("graphContextMenu"),
+      graphContextGotoBtn: document.getElementById("graphContextGotoBtn"),
+      graphContextPreviewBtn: document.getElementById("graphContextPreviewBtn"),
+      graphContextHighlightFullBtn: document.getElementById(
+        "graphContextHighlightFullBtn",
+      ),
+      graphContextHighlightAncestorsBtn: document.getElementById(
+        "graphContextHighlightAncestorsBtn",
+      ),
+      graphContextHighlightDescendantsBtn: document.getElementById(
+        "graphContextHighlightDescendantsBtn",
+      ),
+      graphContextHighlightNearbyBtn: document.getElementById(
+        "graphContextHighlightNearbyBtn",
+      ),
+      refreshGraphBtn: document.getElementById("refreshGraphBtn"),
+      graphZoomInBtn: document.getElementById("graphZoomInBtn"),
+      graphZoomOutBtn: document.getElementById("graphZoomOutBtn"),
+      graphResetViewBtn: document.getElementById("graphResetViewBtn"),
 
       journalNoteInput: document.getElementById("journalNoteInput"),
       addJournalRemBtn: document.getElementById("addJournalRemBtn"),
@@ -5972,24 +5979,24 @@ graphResetViewBtn: document.getElementById("graphResetViewBtn"),
     }
 
     function getSceneTypeLabel(type) {
-  const labels = {
-    normal: "Normale",
-    ending: "Fin",
-    diagnosis: "Diagnostic",
-    remediation: "Remédiation",
-  };
-  return labels[type] || type || "Normale";
-}
+      const labels = {
+        normal: "Normale",
+        ending: "Fin",
+        diagnosis: "Diagnostic",
+        remediation: "Remédiation",
+      };
+      return labels[type] || type || "Normale";
+    }
 
-function closeGraphScenePreviewModal() {
-  if (!els.graphScenePreviewModal) return;
-  els.graphScenePreviewModal.classList.remove("open");
-  els.graphScenePreviewModal.setAttribute("aria-hidden", "true");
-  els.graphScenePreviewModal.dataset.sceneId = "";
-  document.body.style.overflow = "";
-}
+    function closeGraphScenePreviewModal() {
+      if (!els.graphScenePreviewModal) return;
+      els.graphScenePreviewModal.classList.remove("open");
+      els.graphScenePreviewModal.setAttribute("aria-hidden", "true");
+      els.graphScenePreviewModal.dataset.sceneId = "";
+      document.body.style.overflow = "";
+    }
 
-function renderGraphScenePreview(sceneId) {
+    function renderGraphScenePreview(sceneId) {
   if (!els.graphScenePreviewContent) return;
 
   const scene = project.scenes?.[sceneId];
@@ -6013,6 +6020,7 @@ function renderGraphScenePreview(sceneId) {
     ? scene.text.filter(Boolean).join("\n\n")
     : String(scene.text || "");
   const choices = Array.isArray(scene.choices) ? scene.choices : [];
+  const incomingLinks = getIncomingLinks(sceneId);
 
   const textHtml = sceneText
     ? escapeHtml(sceneText).replace(/\n/g, "<br>")
@@ -6021,13 +6029,40 @@ function renderGraphScenePreview(sceneId) {
   const choicesHtml = choices.length
     ? `
       <div class="row">
-        <strong>Noms des choix</strong>
+        <strong>Choix et destinations</strong>
         <div class="list" style="margin-top: 8px">
           ${choices
             .map((choice, index) => {
               const choiceName =
                 (choice?.title || "").trim() || `Choix ${index + 1}`;
-              return `<div class="itemCard">${escapeHtml(choiceName)}</div>`;
+              const targetId = (choice?.goto || "").trim();
+              const targetScene = targetId ? project.scenes?.[targetId] : null;
+              const targetName = targetScene
+                ? ((targetScene.title || targetId).trim() || targetId)
+                : "";
+              const destinationHtml = targetId
+                ? `
+                  <div class="muted small" style="margin-top: 6px">
+                    Destination :
+                    <code>${escapeHtml(targetId)}</code>
+                    ${targetName && targetName !== targetId
+                      ? ` — ${escapeHtml(targetName)}`
+                      : ""}
+                  </div>
+                `
+                : `
+                  <div class="muted small" style="margin-top: 6px">
+                    Destination non définie.
+                  </div>
+                `;
+
+              return `
+                <div class="itemCard">
+                  <div><strong>Choix ${index + 1}</strong></div>
+                  <div style="margin-top: 6px">${escapeHtml(choiceName)}</div>
+                  ${destinationHtml}
+                </div>
+              `;
             })
             .join("")}
         </div>
@@ -6035,9 +6070,48 @@ function renderGraphScenePreview(sceneId) {
     `
     : `
       <div class="row">
-        <strong>Noms des choix</strong>
+        <strong>Choix et destinations</strong>
         <div class="muted small" style="margin-top: 8px">
           Aucun choix pour cette scène.
+        </div>
+      </div>
+    `;
+
+  const incomingHtml = incomingLinks.length
+    ? `
+      <div class="row">
+        <strong>Scènes d’origine</strong>
+        <div class="list" style="margin-top: 8px">
+          ${incomingLinks
+            .map((link) => {
+              const sourceScene = project.scenes?.[link.sourceSceneId];
+              const sourceName = sourceScene
+                ? ((sourceScene.title || link.sourceSceneId).trim() || link.sourceSceneId)
+                : link.sourceSceneId;
+              const choiceLabel =
+                (link.choiceTitle || "").trim() || `Choix ${link.choiceIndex + 1}`;
+
+              return `
+                <div class="itemCard">
+                  <div>
+                    <strong>${escapeHtml(sourceName)}</strong>
+                    <span class="muted small"> — <code>${escapeHtml(link.sourceSceneId)}</code></span>
+                  </div>
+                  <div class="muted small" style="margin-top: 6px">
+                    Choix ${link.choiceIndex + 1} — ${escapeHtml(choiceLabel)}
+                  </div>
+                </div>
+              `;
+            })
+            .join("")}
+        </div>
+      </div>
+    `
+    : `
+      <div class="row">
+        <strong>Scènes d’origine</strong>
+        <div class="muted small" style="margin-top: 8px">
+          Aucune scène ne mène vers cette scène.
         </div>
       </div>
     `;
@@ -6065,6 +6139,7 @@ function renderGraphScenePreview(sceneId) {
         <div style="margin-top: 8px; white-space: normal">${textHtml}</div>
       </div>
       ${choicesHtml}
+      ${incomingHtml}
     </div>
   `;
 
@@ -6074,15 +6149,15 @@ function renderGraphScenePreview(sceneId) {
   }
 }
 
-function openGraphScenePreviewModal(sceneId) {
-  if (!sceneId || !els.graphScenePreviewModal) return;
-  closeGraphContextMenu();
-  els.graphScenePreviewModal.dataset.sceneId = sceneId;
-  renderGraphScenePreview(sceneId);
-  els.graphScenePreviewModal.classList.add("open");
-  els.graphScenePreviewModal.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
-}
+    function openGraphScenePreviewModal(sceneId) {
+      if (!sceneId || !els.graphScenePreviewModal) return;
+      closeGraphContextMenu();
+      els.graphScenePreviewModal.dataset.sceneId = sceneId;
+      renderGraphScenePreview(sceneId);
+      els.graphScenePreviewModal.classList.add("open");
+      els.graphScenePreviewModal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
 
     function showActionFeedback(message) {
       if (!els.actionFeedbackModal || !els.actionFeedbackMessage) return;
@@ -7415,8 +7490,14 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       return cachedValidationResult;
     }
 
-    function renderValidation() {
-      const result = getValidationResult(project);
+    function renderValidation(force = false) {
+      if (!force) {
+        validationDirty = true;
+        renderStaleValidationNotice();
+        return;
+      }
+
+      const result = getValidationResult(project, true);
       validationCycleAlerts = result.cycleWarnings || [];
       const blocks = [];
 
@@ -7448,19 +7529,20 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         const isActive =
           graphHighlightState?.type === "cycle" &&
           graphHighlightState?.signature === alertEntry.highlight.signature;
+
         blocks.push(`
-            <div class="notice ${isActive ? "warn" : ""}">
-              <button
-                type="button"
-                class="validationAlertBtn${isActive ? " is-active" : ""}"
-                data-cycle-alert-index="${cycleIndex}"
-                aria-pressed="${isActive ? "true" : "false"}"
-              >
-                <strong>Alerte</strong><br>${escapeHtml(warn)}
-                <span class="validationAlertHint">Cliquer pour afficher ou masquer cette boucle dans le graphe.</span>
-              </button>
-            </div>
-          `);
+        <div class="notice ${isActive ? "warn" : ""}">
+          <button
+            type="button"
+            class="validationAlertBtn${isActive ? " is-active" : ""}"
+            data-cycle-alert-index="${cycleIndex}"
+            aria-pressed="${isActive ? "true" : "false"}"
+          >
+            <strong>Alerte</strong><br>${escapeHtml(warn)}
+            <span class="validationAlertHint">Cliquer pour afficher ou masquer cette boucle dans le graphe.</span>
+          </button>
+        </div>
+      `);
       });
 
       lastValidationHtml = blocks.join("");
@@ -7468,21 +7550,23 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
     }
 
     function renderValidationIfNeeded(force = false) {
-      if (!force && !validationDirty) {
+      if (!force) {
+        renderStaleValidationNotice();
         return;
       }
 
       setTabLoading(
         "json",
         true,
-        "Analyse de la structure et détection des boucles... (cela peut prendre quelques minutes en fonction de la complexité du scénario, l'affichage peut bloquer, mais ça charge en arrière plan, un peu de patience !')",
+        "Analyse de la structure et détection des boucles... Cela peut prendre plusieurs minutes si votre projet est complexe.",
       );
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setTimeout(() => {
-            renderValidation();
+            renderValidation(true);
             validationDirty = false;
+            hasValidatedAtLeastOnce = true;
             stopFakeLoadingProgress("json", true);
             setTimeout(() => {
               setTabLoading("json", false);
@@ -7495,19 +7579,39 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
     function renderStaleValidationNotice() {
       if (!els.validationBox) return;
 
-      const previousAnalysisBlock = lastValidationHtml
-        ? `<div id="staleValidationContent" class="stack">${lastValidationHtml}</div>`
-        : "";
+      const isFirstDisplay = !hasValidatedAtLeastOnce && !lastValidationHtml;
+      const previousAnalysisBlock =
+        !isFirstDisplay && lastValidationHtml
+          ? `<div id="staleValidationContent" class="stack">${lastValidationHtml}</div>`
+          : "";
 
-      els.validationBox.innerHTML = `
+      if (isFirstDisplay) {
+        els.validationBox.innerHTML = `
+<div class="stack" style="min-height:320px; display:flex; align-items:center; justify-content:center;">
+  <div class="notice attention" style="text-align:center; max-width:700px; margin:auto; padding:24px;">
+    <div style="margin-bottom:16px;">
+      Aucune analyse n’a encore été lancée.
+    </div>
+    <div style="margin-bottom:14px;">
+      <button id="refreshJsonAnalysisInlineBtn" type="button" class="secondary">Lancer l'analyse</button>
+    </div>
+    <div class="small muted">
+      ⚠️ Peut prendre plusieurs minutes si votre projet est complexe.
+    </div>
+  </div>
+</div>
+`;
+      } else {
+        els.validationBox.innerHTML = `
 <div class="stack">
   <div class="notice attention" style="text-align:center; max-width:700px; margin:auto;">
-    Votre scénario a changé. Cliquez sur le bouton <button id="refreshJsonAnalysisInlineBtn" class="secondary">Mettre à jour</button> pour relancer l'analyse.<br>
-    ⚠️ <strong>En fonction de la complexité de votre projet, l'analyse peut durer plusieurs minutes. <br>On a déjà vu 10 minutes pour un projet à 60 scènes… Patience !</strong>   
+    Votre scénario a changé. Cliquez sur le bouton <button id="refreshJsonAnalysisInlineBtn" type="button" class="secondary">Mettre à jour</button> pour relancer l'analyse.<br><br>
+    <span class="small muted">Peut prendre plusieurs minutes si votre projet est complexe.</span>
   </div>
   ${previousAnalysisBlock}
 </div>
 `;
+      }
 
       const refreshBtn = document.getElementById("refreshJsonAnalysisInlineBtn");
 
@@ -7519,6 +7623,8 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         });
       }
     }
+
+    let hasValidatedAtLeastOnce = false;
 
     let loadingProgressTimers = {
       json: null,
@@ -7943,7 +8049,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         graphHighlightState?.signature === alertEntry.highlight.signature;
       graphHighlightState = isActive ? null : { ...alertEntry.highlight };
       closeGraphContextMenu();
-      renderValidation();
+      renderValidation(true);
       renderStructureGraph();
 
       if (!isActive) {
@@ -8455,9 +8561,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       renderSceneEditor();
       renderJsonPreview();
 
-      if (currentTab === "json" && !skipValidation) {
-        renderValidationIfNeeded();
-      } else if (els.validationBox) {
+      if (els.validationBox) {
         renderStaleValidationNotice();
       }
 
@@ -10681,9 +10785,9 @@ if (document.readyState === "loading") {
     });
 
     els.graphContextPreviewBtn?.addEventListener("click", () => {
-  if (!graphContextMenuState?.sceneId) return;
-  openGraphScenePreviewModal(graphContextMenuState.sceneId);
-});
+      if (!graphContextMenuState?.sceneId) return;
+      openGraphScenePreviewModal(graphContextMenuState.sceneId);
+    });
 
     els.graphContextHighlightFullBtn?.addEventListener("click", () => {
       if (!graphContextMenuState?.sceneId) return;
@@ -10725,16 +10829,16 @@ if (document.readyState === "loading") {
       renderStructureGraph();
     });
 
-els.graphScenePreviewOpenEditorBtn?.addEventListener("click", () => {
-  const sceneId = els.graphScenePreviewModal?.dataset.sceneId;
-  if (!sceneId) return;
-  closeGraphScenePreviewModal();
-  openGraphScene(sceneId);
-});
+    els.graphScenePreviewOpenEditorBtn?.addEventListener("click", () => {
+      const sceneId = els.graphScenePreviewModal?.dataset.sceneId;
+      if (!sceneId) return;
+      closeGraphScenePreviewModal();
+      openGraphScene(sceneId);
+    });
 
-els.closeGraphScenePreviewModalBtn?.addEventListener("click", () => {
-  closeGraphScenePreviewModal();
-});
+    els.closeGraphScenePreviewModalBtn?.addEventListener("click", () => {
+      closeGraphScenePreviewModal();
+    });
 
     document
       .getElementById("openPreviewNewTabBtn")
@@ -10818,17 +10922,17 @@ els.closeGraphScenePreviewModalBtn?.addEventListener("click", () => {
     });
 
     document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape") return;
+      if (event.key !== "Escape") return;
 
-  if (els.graphScenePreviewModal?.classList.contains("open")) {
-    closeGraphScenePreviewModal();
-    return;
-  }
+      if (els.graphScenePreviewModal?.classList.contains("open")) {
+        closeGraphScenePreviewModal();
+        return;
+      }
 
-  if (els.sceneEditorModal?.classList.contains("open")) {
-    closeSceneEditorModal();
-  }
-});
+      if (els.sceneEditorModal?.classList.contains("open")) {
+        closeSceneEditorModal();
+      }
+    });
 
     document.getElementById("exportHtmlBtn").addEventListener("click", () => {
       const result = validateProject(project);
@@ -10915,7 +11019,7 @@ els.closeGraphScenePreviewModalBtn?.addEventListener("click", () => {
     });
 
     els.metaSubtitle.addEventListener("input", () => {
-      project.meta.subtitle = els.metasubTitle.value;
+      project.meta.subtitle = els.metaSubtitle.value;
       renderJsonPreview();
       if (currentTab === "json") {
         renderValidation();
@@ -11273,8 +11377,8 @@ els.closeGraphScenePreviewModalBtn?.addEventListener("click", () => {
       }
 
       if (action === "closeGraphScenePreviewModal") {
-  closeGraphScenePreviewModal();
-}
+        closeGraphScenePreviewModal();
+      }
 
       if (action === "moveChoiceUp") {
         captureEditorSnapshot();
