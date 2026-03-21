@@ -754,10 +754,9 @@
           --editor-left-pane-width: 460px;
           height: 100%;
           min-height: 0;
-          grid-template-columns: minmax(
-              320px,
-              var(--editor-left-pane-width)
-            ) 10px minmax(520px, 1fr);
+          grid-template-columns:
+            minmax(320px, var(--editor-left-pane-width))
+            10px minmax(520px, 1fr);
           grid-template-rows: auto minmax(0, 1fr);
           align-items: stretch;
         }
@@ -7440,13 +7439,14 @@
           return;
         }
 
+        const previousUiState = captureChoicesUiState();
         const sceneIds = Object.keys(project.scenes);
         const customFlags = project.variables;
 
         els.choicesList.innerHTML = scene.choices
           .map(
             (choice, idx) => `
-        <details open class="choiceBlock">
+        <details class="choiceBlock" data-choice-index="${idx}">
           <summary>Choix ${idx + 1} — ${escapeHtml(choice.title || "Sans titre")}</summary>
                     <div class="itemActions" style="padding: 0 12px 12px;">
             <button
@@ -7749,6 +7749,8 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       `,
           )
           .join("");
+
+        restoreChoicesUiState(previousUiState);
       }
 
       function renderJsonPreview() {
@@ -8709,8 +8711,58 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         graphDirty = true;
       }
 
+      function getSceneEditorScrollContainer() {
+        if (!els.sceneEditor)
+          return document.scrollingElement || document.documentElement;
+
+        return (
+          els.sceneEditor.closest(".sceneEditorModalContent") ||
+          els.sceneEditor.closest(".rightCol") ||
+          els.sceneEditor.closest("[data-desktop-section]") ||
+          document.scrollingElement ||
+          document.documentElement
+        );
+      }
+
+      function captureChoicesUiState() {
+        const sceneId = selectedSceneId;
+        if (!sceneId || !els.choicesList) return null;
+
+        const openChoiceIndexes = Array.from(
+          els.choicesList.querySelectorAll("details.choiceBlock"),
+        )
+          .map((detail, index) => (detail.open ? index : null))
+          .filter((value) => value !== null);
+
+        return {
+          sceneId,
+          openChoiceIndexes,
+          scrollTop: getSceneEditorScrollContainer().scrollTop,
+        };
+      }
+
+      function restoreChoicesUiState(state) {
+        if (!state) return;
+        if (state.sceneId !== selectedSceneId) return;
+        if (!els.choicesList) return;
+
+        const detailsBlocks = els.choicesList.querySelectorAll(
+          "details.choiceBlock",
+        );
+
+        detailsBlocks.forEach((detail, index) => {
+          detail.open = state.openChoiceIndexes.includes(index);
+        });
+
+        requestAnimationFrame(() => {
+          const container = getSceneEditorScrollContainer();
+          container.scrollTop = state.scrollTop;
+        });
+      }
+
       function renderAll(options = {}) {
         const { invalidateCaches = false, skipValidation = false } = options;
+        const previousChoicesUiState = captureChoicesUiState();
 
         if (invalidateCaches) {
           invalidatePerformanceCaches();
@@ -8772,6 +8824,7 @@ En fonction de la complexité de votre projet, l'analyse peut durer plusieurs mi
 
         renderJournal();
         setupCustomTextareaResize();
+        restoreChoicesUiState(previousChoicesUiState);
 
         if (!isMobileSceneEditorMode()) {
           applyDesktopPaneWidth(desktopLeftPaneWidth);
