@@ -6859,7 +6859,7 @@
                 <div class="muted small">${escapeHtml(scene.title || "")}</div>
               </div>
                             <div class="itemActions">
-                <button data-action="selectScene" data-scene="${escapeAttr(id)}">${isActive ? "Ouverte" : "Éditer"}</button>
+                <button data-action="selectScene" data-scene="${escapeAttr(id)}">${isActive ? "Ouverte" : "Ouvrir"}</button>
                 <button
                   data-action="duplicateSceneCard"
                   data-scene="${escapeAttr(id)}"
@@ -8923,8 +8923,10 @@ function hasTooManyScenesForStructureAnalysis() {
         renderValidationIfNeeded();
       }
 
-      if (tab === "graph") {
-        renderStructureGraphIfNeeded();
+                 if (tab === "graph") {
+        invalidatePerformanceCaches();
+        closeGraphContextMenu();
+        renderStructureGraphIfNeeded(true);
       }
 
       if (tab === "journal") {
