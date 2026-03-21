@@ -9541,6 +9541,41 @@ En fonction de la complexité de votre projet, l'analyse peut durer plusieurs mi
       border:1px solid var(--border);font-size:1.15rem;font-weight:700;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
     }
     .icon-btn:hover,.icon-btn:focus{outline:none;background:#2f3b6c}
+        .topbar-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .fullscreen-btn.is-active{
+      background:#1e4a3b;
+    }
+       html.is-game-fullscreen,
+    body.is-game-fullscreen{
+      height:100%;
+    }
+    body.is-game-fullscreen{
+      padding:0;
+      display:block;
+      overflow:auto;
+    }
+    body.is-game-fullscreen .app{
+      width:100%;
+      max-width:none;
+      min-height:100vh;
+      min-height:100dvh;
+      gap:0;
+    }
+    body.is-game-fullscreen .topbar,
+    body.is-game-fullscreen .card{
+      border-radius:0;
+    }
+    body.is-game-fullscreen .topbar{
+      position:sticky;
+      top:env(safe-area-inset-top, 0px);
+      z-index:200;
+      margin:0;
+    }
+
     .modal-overlay{
       position:fixed;inset:0;background:rgba(5, 8, 18, .82);backdrop-filter: blur(6px);-webkit-backdrop-filter: blur(6px);
       display:none;align-items:flex-end;justify-content:center;padding:0;z-index:1000;
@@ -9697,7 +9732,17 @@ font-style:italic;
           <h1 id="gameTitle"></h1>
           <p id="gameSubtitle"></p>
         </div>
-        <button id="helpBtn" class="icon-btn" type="button" aria-label="Ouvrir l’aide">?</button>
+                <div class="topbar-actions">
+          <button
+            id="fullscreenBtn"
+            class="icon-btn fullscreen-btn"
+            type="button"
+            aria-label="Passer en plein écran"
+            aria-pressed="false"
+            title="Passer en plein écran"
+          >⛶</button>
+          <button id="helpBtn" class="icon-btn" type="button" aria-label="Ouvrir l’aide">?</button>
+        </div>
       </div>
 
       <div class="stats">
@@ -10534,11 +10579,94 @@ if (scene.ending) {
         document.body.classList.remove("modal-open");
         if (helpBtn) helpBtn.focus();
       }
+
+            const fullscreenTarget = document.documentElement;
+      let orientationWasLocked = false;
+
+      function updateFullscreenButton() {
+        const btn = document.getElementById("fullscreenBtn");
+        const isFullscreen = Boolean(document.fullscreenElement);
+        if (!btn) return;
+
+        btn.classList.toggle("is-active", isFullscreen);
+        btn.setAttribute("aria-pressed", isFullscreen ? "true" : "false");
+        btn.setAttribute(
+          "aria-label",
+          isFullscreen ? "Quitter le plein écran" : "Passer en plein écran",
+        );
+        btn.setAttribute(
+          "title",
+          isFullscreen ? "Quitter le plein écran" : "Passer en plein écran",
+        );
+        btn.textContent = isFullscreen ? "×" : "⛶";
+      }
+
+      async function lockCurrentOrientationIfPossible() {
+        if (!window.screen?.orientation?.lock) return;
+
+        const orientation =
+          window.matchMedia("(orientation: portrait)").matches
+            ? "portrait"
+            : "landscape";
+
+        try {
+          await window.screen.orientation.lock(orientation);
+          orientationWasLocked = true;
+        } catch (error) {
+          orientationWasLocked = false;
+          console.warn("Verrouillage d’orientation non disponible.", error);
+        }
+      }
+
+      function unlockOrientationIfPossible() {
+        if (!orientationWasLocked) return;
+        if (!window.screen?.orientation?.unlock) return;
+
+        try {
+          window.screen.orientation.unlock();
+        } catch (error) {
+          console.warn("Déverrouillage d’orientation non disponible.", error);
+        } finally {
+          orientationWasLocked = false;
+        }
+      }
+
+      async function toggleFullscreen() {
+        if (!document.fullscreenEnabled || !fullscreenTarget.requestFullscreen) {
+          alert("Le plein écran n’est pas disponible dans ce contexte.");
+          return;
+        }
+
+        try {
+          if (!document.fullscreenElement) {
+            await fullscreenTarget.requestFullscreen();
+            await lockCurrentOrientationIfPossible();
+          } else if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          }
+        } catch (error) {
+          console.error("Impossible de basculer en plein écran.", error);
+          alert("Impossible d’activer le plein écran sur ce navigateur ou dans ce contexte.");
+        }
+      }
       
-      document.getElementById("undoBtn")?.addEventListener("click", restore);
+          document.getElementById("undoBtn")?.addEventListener("click", restore);
       document.getElementById("restartBtn")?.addEventListener("click", restart);
+      document.getElementById("fullscreenBtn")?.addEventListener("click", toggleFullscreen);
       document.getElementById("helpBtn")?.addEventListener("click", openHelpModal);
       document.getElementById("closeHelpBtn")?.addEventListener("click", closeHelpModal);
+
+      document.addEventListener("fullscreenchange", () => {
+        const isFullscreen = Boolean(document.fullscreenElement);
+        document.documentElement.classList.toggle("is-game-fullscreen", isFullscreen);
+        document.body.classList.toggle("is-game-fullscreen", isFullscreen);
+
+        if (!isFullscreen) {
+          unlockOrientationIfPossible();
+        }
+
+        updateFullscreenButton();
+      });
 
       document.getElementById("mobileJournalHint")?.addEventListener("click", () => {
         scrollToJournalArea();
@@ -10555,6 +10683,62 @@ window.addEventListener("resize", updateMobileJournalHint);
         }
       });
 
+            const helpModalDialog = document.querySelector("#helpModal .modal-dialog");
+      const mobileTapHelpClose = {
+        startX: 0,
+        startY: 0,
+        moved: false,
+      };
+
+      function isMobileLikePointer() {
+        return window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+      }
+
+      helpModalDialog?.addEventListener(
+        "touchstart",
+        (event) => {
+          if (!isMobileLikePointer()) return;
+          if (!document.getElementById("helpModal")?.classList.contains("open")) return;
+          if (event.touches.length !== 1) return;
+
+          const touch = event.touches[0];
+          mobileTapHelpClose.startX = touch.clientX;
+          mobileTapHelpClose.startY = touch.clientY;
+          mobileTapHelpClose.moved = false;
+        },
+        { passive: true },
+      );
+
+      helpModalDialog?.addEventListener(
+        "touchmove",
+        (event) => {
+          if (!isMobileLikePointer()) return;
+          if (!document.getElementById("helpModal")?.classList.contains("open")) return;
+          if (event.touches.length !== 1) return;
+
+          const touch = event.touches[0];
+          const deltaX = Math.abs(touch.clientX - mobileTapHelpClose.startX);
+          const deltaY = Math.abs(touch.clientY - mobileTapHelpClose.startY);
+
+          if (deltaX > 10 || deltaY > 10) {
+            mobileTapHelpClose.moved = true;
+          }
+        },
+        { passive: true },
+      );
+
+      helpModalDialog?.addEventListener("touchend", (event) => {
+        if (!isMobileLikePointer()) return;
+        if (!document.getElementById("helpModal")?.classList.contains("open")) return;
+        if (mobileTapHelpClose.moved) return;
+
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (target.closest("#closeHelpBtn")) return;
+
+        closeHelpModal();
+      });
+
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && document.getElementById("helpModal")?.classList.contains("open")) {
           closeHelpModal();
@@ -10562,6 +10746,7 @@ window.addEventListener("resize", updateMobileJournalHint);
       });
 
       render();
+            updateFullscreenButton();
 
       if (project.ui?.openHelpOnStart) {
         setTimeout(() => openHelpModal(), 120);
