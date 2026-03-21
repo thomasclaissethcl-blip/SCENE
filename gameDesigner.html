@@ -203,6 +203,53 @@
       .toolbarIconBtn.show-touch-label .toolbarIconLabel {
         opacity: 1;
       }
+            .toolbarIconBtn.is-active {
+        background: #1e4a3b;
+      }
+
+      html.is-editor-fullscreen,
+      body.is-editor-fullscreen {
+        height: 100%;
+      }
+
+      body.is-editor-fullscreen {
+        padding: 0;
+      }
+
+      body.is-editor-fullscreen .app {
+        max-width: none;
+        min-height: 100vh;
+        min-height: 100dvh;
+      }
+
+      body.is-editor-fullscreen .card {
+        border-radius: 0;
+      }
+
+      body.is-editor-fullscreen #topbarCard,
+      body.is-editor-fullscreen #toolbarCard {
+        border-left: none;
+        border-right: none;
+      }
+
+      body.is-editor-fullscreen .toolbarCard {
+        position: sticky;
+        top: 0;
+        z-index: 120;
+      }
+
+      @media (min-width: 1170px) {
+        body.is-editor-fullscreen {
+          height: 100vh;
+          height: 100dvh;
+          overflow: hidden;
+        }
+
+        body.is-editor-fullscreen .app {
+          height: 100vh;
+          height: 100dvh;
+        }
+      }
 
       button,
       .btn {
@@ -2099,6 +2146,32 @@
                 </svg>
               </span>
               <span class="toolbarIconLabel">Sauvegarder projet</span>
+            </button>
+
+                        <button
+              id="editorFullscreenBtn"
+              class="secondary toolbarIconBtn"
+              type="button"
+              aria-label="Passer l’éditeur en plein écran"
+              data-toolbar-label="Plein écran"
+              title="Passer l’éditeur en plein écran"
+              aria-pressed="false"
+            >
+              <span class="toolbarIconFace" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M8 3H3v5" />
+                  <path d="M16 3h5v5" />
+                  <path d="M21 16v5h-5" />
+                  <path d="M3 16v5h5" />
+                </svg>
+              </span>
+              <span class="toolbarIconLabel">Plein écran</span>
             </button>
 
             <button
@@ -5510,8 +5583,9 @@
         helpTitle: document.getElementById("helpTitle"),
         helpContent: document.getElementById("helpContent"),
         openHelpOnStart: document.getElementById("openHelpOnStart"),
-        undoEditorBtn: document.getElementById("undoEditorBtn"),
+              undoEditorBtn: document.getElementById("undoEditorBtn"),
         simpleModeToggleBtn: document.getElementById("simpleModeToggleBtn"),
+        editorFullscreenBtn: document.getElementById("editorFullscreenBtn"),
         modeIndicator: document.getElementById("modeIndicator"),
 
         scenesList: document.getElementById("scenesList"),
@@ -5874,6 +5948,59 @@
           els.modeIndicator.title = simple
             ? "Mode simple actif"
             : "Mode expert actif";
+        }
+      }
+            function updateEditorFullscreenButton() {
+        if (!els.editorFullscreenBtn) return;
+
+        const isFullscreen = Boolean(document.fullscreenElement);
+
+        els.editorFullscreenBtn.classList.toggle("is-active", isFullscreen);
+        els.editorFullscreenBtn.setAttribute(
+          "aria-pressed",
+          isFullscreen ? "true" : "false",
+        );
+
+        const nextLabel = isFullscreen
+          ? "Quitter le plein écran"
+          : "Passer l’éditeur en plein écran";
+
+        els.editorFullscreenBtn.setAttribute("aria-label", nextLabel);
+        els.editorFullscreenBtn.setAttribute("title", nextLabel);
+        els.editorFullscreenBtn.dataset.toolbarLabel = isFullscreen
+          ? "Quitter plein écran"
+          : "Plein écran";
+
+        const overlayLabel =
+          els.editorFullscreenBtn.querySelector(".toolbarIconLabel");
+
+        if (overlayLabel) {
+          overlayLabel.textContent = isFullscreen
+            ? "Quitter plein écran"
+            : "Plein écran";
+        }
+      }
+
+      async function toggleEditorFullscreen() {
+        const fullscreenTarget = document.documentElement;
+
+        if (!document.fullscreenEnabled || !fullscreenTarget.requestFullscreen) {
+          alert("Le plein écran n’est pas disponible dans ce contexte.");
+          return;
+        }
+
+        try {
+          if (!document.fullscreenElement) {
+            await fullscreenTarget.requestFullscreen();
+          } else if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          }
+        } catch (error) {
+          console.error(
+            "Impossible de basculer l’éditeur en plein écran.",
+            error,
+          );
+          alert("Impossible d’activer le plein écran sur ce navigateur ou dans ce contexte.");
         }
       }
       function hideToolbarTouchLabel(button) {
@@ -11185,8 +11312,22 @@ if (document.readyState === "loading") {
         showActionFeedback("Le jeu a bien été exporté en HTML.");
       });
 
-      els.undoEditorBtn?.addEventListener("click", () => {
+           els.undoEditorBtn?.addEventListener("click", () => {
         restoreEditorSnapshot();
+      });
+
+      els.editorFullscreenBtn?.addEventListener("click", () => {
+        toggleEditorFullscreen();
+      });
+
+      document.addEventListener("fullscreenchange", () => {
+        const isFullscreen = Boolean(document.fullscreenElement);
+        document.documentElement.classList.toggle(
+          "is-editor-fullscreen",
+          isFullscreen,
+        );
+        document.body.classList.toggle("is-editor-fullscreen", isFullscreen);
+        updateEditorFullscreenButton();
       });
 
       document.getElementById("importJsonBtn").addEventListener("click", () => {
@@ -11962,13 +12103,14 @@ if (document.readyState === "loading") {
         }
       }
 
-      setupContextHelp();
+           setupContextHelp();
       syncSceneEditorPlacement();
       initDesktopDivider();
       syncEditorSectionDefaultOpenState(true);
       initToolbarLongPressHints();
       syncResponsiveToolbarPlacement();
       window.addEventListener("resize", syncResponsiveToolbarPlacement);
+      updateEditorFullscreenButton();
       renderAll();
     </script>
     <script>
