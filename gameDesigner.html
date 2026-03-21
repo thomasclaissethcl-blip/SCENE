@@ -1805,9 +1805,10 @@
       background: rgba(243, 202, 112, 0.24);
     }
 
-    .journalBoard {
+      .journalBoard {
       display: grid;
       gap: 10px;
+      min-height: 0;
     }
 
     .journalList {
@@ -1822,8 +1823,9 @@
       display: none;
     }
 
-    .journalColumn {
+       .journalColumn {
       min-height: 0;
+      height: 100%;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
       gap: 10px;
@@ -1882,12 +1884,13 @@
       background: rgba(255, 255, 255, 0.02);
     }
 
-    @media (min-width: 1170px) {
+      @media (min-width: 1170px) {
       .journalDesktopGrid {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: 12px;
         align-items: stretch;
+        height: min(70vh, 900px);
         min-height: 560px;
       }
 
