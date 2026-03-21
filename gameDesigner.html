@@ -2594,7 +2594,13 @@
                           <strong>Contenu de l'aide</strong>
                           Rédigez ici le texte qui sera affiché dans la fenêtre d’aide du jeu. Utilisez des lignes vides
                           pour séparer les
-                          paragraphes et améliorer la lisibilité.
+                          paragraphes et améliorer la lisibilité.<br>
+                        <strong>Mise en forme simple, exemples :</strong><ul>
+                              <li><b>gras :</b> Utilisez les **double étoiles**</li>
+                              <li><b>Italique :</b> utilisez les *étoiles simples*.</li>
+                              <li><b>Listes à puces :</b><br>- Pommes<br>- Poires <br>- Abricots</li>
+                              <li><b>Listes ordonnées :</b><br>1. Commencer<br>2. Continuer<br>3. Arrêter</li>
+                            </ul>
                         </div>
                         <textarea id="helpContent"></textarea>
                       </div>
@@ -3062,7 +3068,13 @@
                             Rédigez ici le récit affiché au joueur. Utilisez une ligne vide entre deux paragraphes pour
                             structurer la narration et
                             améliorer la lisibilité.
-                            <br /><br /><strong>Texte dynamique</strong> Vous pouvez afficher automatiquement la valeur
+                            <br /><br /><strong>Mise en forme simple, exemples :</strong><ul>
+                              <li><b>gras :</b> Utilisez les **double étoiles**</li>
+                              <li><b>Italique :</b> utilisez les *étoiles simples*.</li>
+                              <li><b>Listes à puces :</b><br>- Pommes<br>- Poires <br>- Abricots</li>
+                              <li><b>Listes ordonnées :</b><br>1. Commencer<br>2. Continuer<br>3. Arrêter</li>
+                            </ul>
+                            <strong>Texte dynamique</strong> Vous pouvez afficher automatiquement la valeur
                             actuelle d’une variable avec
                             la syntaxe <code>{{nomVariable}}</code>. <br /><br />
                             <strong>Exemples</strong>
@@ -9175,6 +9187,18 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
   border-radius:8px;
 }
     .scene p{margin-bottom:12px;font-size:1rem}
+        .scene ul,.scene ol,
+    .diag ul,.diag ol,
+    #helpModalBody ul,#helpModalBody ol{
+      margin:0 0 12px 1.4rem;
+      padding:0;
+    }
+
+    .scene li,
+    .diag li,
+    #helpModalBody li{
+      margin:0 0 6px;
+    }
     .muted{color:var(--muted)}
     .small{font-size:.84rem;color:var(--muted)}
     .good{color:var(--good)}
@@ -10117,6 +10141,68 @@ function normalizeInlineOperator(operator) {
         return output;
       }
 
+            function escapeRichTextHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function applyInlineMarkdown(text) {
+        let html = String(text ?? "");
+
+        html = html.replace(/\\*\\*([^\\n]+?)\\*\\*/g, "<strong>$1</strong>");
+        html = html.replace(/(^|[^*])\\*([^*\\n]+?)\\*(?!\\*)/g, "$1<em>$2</em>");
+        html = html.replace(/(^|[^_])_([^_\\n]+?)_(?!_)/g, "$1<em>$2</em>");
+
+        return html;
+      }
+
+      function renderInlineMarkdown(text) {
+        return applyInlineMarkdown(escapeRichTextHtml(text));
+      }
+
+      function renderSimpleMarkdown(text) {
+        const source = String(text ?? "").replace(/\\r\\n?/g, "\\n").trim();
+
+        if (!source) return "";
+
+        const blocks = source.split(/\\n{2,}/);
+
+        return blocks.map(function(block) {
+          const lines = block
+            .split("\\n")
+            .map(function(line) { return line.trim(); })
+            .filter(Boolean);
+
+          if (!lines.length) return "";
+
+          const isUnorderedList = lines.every(function(line) { return /^[-*]\\s+/.test(line); });
+          if (isUnorderedList) {
+            return "<ul>" + lines
+              .map(function(line) {
+                return "<li>" + renderInlineMarkdown(line.replace(/^[-*]\\s+/, "")) + "</li>";
+              })
+              .join("") + "</ul>";
+          }
+
+          const isOrderedList = lines.every(function(line) { return /^\\d+\\.\\s+/.test(line); });
+          if (isOrderedList) {
+            return "<ol>" + lines
+              .map(function(line) {
+                return "<li>" + renderInlineMarkdown(line.replace(/^\\d+\\.\\s+/, "")) + "</li>";
+              })
+              .join("") + "</ol>";
+          }
+
+          return "<p>" + lines
+            .map(function(line) { return renderInlineMarkdown(line); })
+            .join("<br>") + "</p>";
+        }).join("");
+      }
+
      function renderScene() {
         const scene = project.scenes?.[state.current];
         const el = document.getElementById("scene");
@@ -10132,11 +10218,11 @@ function normalizeInlineOperator(operator) {
             </div>\`
           : "";
 
-        let html = \`
+                let html = \`
           <div class="chapter">\${escapeHtml(scene.chapter || "")}</div>
           \${sceneImageHtml}
           <h2>\${escapeHtml(scene.title || "")}</h2>
-          \${(scene.text || []).map(p => \`<p>\${escapeHtml(resolveTemplateText(p, state))}</p>\`).join("")}
+          \${(scene.text || []).map(p => renderSimpleMarkdown(resolveTemplateText(p, state))).join("")}
         \`;
 
         if (scene.diagnosis) {
@@ -10150,13 +10236,13 @@ function normalizeInlineOperator(operator) {
               \${items.map(item => \`
                 <div class="diag">
                   <strong>\${escapeHtml(item.title)}</strong>
-                  <p style="margin-top:8px;">\${escapeHtml(resolveTemplateText(item.text, state))}</p>
+                    <div style="margin-top:8px;">\${renderSimpleMarkdown(resolveTemplateText(item.text, state))}</div>
                 </div>
               \`).join("")}
             </div>
             <div class="choices">
-              <button class="choice" data-action="restart">
-                <span class="choice-title">\${escapeHtml(project.ui?.labels?.restart || "Rejouer")}</span>
+                            <button class="choice" data-action="restart">
+                <span class="choice-title">\${renderInlineMarkdown(project.ui?.labels?.restart || "Rejouer")}</span>
                 <span class="choice-desc">Repartir du début.</span>
               </button>
             </div>
@@ -10164,8 +10250,8 @@ function normalizeInlineOperator(operator) {
         } else if (scene.ending) {
           html += \`
             <div class="choices">
-              <button class="choice" data-action="restart">
-                <span class="choice-title">\${escapeHtml(project.ui?.labels?.restart || "Rejouer")}</span>
+                            <button class="choice" data-action="restart">
+                <span class="choice-title">\${renderInlineMarkdown(project.ui?.labels?.restart || "Rejouer")}</span>
                 <span class="choice-desc">Repartir du début.</span>
               </button>
             </div>
@@ -10175,9 +10261,9 @@ function normalizeInlineOperator(operator) {
           html += \`<div class="choices">\`;
           choices.forEach((choice, index) => {
             html += \`
-              <button class="choice" data-choice="\${index}">
-                <span class="choice-title">\${escapeHtml(choice.title || "")}</span>
-                <span class="choice-desc">\${escapeHtml(choice.desc || "")}</span>
+                            <button class="choice" data-choice="\${index}">
+                <span class="choice-title">\${renderInlineMarkdown(choice.title || "")}</span>
+                <span class="choice-desc">\${renderInlineMarkdown(choice.desc || "")}</span>
               </button>
             \`;
           });
@@ -10203,12 +10289,12 @@ if (scene.ending) {
         }
       }          
 
-      function renderHelp() {
+            function renderHelp() {
         document.getElementById("gameTitle").textContent = project.meta?.title || "Jeu narratif";
         document.getElementById("gameSubtitle").textContent = project.meta?.subtitle || "";
         document.getElementById("helpModalTitle").textContent = project.help?.title || "Aide";
         document.getElementById("helpModalBody").innerHTML = (project.help?.content || [])
-          .map(p => \`<p>\${escapeHtml(p)}</p>\`)
+          .map(p => renderSimpleMarkdown(p))
           .join("");
       }
 
