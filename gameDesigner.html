@@ -9187,17 +9187,37 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
   border-radius:8px;
 }
     .scene p{margin-bottom:12px;font-size:1rem}
-        .scene ul,.scene ol,
+            .scene ul,.scene ol,
     .diag ul,.diag ol,
     #helpModalBody ul,#helpModalBody ol{
-      margin:0 0 12px 1.4rem;
-      padding:0;
+      margin:0 0 14px 1.5rem;
+      padding-left:0.4rem;
+    }
+
+    .scene ul,
+    .diag ul,
+    #helpModalBody ul{
+      list-style-type: disc;
+    }
+
+    .scene ol,
+    .diag ol,
+    #helpModalBody ol{
+      list-style-type: decimal;
     }
 
     .scene li,
     .diag li,
     #helpModalBody li{
-      margin:0 0 6px;
+      margin:0 0 8px;
+      padding-left:0.2rem;
+    }
+
+    .scene li::marker,
+    .diag li::marker,
+    #helpModalBody li::marker{
+      color: var(--accent);
+      font-weight: 700;
     }
     .muted{color:var(--muted)}
     .small{font-size:.84rem;color:var(--muted)}
