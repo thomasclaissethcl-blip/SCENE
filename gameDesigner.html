@@ -1805,7 +1805,7 @@
       background: rgba(243, 202, 112, 0.24);
     }
 
-      .journalBoard {
+    .journalBoard {
       display: grid;
       gap: 10px;
       min-height: 0;
@@ -1823,7 +1823,7 @@
       display: none;
     }
 
-       .journalColumn {
+    .journalColumn {
       min-height: 0;
       height: 100%;
       display: grid;
@@ -1884,7 +1884,7 @@
       background: rgba(255, 255, 255, 0.02);
     }
 
-      @media (min-width: 1170px) {
+    @media (min-width: 1170px) {
       .journalDesktopGrid {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -2595,12 +2595,13 @@
                           Rédigez ici le texte qui sera affiché dans la fenêtre d’aide du jeu. Utilisez des lignes vides
                           pour séparer les
                           paragraphes et améliorer la lisibilité.<br>
-                        <strong>Mise en forme simple, exemples :</strong><ul>
-                              <li><b>gras :</b> Utilisez les **double étoiles**</li>
-                              <li><b>Italique :</b> utilisez les *étoiles simples*.</li>
-                              <li><b>Listes à puces :</b><br>- Pommes<br>- Poires <br>- Abricots</li>
-                              <li><b>Listes ordonnées :</b><br>1. Commencer<br>2. Continuer<br>3. Arrêter</li>
-                            </ul>
+                          <strong>Mise en forme simple, exemples :</strong>
+                          <ul>
+                            <li><b>gras :</b> Utilisez les **double étoiles**</li>
+                            <li><b>Italique :</b> utilisez les *étoiles simples*.</li>
+                            <li><b>Listes à puces :</b><br>- Pommes<br>- Poires <br>- Abricots</li>
+                            <li><b>Listes ordonnées :</b><br>1. Commencer<br>2. Continuer<br>3. Arrêter</li>
+                          </ul>
                         </div>
                         <textarea id="helpContent"></textarea>
                       </div>
@@ -3068,7 +3069,8 @@
                             Rédigez ici le récit affiché au joueur. Utilisez une ligne vide entre deux paragraphes pour
                             structurer la narration et
                             améliorer la lisibilité.
-                            <br /><br /><strong>Mise en forme simple, exemples :</strong><ul>
+                            <br /><br /><strong>Mise en forme simple, exemples :</strong>
+                            <ul>
                               <li><b>gras :</b> Utilisez les **double étoiles**</li>
                               <li><b>Italique :</b> utilisez les *étoiles simples*.</li>
                               <li><b>Listes à puces :</b><br>- Pommes<br>- Poires <br>- Abricots</li>
@@ -3389,7 +3391,7 @@
                 <p class="muted small">Seules les scènes reliées à au moins une autre scène sont affichées.</p>
               </div>
               <div class="graphControls">
-                <button id="refreshGraphBtn" type="button" class="secondary" style="display: none">Mettre à
+                <button id="refreshGraphBtn" type="button" class="secondary">Mettre à
                   jour</button>
                 <button id="graphZoomOutBtn" type="button" class="secondary">Zoom -</button>
                 <button id="graphResetViewBtn" type="button" class="secondary">Vue complète</button>
@@ -7269,7 +7271,122 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       restoreChoicesUiState(previousUiState);
     }
 
+    const STRUCTURE_ANALYSIS_COST_LIMIT = 450;
+const STRUCTURE_ANALYSIS_INVALID_GOTO_LIMIT = 40;
+const STRUCTURE_ANALYSIS_SELF_LOOP_LIMIT = 20;
+
+function getStructureAnalysisComplexity() {
+  const scenesById = project.scenes || {};
+  const sceneIds = Object.keys(scenesById);
+  const sceneCount = sceneIds.length;
+
+  let choiceCount = 0;
+  let invalidGotoCount = 0;
+  let selfLoopCount = 0;
+  let backLinkCount = 0;
+
+  sceneIds.forEach((sceneId, sceneIndex) => {
+    const scene = scenesById[sceneId];
+    const choices = Array.isArray(scene.choices) ? scene.choices : [];
+
+    choices.forEach((choice) => {
+      choiceCount += 1;
+
+      const target = choice.goto;
+
+      if (!target || !scenesById[target]) {
+        invalidGotoCount += 1;
+        return;
+      }
+
+      if (target === sceneId) {
+        selfLoopCount += 1;
+        return;
+      }
+
+      const targetIndex = sceneIds.indexOf(target);
+
+      if (targetIndex !== -1 && targetIndex <= sceneIndex) {
+        backLinkCount += 1;
+      }
+    });
+  });
+
+  const score =
+    sceneCount +
+    (choiceCount * 2) +
+    (backLinkCount * 6) +
+    (selfLoopCount * 12) +
+    (invalidGotoCount * 8);
+
+  return {
+    sceneCount,
+    choiceCount,
+    invalidGotoCount,
+    selfLoopCount,
+    backLinkCount,
+    score,
+  };
+}
+
+function hasTooManyScenesForStructureAnalysis() {
+  const complexity = getStructureAnalysisComplexity();
+
+  if (complexity.invalidGotoCount >= STRUCTURE_ANALYSIS_INVALID_GOTO_LIMIT) {
+    return true;
+  }
+
+  if (complexity.selfLoopCount >= STRUCTURE_ANALYSIS_SELF_LOOP_LIMIT) {
+    return true;
+  }
+
+  return complexity.score > STRUCTURE_ANALYSIS_COST_LIMIT;
+}
+
+    function renderStructureAnalysisLimitMessage() {
+  const complexity = getStructureAnalysisComplexity();
+  const message =
+    `Analyse désactivée pour ce projet. ` +
+    `Scènes : ${complexity.sceneCount}. ` +
+    `Choix : ${complexity.choiceCount}. ` +
+    `Retours arrière : ${complexity.backLinkCount}. ` +
+    `Boucles directes : ${complexity.selfLoopCount}. ` +
+    `Destinations invalides : ${complexity.invalidGotoCount}. ` +
+    `Score de complexité : ${complexity.score}.`;
+
+  if (els.validationBox) {
+    els.validationBox.innerHTML = `
+      <div class="notice attention">${escapeHtml(message)}</div>
+    `;
+  }
+
+  if (els.jsonPreview) {
+    els.jsonPreview.textContent = message;
+  }
+
+  const refreshBtn = document.getElementById("refreshJsonAnalysisBtn");
+  if (refreshBtn) {
+    refreshBtn.disabled = true;
+  }
+}
+
     function renderJsonPreview() {
+      const refreshBtn = document.getElementById("refreshJsonAnalysisBtn");
+
+      if (hasTooManyScenesForStructureAnalysis()) {
+        els.jsonPreview.textContent = "Votre projet contient trop de scènes pour lancer l’analyse.";
+
+        if (refreshBtn) {
+          refreshBtn.disabled = true;
+        }
+
+        return;
+      }
+
+      if (refreshBtn) {
+        refreshBtn.disabled = false;
+      }
+
       els.jsonPreview.textContent = JSON.stringify(project, null, 2);
     }
 
@@ -7509,6 +7626,12 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
     }
 
     function renderValidationIfNeeded(force = false) {
+      if (hasTooManyScenesForStructureAnalysis()) {
+        renderStructureAnalysisLimitMessage();
+        validationDirty = false;
+        return;
+      }
+
       if (!force) {
         renderStaleValidationNotice();
         return;
