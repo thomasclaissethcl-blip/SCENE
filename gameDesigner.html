@@ -3356,11 +3356,13 @@
                 <p class="muted small">Vue utile pour contrôle, débogage ou archivage.</p>
               </div>
 
-              <div class="graphControls">
+                          <div class="graphControls">
                 <button id="refreshJsonAnalysisBtn" type="button" class="secondary">Mettre à jour</button>
+                <button id="analyzeTextsBtn" type="button" class="secondary">Analyser les textes</button>
               </div>
             </div>
             <div id="validationBox" class="stack"></div>
+            <div id="textAnalysisBox" class="stack"></div>
             <pre id="jsonPreview" class="jsonPreview"></pre>
           </div>
         </div>
@@ -5035,9 +5037,11 @@
       incomingScenesList: document.getElementById("incomingScenesList"),
       choicesList: document.getElementById("choicesList"),
 
-      jsonPreview: document.getElementById("jsonPreview"),
+           jsonPreview: document.getElementById("jsonPreview"),
       validationBox: document.getElementById("validationBox"),
+      textAnalysisBox: document.getElementById("textAnalysisBox"),
       refreshJsonAnalysisBtn: document.getElementById("refreshJsonAnalysisBtn"),
+      analyzeTextsBtn: document.getElementById("analyzeTextsBtn"),
       graphViewport: document.getElementById("graphViewport"),
       graphSvg: document.getElementById("graphSvg"),
       graphEmptyState: document.getElementById("graphEmptyState"),
@@ -6221,60 +6225,60 @@
           });
 
           const rawShowIf = String(choice.showIf || "").trim();
-if (rawShowIf) {
-  const parseShowIfConditionForValidation = (text) => {
-    const value = String(text || "").trim();
-    if (!value) return null;
+          if (rawShowIf) {
+            const parseShowIfConditionForValidation = (text) => {
+              const value = String(text || "").trim();
+              if (!value) return null;
 
-    const comparisonMatch = value.match(/^(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);
-    if (comparisonMatch) {
-      const [, variableRaw, operator, valueRaw] = comparisonMatch;
-      return {
-        variable: variableRaw.trim(),
-        operator,
-        value: valueRaw.trim()
-      };
-    }
+              const comparisonMatch = value.match(/^(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);
+              if (comparisonMatch) {
+                const [, variableRaw, operator, valueRaw] = comparisonMatch;
+                return {
+                  variable: variableRaw.trim(),
+                  operator,
+                  value: valueRaw.trim()
+                };
+              }
 
-    const booleanMatch = value.match(/^([A-Za-z_][\w]*)$/);
-    if (booleanMatch) {
-      return {
-        variable: booleanMatch[1],
-        operator: "==",
-        value: true
-      };
-    }
+              const booleanMatch = value.match(/^([A-Za-z_][\w]*)$/);
+              if (booleanMatch) {
+                return {
+                  variable: booleanMatch[1],
+                  operator: "==",
+                  value: true
+                };
+              }
 
-    return null;
-  };
+              return null;
+            };
 
-  rawShowIf
-    .split("&&")
-    .map(part => part.trim())
-    .filter(Boolean)
-    .forEach(part => {
-      const parsed = parseShowIfConditionForValidation(part);
+            rawShowIf
+              .split("&&")
+              .map(part => part.trim())
+              .filter(Boolean)
+              .forEach(part => {
+                const parsed = parseShowIfConditionForValidation(part);
 
-      if (!parsed) {
-        errors.push(`La scène '${id}', choix ${idx + 1}, contient une condition d’affichage invalide : '${part}'.`);
-        return;
-      }
+                if (!parsed) {
+                  errors.push(`La scène '${id}', choix ${idx + 1}, contient une condition d’affichage invalide : '${part}'.`);
+                  return;
+                }
 
-      const variableRaw = parsed.variable.trim();
-      const variableKnown =
-        varNames.includes(variableRaw) ||
-        proj.variables.some(v =>
-          String(v.label || "").trim() === variableRaw ||
-          String(v.label || "").trim().toLowerCase() === variableRaw.toLowerCase() ||
-          String(v.name || "").trim().toLowerCase() === variableRaw.toLowerCase()
-        ) ||
-        ["score", "risk", "step"].includes(variableRaw.toLowerCase());
+                const variableRaw = parsed.variable.trim();
+                const variableKnown =
+                  varNames.includes(variableRaw) ||
+                  proj.variables.some(v =>
+                    String(v.label || "").trim() === variableRaw ||
+                    String(v.label || "").trim().toLowerCase() === variableRaw.toLowerCase() ||
+                    String(v.name || "").trim().toLowerCase() === variableRaw.toLowerCase()
+                  ) ||
+                  ["score", "risk", "step"].includes(variableRaw.toLowerCase());
 
-      if (!variableKnown) {
-        errors.push(`La scène '${id}', choix ${idx + 1}, utilise une variable inconnue dans la condition d’affichage : '${variableRaw}'.`);
-      }
-    });
-}
+                if (!variableKnown) {
+                  errors.push(`La scène '${id}', choix ${idx + 1}, utilise une variable inconnue dans la condition d’affichage : '${variableRaw}'.`);
+                }
+              });
+          }
         });
       });
 
@@ -7469,6 +7473,242 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       return cachedValidationResult;
     }
 
+        function getKnownTemplateVariableNames() {
+      return new Set(
+        [
+          ...RESERVED_VARS.map((v) => String(v.name || "").trim().toLowerCase()),
+          ...(project.variables || []).flatMap((v) => {
+            const names = [];
+            const technicalName = String(v.name || "").trim().toLowerCase();
+            const labelName = String(v.label || "").trim().toLowerCase();
+
+            if (technicalName) names.push(technicalName);
+            if (labelName) names.push(labelName);
+
+            return names;
+          }),
+        ].filter(Boolean)
+      );
+    }
+
+    function collectRenderedTextEntries(proj) {
+      const entries = [];
+
+      const pushEntry = (location, value) => {
+        if (typeof value !== "string") return;
+        if (!value.trim()) return;
+        entries.push({ location, text: value });
+      };
+
+      pushEntry("Libellé du bouton recommencer", proj.ui?.labels?.restart || "");
+
+      (proj.help?.content || []).forEach((text, index) => {
+        pushEntry(`Aide, paragraphe ${index + 1}`, text);
+      });
+
+      (proj.diagnostics || []).forEach((diag, diagIndex) => {
+        pushEntry(`Diagnostic ${diagIndex + 1}, titre`, diag.title || "");
+        pushEntry(`Diagnostic ${diagIndex + 1}, texte`, diag.text || "");
+      });
+
+      Object.entries(proj.scenes || {}).forEach(([sceneId, scene]) => {
+        pushEntry(`Scène '${sceneId}', chapitre`, scene.chapter || "");
+        pushEntry(`Scène '${sceneId}', titre`, scene.title || "");
+
+        (scene.text || []).forEach((text, index) => {
+          pushEntry(`Scène '${sceneId}', paragraphe ${index + 1}`, text);
+        });
+
+        (scene.choices || []).forEach((choice, index) => {
+          pushEntry(`Scène '${sceneId}', choix ${index + 1}, titre`, choice.title || "");
+          pushEntry(`Scène '${sceneId}', choix ${index + 1}, description`, choice.desc || "");
+        });
+      });
+
+      return entries;
+    }
+
+    function isKnownTemplateVariable(variableName, knownNames) {
+      const normalized = String(variableName || "").trim().toLowerCase();
+      if (!normalized) return false;
+      return knownNames.has(normalized);
+    }
+
+    function analyzeRenderedTexts(proj) {
+      const issues = [];
+      const knownNames = getKnownTemplateVariableNames();
+      const entries = collectRenderedTextEntries(proj);
+
+      const pushIssue = (kind, location, message, sample = "") => {
+        issues.push({
+          kind,
+          location,
+          message,
+          sample,
+        });
+      };
+
+      entries.forEach((entry) => {
+        const text = entry.text;
+        const location = entry.location;
+
+                       const templateControlTokens = [
+          ...text.matchAll(/\{\{if\b[\s\S]*?\}\}|\{\{endif\}\}/g),
+        ];
+
+        const openIfStack = [];
+
+        templateControlTokens.forEach((match) => {
+          const token = match[0];
+
+          if (/^\{\{if\b[\s\S]*?\}\}$/.test(token)) {
+            openIfStack.push(token);
+            return;
+          }
+
+          if (token === "{{endif}}") {
+            if (!openIfStack.length) {
+              pushIssue(
+                "error",
+                location,
+                "Balise {{endif}} en trop ou sans bloc {{if}} correspondant.",
+                text
+              );
+              return;
+            }
+
+            openIfStack.pop();
+          }
+        });
+
+        if (openIfStack.length > 0) {
+          pushIssue(
+            "error",
+            location,
+            "Bloc {{if ...}} non refermé par {{endif}}.",
+            text
+          );
+        }
+
+              const TEMPLATE_RESERVED_KEYWORDS = new Set(["if", "endif"]);
+
+        const variableTokens = [...text.matchAll(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g)];
+        variableTokens.forEach((match) => {
+          const variableName = match[1];
+          const normalizedVariableName = String(variableName || "").trim().toLowerCase();
+
+          if (TEMPLATE_RESERVED_KEYWORDS.has(normalizedVariableName)) {
+            return;
+          }
+
+          if (!isKnownTemplateVariable(variableName, knownNames)) {
+            pushIssue(
+              "error",
+              location,
+              `Variable inconnue dans un texte : '${variableName}'.`,
+              text
+            );
+          }
+        });
+
+        const inlineIfBooleanTokens = [...text.matchAll(/\{\{if\s+([A-Za-z0-9_]+)\}\}/g)];
+        inlineIfBooleanTokens.forEach((match) => {
+          const variableName = match[1];
+          if (!isKnownTemplateVariable(variableName, knownNames)) {
+            pushIssue(
+              "error",
+              location,
+              `Variable inconnue dans une condition de texte : '${variableName}'.`,
+              text
+            );
+          }
+        });
+
+        const inlineIfComparisonTokens = [
+          ...text.matchAll(/\{\{if\s+([A-Za-z0-9_]+)\s*(==|!=|>=|<=|=>|=<|=|>|<)\s*([^}]+?)\s*\}\}/g),
+        ];
+        inlineIfComparisonTokens.forEach((match) => {
+          const variableName = match[1];
+          if (!isKnownTemplateVariable(variableName, knownNames)) {
+            pushIssue(
+              "error",
+              location,
+              `Variable inconnue dans une condition de texte : '${variableName}'.`,
+              text
+            );
+          }
+        });
+
+        const malformedIfTokens = [...text.matchAll(/\{\{if\b(.*?)\}\}/g)];
+        malformedIfTokens.forEach((match) => {
+          const rawToken = match[0];
+          const rawContent = String(match[1] || "").trim();
+
+          const isSimpleBoolean = /^[A-Za-z0-9_]+$/.test(rawContent);
+          const isComparison = /^([A-Za-z0-9_]+)\s*(==|!=|>=|<=|=>|=<|=|>|<)\s*.+$/.test(rawContent);
+
+          if (!isSimpleBoolean && !isComparison) {
+            pushIssue(
+              "error",
+              location,
+              `Syntaxe invalide pour une condition de texte : '${rawToken}'.`,
+              text
+            );
+          }
+        });
+
+        const stripped = text
+          .replace(/\{\{if\s+([A-Za-z0-9_]+)\s*(==|!=|>=|<=|=>|=<|=|>|<)\s*([^}]+?)\s*\}\}/g, "")
+          .replace(/\{\{if\s+([A-Za-z0-9_]+)\}\}/g, "")
+          .replace(/\{\{endif\}\}/g, "")
+          .replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, "");
+
+        if (stripped.includes("{{") || stripped.includes("}}")) {
+          pushIssue(
+            "warning",
+            location,
+            "Des délimiteurs '{{' ou '}}' restent présents. Cela ressemble à une balise incomplète ou mal formée.",
+            text
+          );
+        }
+      });
+
+      return issues;
+    }
+
+    function renderTextAnalysis() {
+      if (!els.textAnalysisBox) return;
+
+      const issues = analyzeRenderedTexts(project);
+
+      if (!issues.length) {
+        els.textAnalysisBox.innerHTML = `
+          <div class="notice">
+            Analyse des textes terminée. Aucune anomalie détectée dans les chaînes rendues.
+          </div>
+        `;
+        return;
+      }
+
+      const blocks = issues.map((issue) => `
+        <div class="notice ${issue.kind === "error" ? "warn" : ""}">
+          <strong>${issue.kind === "error" ? "Erreur de texte" : "Alerte de texte"}</strong><br>
+          ${escapeHtml(issue.location)}<br>
+          ${escapeHtml(issue.message)}
+          <div class="small muted" style="margin-top:8px;">
+            Extrait : ${escapeHtml(issue.sample)}
+          </div>
+        </div>
+      `);
+
+      els.textAnalysisBox.innerHTML = `
+        <div class="notice">
+          ${issues.length} anomalie(s) détectée(s) dans les textes rendus.
+        </div>
+        ${blocks.join("")}
+      `;
+    }
+
     function getValidationIssueKey(kind, text) {
       return `${kind}::${text}`;
     }
@@ -7738,6 +7978,15 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
   </div>
 </div>
 `;
+
+        if (els.textAnalysisBox) {
+          els.textAnalysisBox.innerHTML = `
+<div class="notice">
+  L’analyse des textes n’a pas encore été lancée.
+</div>
+`;
+        }
+
       } else {
         els.validationBox.innerHTML = `
 <div class="stack">
@@ -8550,7 +8799,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       });
     }
 
-    function invalidatePerformanceCaches() {
+        function invalidatePerformanceCaches() {
       cachedValidationResult = null;
       cachedValidationSignature = "";
       cachedGraphData = null;
@@ -8559,6 +8808,14 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
 
       validationDirty = true;
       graphDirty = true;
+
+      if (els.textAnalysisBox) {
+        els.textAnalysisBox.innerHTML = `
+          <div class="notice">
+            Lancez « Analyser les textes » pour détecter d'éventuelles erreurs dans les champs de texte.
+          </div>
+        `;
+      }
     }
 
     function getSceneEditorScrollContainer() {
@@ -11046,6 +11303,10 @@ if (document.readyState === "loading") {
       invalidatePerformanceCaches();
       renderJsonPreview();
       renderValidationIfNeeded(true);
+    });
+
+        els.analyzeTextsBtn?.addEventListener("click", () => {
+      renderTextAnalysis();
     });
 
     els.refreshGraphBtn?.addEventListener("click", () => {
