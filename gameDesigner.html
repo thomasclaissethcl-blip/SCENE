@@ -6202,6 +6202,7 @@
         if (!scene.title?.trim()) {
           warnings.push(`La scène '${id}' n’a pas de titre.`);
         }
+
         scene.choices.forEach((choice, idx) => {
           if (!choice.goto || !proj.scenes[choice.goto]) {
             errors.push(`La scène '${id}', choix ${idx + 1}, pointe vers une cible inexistante : '${choice.goto}'.`);
@@ -6218,6 +6219,62 @@
               errors.push(`La scène '${id}', choix ${idx + 1}, incrémente une variable inconnue : '${flagName}'.`);
             }
           });
+
+          const rawShowIf = String(choice.showIf || "").trim();
+if (rawShowIf) {
+  const parseShowIfConditionForValidation = (text) => {
+    const value = String(text || "").trim();
+    if (!value) return null;
+
+    const comparisonMatch = value.match(/^(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);
+    if (comparisonMatch) {
+      const [, variableRaw, operator, valueRaw] = comparisonMatch;
+      return {
+        variable: variableRaw.trim(),
+        operator,
+        value: valueRaw.trim()
+      };
+    }
+
+    const booleanMatch = value.match(/^([A-Za-z_][\w]*)$/);
+    if (booleanMatch) {
+      return {
+        variable: booleanMatch[1],
+        operator: "==",
+        value: true
+      };
+    }
+
+    return null;
+  };
+
+  rawShowIf
+    .split("&&")
+    .map(part => part.trim())
+    .filter(Boolean)
+    .forEach(part => {
+      const parsed = parseShowIfConditionForValidation(part);
+
+      if (!parsed) {
+        errors.push(`La scène '${id}', choix ${idx + 1}, contient une condition d’affichage invalide : '${part}'.`);
+        return;
+      }
+
+      const variableRaw = parsed.variable.trim();
+      const variableKnown =
+        varNames.includes(variableRaw) ||
+        proj.variables.some(v =>
+          String(v.label || "").trim() === variableRaw ||
+          String(v.label || "").trim().toLowerCase() === variableRaw.toLowerCase() ||
+          String(v.name || "").trim().toLowerCase() === variableRaw.toLowerCase()
+        ) ||
+        ["score", "risk", "step"].includes(variableRaw.toLowerCase());
+
+      if (!variableKnown) {
+        errors.push(`La scène '${id}', choix ${idx + 1}, utilise une variable inconnue dans la condition d’affichage : '${variableRaw}'.`);
+      }
+    });
+}
         });
       });
 
@@ -7272,103 +7329,103 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
     }
 
     const STRUCTURE_ANALYSIS_COST_LIMIT = 450;
-const STRUCTURE_ANALYSIS_INVALID_GOTO_LIMIT = 40;
-const STRUCTURE_ANALYSIS_SELF_LOOP_LIMIT = 20;
+    const STRUCTURE_ANALYSIS_INVALID_GOTO_LIMIT = 40;
+    const STRUCTURE_ANALYSIS_SELF_LOOP_LIMIT = 20;
 
-function getStructureAnalysisComplexity() {
-  const scenesById = project.scenes || {};
-  const sceneIds = Object.keys(scenesById);
-  const sceneCount = sceneIds.length;
+    function getStructureAnalysisComplexity() {
+      const scenesById = project.scenes || {};
+      const sceneIds = Object.keys(scenesById);
+      const sceneCount = sceneIds.length;
 
-  let choiceCount = 0;
-  let invalidGotoCount = 0;
-  let selfLoopCount = 0;
-  let backLinkCount = 0;
+      let choiceCount = 0;
+      let invalidGotoCount = 0;
+      let selfLoopCount = 0;
+      let backLinkCount = 0;
 
-  sceneIds.forEach((sceneId, sceneIndex) => {
-    const scene = scenesById[sceneId];
-    const choices = Array.isArray(scene.choices) ? scene.choices : [];
+      sceneIds.forEach((sceneId, sceneIndex) => {
+        const scene = scenesById[sceneId];
+        const choices = Array.isArray(scene.choices) ? scene.choices : [];
 
-    choices.forEach((choice) => {
-      choiceCount += 1;
+        choices.forEach((choice) => {
+          choiceCount += 1;
 
-      const target = choice.goto;
+          const target = choice.goto;
 
-      if (!target || !scenesById[target]) {
-        invalidGotoCount += 1;
-        return;
+          if (!target || !scenesById[target]) {
+            invalidGotoCount += 1;
+            return;
+          }
+
+          if (target === sceneId) {
+            selfLoopCount += 1;
+            return;
+          }
+
+          const targetIndex = sceneIds.indexOf(target);
+
+          if (targetIndex !== -1 && targetIndex <= sceneIndex) {
+            backLinkCount += 1;
+          }
+        });
+      });
+
+      const score =
+        sceneCount +
+        (choiceCount * 2) +
+        (backLinkCount * 6) +
+        (selfLoopCount * 12) +
+        (invalidGotoCount * 8);
+
+      return {
+        sceneCount,
+        choiceCount,
+        invalidGotoCount,
+        selfLoopCount,
+        backLinkCount,
+        score,
+      };
+    }
+
+    function hasTooManyScenesForStructureAnalysis() {
+      const complexity = getStructureAnalysisComplexity();
+
+      if (complexity.invalidGotoCount >= STRUCTURE_ANALYSIS_INVALID_GOTO_LIMIT) {
+        return true;
       }
 
-      if (target === sceneId) {
-        selfLoopCount += 1;
-        return;
+      if (complexity.selfLoopCount >= STRUCTURE_ANALYSIS_SELF_LOOP_LIMIT) {
+        return true;
       }
 
-      const targetIndex = sceneIds.indexOf(target);
-
-      if (targetIndex !== -1 && targetIndex <= sceneIndex) {
-        backLinkCount += 1;
-      }
-    });
-  });
-
-  const score =
-    sceneCount +
-    (choiceCount * 2) +
-    (backLinkCount * 6) +
-    (selfLoopCount * 12) +
-    (invalidGotoCount * 8);
-
-  return {
-    sceneCount,
-    choiceCount,
-    invalidGotoCount,
-    selfLoopCount,
-    backLinkCount,
-    score,
-  };
-}
-
-function hasTooManyScenesForStructureAnalysis() {
-  const complexity = getStructureAnalysisComplexity();
-
-  if (complexity.invalidGotoCount >= STRUCTURE_ANALYSIS_INVALID_GOTO_LIMIT) {
-    return true;
-  }
-
-  if (complexity.selfLoopCount >= STRUCTURE_ANALYSIS_SELF_LOOP_LIMIT) {
-    return true;
-  }
-
-  return complexity.score > STRUCTURE_ANALYSIS_COST_LIMIT;
-}
+      return complexity.score > STRUCTURE_ANALYSIS_COST_LIMIT;
+    }
 
     function renderStructureAnalysisLimitMessage() {
-  const complexity = getStructureAnalysisComplexity();
-  const message =
-    `Analyse désactivée pour ce projet. ` +
-    `Scènes : ${complexity.sceneCount}. ` +
-    `Choix : ${complexity.choiceCount}. ` +
-    `Retours arrière : ${complexity.backLinkCount}. ` +
-    `Boucles directes : ${complexity.selfLoopCount}. ` +
-    `Destinations invalides : ${complexity.invalidGotoCount}. ` +
-    `Score de complexité : ${complexity.score}.`;
+      const complexity = getStructureAnalysisComplexity();
+      const message =
+        `Analyse désactivée pour ce projet. ` +
+        `Scènes : ${complexity.sceneCount}. ` +
+        `Choix : ${complexity.choiceCount}. ` +
+        `Retours arrière : ${complexity.backLinkCount}. ` +
+        `Boucles directes : ${complexity.selfLoopCount}. ` +
+        `Destinations invalides : ${complexity.invalidGotoCount}. ` +
+        `Score de complexité : ${complexity.score}.`;
 
-  if (els.validationBox) {
-    els.validationBox.innerHTML = `
+      if (els.validationBox) {
+        els.validationBox.innerHTML = `
       <div class="notice attention">${escapeHtml(message)}</div>
     `;
-  }
+      }
 
-  if (els.jsonPreview) {
-    els.jsonPreview.textContent = message;
-  }
+      if (els.jsonPreview) {
+        els.jsonPreview.textContent = message;
+      }
 
-  const refreshBtn = document.getElementById("refreshJsonAnalysisBtn");
-  if (refreshBtn) {
-    refreshBtn.disabled = true;
-  }
-}
+      const refreshBtn = document.getElementById("refreshJsonAnalysisBtn");
+      if (refreshBtn) {
+        refreshBtn.disabled = true;
+      }
+    }
 
     function renderJsonPreview() {
       const refreshBtn = document.getElementById("refreshJsonAnalysisBtn");
@@ -8923,7 +8980,7 @@ function hasTooManyScenesForStructureAnalysis() {
         renderValidationIfNeeded();
       }
 
-                 if (tab === "graph") {
+      if (tab === "graph") {
         invalidatePerformanceCaches();
         closeGraphContextMenu();
         renderStructureGraphIfNeeded(true);
@@ -9685,9 +9742,15 @@ font-style:italic;
         if (!variable) return rawValue;
 
         if (variable.type === "boolean") {
-          if (rawValue === true || rawValue === "true") return true;
-          if (rawValue === false || rawValue === "false") return false;
-          return !!rawValue;
+          const normalized =
+            typeof rawValue === "string"
+              ? rawValue.trim().toLowerCase()
+              : rawValue;
+
+          if (normalized === true || normalized === "true" || normalized === 1 || normalized === "1") return true;
+          if (normalized === false || normalized === "false" || normalized === 0 || normalized === "0") return false;
+
+          return Boolean(rawValue);
         }
 
         if (variable.type === "number") {
@@ -9698,33 +9761,47 @@ font-style:italic;
       }
 
       function findVariable(name) {
-        const builtins = [
-          { name: "score", type: "number" },
-          { name: "risk", type: "number" },
-          { name: "step", type: "number" }
-        ];
-        return builtins.find(v => v.name === name) || (project.variables || []).find(v => v.name === name);
-      }
+  const query = String(name || "").trim();
+  const builtins = [
+    { name: "score", type: "number" },
+    { name: "risk", type: "number" },
+    { name: "step", type: "number" }
+  ];
+  const customVars = project.variables || [];
+
+  return (
+    builtins.find(v => v.name === query) ||
+    customVars.find(v => v.name === query) ||
+    builtins.find(v => v.name.toLowerCase() === query.toLowerCase()) ||
+    customVars.find(v => v.name.toLowerCase() === query.toLowerCase()) ||
+    customVars.find(v => String(v.label || "").trim() === query) ||
+    customVars.find(v => String(v.label || "").trim().toLowerCase() === query.toLowerCase()) ||
+    null
+  );
+}
 
       function evaluateCondition(state, cond) {
-        let left;
-        if (cond.variable === "score") left = state.score;
-        else if (cond.variable === "risk") left = state.risk;
-        else if (cond.variable === "step") left = state.step;
-        else left = state.flags[cond.variable];
+  const variableDef = findVariable(cond.variable);
+  const resolvedName = variableDef?.name || cond.variable;
 
-        const right = parseConditionValue(cond.variable, cond.value);
+  let left;
+  if (resolvedName === "score") left = state.score;
+  else if (resolvedName === "risk") left = state.risk;
+  else if (resolvedName === "step") left = state.step;
+  else left = state.flags[resolvedName];
 
-        switch (cond.operator) {
-          case "==": return left == right;
-          case "!=": return left != right;
-          case ">": return left > right;
-          case "<": return left < right;
-          case ">=": return left >= right;
-          case "<=": return left <= right;
-          default: return false;
-        }
-      }
+  const right = parseConditionValue(resolvedName, cond.value);
+
+  switch (cond.operator) {
+    case "==": return left == right;
+    case "!=": return left != right;
+    case ">": return left > right;
+    case "<": return left < right;
+    case ">=": return left >= right;
+    case "<=": return left <= right;
+    default: return false;
+  }
+}
 
       function evaluateConditions(state, conditions = [], operator = "AND") {
         if (!conditions.length) return true;
@@ -9734,19 +9811,31 @@ font-style:italic;
         return conditions.every(cond => evaluateCondition(state, cond));
       }
 
-            function parseChoiceCondition(conditionText) {
-        const text = String(conditionText || "").trim();
-        if (!text) return null;
+      function parseChoiceCondition(conditionText) {
+  const text = String(conditionText || "").trim();
+  if (!text) return null;
 
-        const match = text.match(/^([A-Za-z_][\w]*)\s*(==|!=|>=|<=|>|<)?\s*(.*)$/);
-        if (!match) return null;
+  const comparisonMatch = text.match(/^(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);
+  if (comparisonMatch) {
+    const [, variableRaw, operator, valueRaw] = comparisonMatch;
+    return {
+      variable: variableRaw.trim(),
+      operator,
+      value: valueRaw.trim()
+    };
+  }
 
-        const [, variable, operatorRaw, valueRaw] = match;
-        const operator = operatorRaw || "==";
-        const value = operatorRaw ? valueRaw.trim() : true;
+  const booleanMatch = text.match(/^([A-Za-z_][\w]*)$/);
+  if (booleanMatch) {
+    return {
+      variable: booleanMatch[1],
+      operator: "==",
+      value: true
+    };
+  }
 
-        return { variable, operator, value };
-      }
+  return null;
+}
 
       function evaluateChoiceVisibility(state, showIf) {
         const raw = String(showIf || "").trim();
@@ -10231,20 +10320,23 @@ function normalizeInlineOperator(operator) {
       }
 
       function evaluateInlineCondition(key, operator, rawValue, state) {
-        const normalizedOperator = normalizeInlineOperator(operator);
-        const left = getStateValue(key, state);
-        const right = parseConditionValue(key, rawValue);
+  const normalizedOperator = normalizeInlineOperator(operator);
+  const variableDef = findVariable(key);
+  const resolvedKey = variableDef?.name || String(key || "").trim();
 
-        switch (normalizedOperator) {
-          case "==": return left == right;
-          case "!=": return left != right;
-          case ">": return left > right;
-          case "<": return left < right;
-          case ">=": return left >= right;
-          case "<=": return left <= right;
-          default: return false;
-        }
-      }
+  const left = getStateValue(resolvedKey, state);
+  const right = parseConditionValue(resolvedKey, rawValue);
+
+  switch (normalizedOperator) {
+    case "==": return left == right;
+    case "!=": return left != right;
+    case ">": return left > right;
+    case "<": return left < right;
+    case ">=": return left >= right;
+    case "<=": return left <= right;
+    default: return false;
+  }
+}
 
       function resolveTemplateText(text, state) {
         let output = String(text);
@@ -10262,26 +10354,28 @@ function normalizeInlineOperator(operator) {
         );
 
         output = output.replace(
-          /\\{\\{if\\s+([a-zA-Z0-9_]+)\\}\\}([\\s\\S]*?)\\{\\{endif\\}\\}/g,
-          function(match, key, content) {
-            const value = getStateValue(key.trim(), state);
-            return value ? content : "";
-          }
-        );
+  /\{\{if\s+([a-zA-Z0-9_]+)\}\}([\s\S]*?)\{\{endif\}\}/g,
+  function(match, key, content) {
+    const variableDef = findVariable(key);
+    const resolvedKey = variableDef?.name || key.trim();
+    const value = getStateValue(resolvedKey, state);
+    return value ? content : "";
+  }
+);
 
-        output = output.replace(
-          /\\{\\{\\s*([a-zA-Z0-9_]+)\\s*\\}\\}/g,
-          function(match, key) {
-            const cleanKey = key.trim();
-            const value = getStateValue(cleanKey, state);
+              output = output.replace(
+  /\{\{if\s+([A-Za-z0-9_]+)\s*(==|!=|>=|<=|=>|=<|=|>|<)\s*([^}]+?)\s*\}\}([\s\S]*?)\{\{endif\}\}/g,
+  function(match, key, operator, rawValue, content) {
+    return evaluateInlineCondition(
+      key.trim(),
+      operator,
+      rawValue.trim(),
+      state
+    ) ? content : "";
+  }
+);
 
-            if (value === undefined) {
-              return "{{" + cleanKey + "}}";
-            }
-
-            return formatStateValue(cleanKey, value);
-          }
-        );
+        output = output.replace(/\{\{endif\}\}/g, "");
 
         return output;
       }
@@ -10300,8 +10394,6 @@ function normalizeInlineOperator(operator) {
 
         html = html.replace(/\\*\\*([^\\n]+?)\\*\\*/g, "<strong>$1</strong>");
         html = html.replace(/(^|[^*])\\*([^*\\n]+?)\\*(?!\\*)/g, "$1<em>$2</em>");
-        html = html.replace(/(^|[^_])_([^_\\n]+?)_(?!_)/g, "$1<em>$2</em>");
-
         return html;
       }
 
