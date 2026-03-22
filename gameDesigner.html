@@ -2250,9 +2250,9 @@
     <section class="card">
       <div class="tabs" style="margin-bottom: 1em">
         <button class="tabBtn active" data-tab="editor">Éditeur</button>
-        <button class="tabBtn" data-tab="preview">Prévisualisation</button>
-        <button class="tabBtn" data-tab="json" data-simple-hide="advanced">Analyse structure</button>
         <button class="tabBtn" data-simple-hide="advanced" data-tab="graph">Graphe des scènes</button>
+        <button class="tabBtn" data-tab="preview">Prévisualisation</button>       
+        <button class="tabBtn" data-tab="json" data-simple-hide="advanced">Analyse projet</button>
         <button class="tabBtn" data-tab="journal">Journal</button>
       </div>
       <div class="panel">
@@ -2305,8 +2305,8 @@
                 </button>
 
                 <button class="tabBtn desktopEditorTabBtn desktopSidebarIconBtn" type="button" data-desktop-tab="rules"
-                  data-simple-hide="advanced" aria-label="Règles d'effondrement"
-                  data-sidebar-label="Règles d'effondrement">
+                  data-simple-hide="advanced" aria-label="Règles d'interruption"
+                  data-sidebar-label="Règles d'interruption">
                   <span class="desktopSidebarIconFace" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"
                       stroke-linejoin="round">
@@ -2315,7 +2315,7 @@
                       <circle cx="12" cy="16.5" r="1" fill="currentColor" stroke="none" />
                     </svg>
                   </span>
-                  <span class="desktopSidebarIconLabel">Effondrement</span>
+                  <span class="desktopSidebarIconLabel">Interruption</span>
                 </button>
 
                 <button class="tabBtn desktopEditorTabBtn desktopSidebarIconBtn" type="button"
@@ -2518,7 +2518,7 @@
                             <strong>Ce que change cette personnalisation</strong>
                             Vous changez uniquement le terme affiché dans la barre de suivi. Cela ne modifie pas la
                             variable technique
-                            <code>risk</code>, ni les règles d’effondrement, ni les diagnostics, ni les effets déjà
+                            <code>risk</code>, ni les règles d’interruption, ni les diagnostics, ni les effets déjà
                             configurés dans les choix.
                             <br /><br />
                             <strong>Bon usage</strong>
@@ -2784,7 +2784,7 @@
 
                           <br /><br />
 
-                          Il permet notamment : de déclencher des règles d’effondrement, de modéliser les dérives
+                          Il permet notamment : de déclencher des règles d’interruption, de modéliser les dérives
                           progressives, de rendre visibles
                           les effets cumulés des décisions.
 
@@ -2836,35 +2836,33 @@
 
               <section class="card" data-simple-hide="advanced" data-desktop-section="rules">
                 <details class="editorSection">
-                  <summary class="editorSectionSummary">Règles d'effondrement</summary>
+                  <summary class="editorSectionSummary">Règles d'interruption</summary>
                   <div class="section">
                     <div class="itemHead">
                       <div>
                         <div class="fieldLabel">
-                          <h2 style="margin: 0">Règles d’effondrement</h2>
+                          <h2 style="margin: 0">Règles d’interruption</h2>
                           <button type="button" class="helpIcon" data-help-toggle="help-rules-section"
-                            aria-label="Aide sur les règles d’effondrement" aria-expanded="false">
+                            aria-label="Aide sur les règles d’interruption" aria-expanded="false">
                             ?
                           </button>
                         </div>
                         <div class="helpBubble" id="help-rules-section" role="note">
-                          <strong>Ce que sont les règles d’effondrement</strong>
-                          Les règles d’effondrement déterminent à quel moment le système considère que le parcours n’est
-                          plus suffisamment viable ou
-                          cohérent pour continuer normalement.
+                          <strong>Ce que sont les règles d’interruption</strong>
+                          Les règles d’interruption déterminent à quel moment le système interrompt le déroulement
+                          normal du parcours pour rediriger le joueur vers une autre scène.
                           <br /><br />
                           <strong>Comment les utiliser</strong>
                           Chaque règle combine une ou plusieurs conditions portant sur l’état du jeu. Si la règle
-                          devient vraie, le jeu bascule vers
-                          une scène de diagnostic ou une autre scène de rupture.
+                          devient vraie, le jeu est interrompu et bascule vers la scène définie dans la règle.
                           <br /><br />
                           <strong>Bon usage</strong>
-                          Utilisez ces règles pour modéliser des dégradations progressives, pas pour punir
-                          arbitrairement un choix isolé. Une bonne
-                          règle d’effondrement traduit une logique de système.
+                          Utilisez ces règles pour modéliser des bifurcations automatiques du récit, des alertes, des
+                          diagnostics, des remédiations ou des fins conditionnelles. Une bonne règle d’interruption
+                          traduit une logique de système lisible.
                         </div>
-                        <p class="muted small">Si l’une de ces règles devient vraie, le jeu bascule vers la scène de
-                          diagnostic.</p>
+                        <p class="muted small">Si l’une de ces règles devient vraie, le jeu est interrompu et redirigé
+                          vers la scène prévue.</p>
                       </div>
                       <button id="addRuleBtn">Ajouter</button>
                     </div>
@@ -3332,7 +3330,7 @@
             <div class="itemHead">
               <div>
                 <div class="fieldLabel">
-                  <h2 style="margin: 0">Analyse structure</h2>
+                  <h2 style="margin: 0">Analyse projet</h2>
                   <button type="button" class="helpIcon" data-help-toggle="help-json-section"
                     aria-label="Aide sur la structure JSON" aria-expanded="false">
                     ?
@@ -3356,8 +3354,8 @@
                 <p class="muted small">Vue utile pour contrôle, débogage ou archivage.</p>
               </div>
 
-                          <div class="graphControls">
-                <button id="refreshJsonAnalysisBtn" type="button" class="secondary">Mettre à jour</button>
+              <div class="graphControls">
+                <button id="refreshJsonAnalysisBtn" type="button" class="secondary">Analyser la structure</button>
                 <button id="analyzeTextsBtn" type="button" class="secondary">Analyser les textes</button>
               </div>
             </div>
@@ -3773,7 +3771,7 @@
             "Avec ce template, vous êtes en mesure d’observer comment les variables influencent la progression. Certaines variables représentent la qualité du parcours, d’autres les risques ou les erreurs. Elles permettent de déclencher des diagnostics, d’ouvrir des voies spécifiques ou d’orienter les fins. Vous pouvez vous en inspirer pour modéliser vos propres logiques narratives.",
             "Pensez à utiliser la prévisualisation pour tester régulièrement votre scénario. Cela permet de vérifier que les choix conduisent bien aux bonnes scènes et que les effets produisent les résultats attendus. Le graphe des scènes peut également vous aider à visualiser la structure globale et à repérer les scènes isolées ou les branches déséquilibrées.",
             "Pensez aussi à utiliser l'onglet l'analyse de la structure : un outil de diagnostic vous avertit si des choses ne vont pas dans la structure de votre récit.",
-            "Pour personnaliser ce template, vous pouvez procéder par étapes. Remplacez d’abord les titres et les textes des scènes. Adaptez ensuite les variables pour qu’elles correspondent à ce que vous voulez suivre dans votre récit. Ajustez enfin les règles d’effondrement et les diagnostics pour refléter la logique de votre univers narratif.",
+            "Pour personnaliser ce template, vous pouvez procéder par étapes. Remplacez d’abord les titres et les textes des scènes. Adaptez ensuite les variables pour qu’elles correspondent à ce que vous voulez suivre dans votre récit. Ajustez enfin les règles d’interruption et les diagnostics pour refléter la logique de votre univers narratif.",
             "Vous pouvez aussi dupliquer des scènes existantes pour créer rapidement de nouvelles branches. Cette méthode permet de conserver une structure cohérente tout en enrichissant progressivement votre histoire.",
             "Cet exemple est conçu comme une base de travail. Vous pouvez le simplifier si votre récit est court, ou au contraire l’enrichir avec de nouvelles variables, de nouvelles conditions, de nouvelles scènes, et de nouvelles fins si votre projet devient plus complexe.",
             "Conseil de pro : modifiez progressivement, testez souvent, et conservez une structure claire. Chaque scène doit avoir un rôle identifiable dans la progression du récit.",
@@ -3844,6 +3842,15 @@
             description:
               "Évalue la qualité globale des décisions prises. Cette variable sert à différencier les parcours maîtrisés des progressions plus fragiles.",
           },
+          {
+            name: "keyInsight",
+            label: "keyInsight",
+            type: "boolean",
+            initial: false,
+            category: "custom",
+            description: "",
+
+          },
         ],
         rules: {
           collapse: [
@@ -3851,7 +3858,7 @@
               id: "c1",
               name: "Risque critique",
               operator: "AND",
-              goto: "diagnostic_effondrement",
+              goto: "diagnostic_interruption",
               conditions: [
                 {
                   variable: "risk",
@@ -3864,7 +3871,7 @@
               id: "c2",
               name: "Erreurs critiques",
               operator: "AND",
-              goto: "diagnostic_effondrement",
+              goto: "diagnostic_interruption",
               conditions: [
                 {
                   variable: "compteur_erreurs",
@@ -4439,7 +4446,7 @@
                 title: "Ignorer",
                 desc: "",
                 decisionLog: "Ignorer",
-                goto: "alerte_effondrement",
+                goto: "alerte_interruption",
                 showIf: "",
                 effects: {
                   score: 0,
@@ -4538,13 +4545,13 @@
               alt: "",
             },
           },
-          alerte_effondrement: {
+          alerte_interruption: {
             chapter: "05_risk",
-            title: "[RISQUE] Alerte effondrement",
+            title: "[RISQUE] Alerte interruption négative",
             text: [
               "STRUCTURE : pré‑collapse.",
-              "Avec cette scène, vous pouvez annoncer que le récit approche d’un seuil dangereux. Il ne s’agit plus d’une simple erreur locale. Le risque devient plus global, plus structurel, plus difficile à contenir. Le lecteur comprend alors qu’il entre dans une zone où les choix auront un poids décisif.",
-              "Vous pouvez utiliser cette scène pour faire apparaître des signaux d’alerte clairs. Quelque chose menace de céder, de se dissoudre, de s’effondrer ou de devenir irréversible. Cette montée du risque peut être concrète, symbolique, psychologique, relationnelle ou systémique selon votre univers.",
+              "Cette scène montre un usage des interruptions pour créer des crises. Avec cette scène, vous pouvez annoncer que le récit approche d’un seuil dangereux, défini préalablement par une variable (typiquement la variable système risk - Risque). Il ne s’agit plus d’une simple erreur locale. Le risque devient plus global, plus structurel, plus difficile à contenir. Le lecteur comprend alors qu’il entre dans une zone où les choix auront un poids décisif.",
+              "Vous pouvez utiliser cette scène pour faire apparaître des signaux d’alerte clairs. Quelque chose menace de céder, de s’effondrer ou de devenir irréversible. Cette montée du risque peut être concrète, symbolique, psychologique, relationnelle ou systémique selon votre univers.",
               "Vous pouvez, avec cette scène, mettre le lecteur face à une alternative très lisible : réparer maintenant, ou continuer en sachant que la situation peut encore empirer. Cette scène est précieuse si vous voulez rendre perceptible l’approche d’un point de non-retour.",
             ],
             type: "normal",
@@ -4803,7 +4810,7 @@
               "Fin correspondant aux variables accumulées.",
               "Conseil : multiplier les fins.",
               "Avec cette scène de fin, vous pouvez assumer une trajectoire d’échec ou de dégradation. Cette conclusion ne sert pas seulement à sanctionner. Elle permet aussi de donner une portée aux choix risqués, aux erreurs répétées ou à l’absence de correction.",
-              "Vous pouvez l’écrire comme une chute lente, une désagrégation, une perte de contrôle, un renoncement, une occasion manquée ou un effondrement partiel. L’important est qu’elle apparaisse comme l’aboutissement logique d’un cheminement, et non comme un accident arbitraire.",
+              "Vous pouvez l’écrire comme une chute lente, une désagrégation, une perte de contrôle, un renoncement, une occasion manquée ou une interruption partielle. L’important est qu’elle apparaisse comme l’aboutissement logique d’un cheminement, et non comme un accident arbitraire.",
               "Avec cette scène, vous êtes en mesure de donner du relief à l’ensemble du récit, car une fin négative crédible renforce aussi la valeur des autres trajectoires.",
             ],
             type: "ending",
@@ -4834,16 +4841,16 @@
               alt: "",
             },
           },
-          diagnostic_effondrement: {
+          diagnostic_interruption: {
             chapter: "07_end",
-            title: "[DIAGNOSTIC] Effondrement",
+            title: "[DIAGNOSTIC] Interruption de parcours",
             text: [
-              "STRUCTURE : scène obligatoire pour collapse.\nUne scène de diagnostic n'est pas nécessairement reliée au reste de la narration. Elle s'affiche lorsque les conditions d'effondrement définies dans les règles d'effondrement sont atteintes.",
+              "STRUCTURE : scène d’interruption automatique.\nUne scène de diagnostic n'est pas nécessairement reliée au reste de la narration. Elle s'affiche lorsque les conditions d'interruption définies dans les règles d'interruption sont atteintes.",
               "Rôle : afficher diagnostics.",
               "Conseil : toujours prévoir analyse des causes.",
-              "Avec cette scène, vous pouvez transformer l’effondrement en moment de lecture du parcours. Au lieu de terminer brutalement, vous prenez le temps de montrer ce qui a conduit à cette issue et de rendre visibles les causes de la rupture.",
-              "Cette scène affichera les informations que vous avez renseignées dans les Diagnostics, en fonction des variables calculées par le système. Vous pouvez l’utiliser comme une scène d’analyse, de révélation, de constat ou de mise en perspective. Elle fonctionne particulièrement bien lorsque votre outil ou votre structure narrative permet d’afficher des diagnostics, des indicateurs ou des motifs d’échec.",
-              "Avec cette scène, vous êtes en mesure de faire de l'effondrement autre chose qu’une simple fin négative. Vous en faites une conclusion explicative, utile, parfois sévère, mais toujours lisible, et adaptée au parcours réalisé. Même l’échec peut être structuré, interprété et intégré à l’expérience narrative.",
+              "Avec cette scène, vous pouvez transformer l’interruption en moment de lecture du parcours. Au lieu de terminer brutalement, vous prenez le temps de montrer ce qui a conduit à cette interruption et de rendre visibles les causes de la rupture.",
+              "Cette scène affichera les informations que vous avez renseignées dans les Diagnostics, en fonction des variables calculées par le système. Vous pouvez l’utiliser comme une scène d’analyse, de révélation, de constat ou de mise en perspective. Elle fonctionne particulièrement bien lorsque votre outil ou votre structure narrative permet d’afficher des diagnostics, des indicateurs ou des motifs d’échec ou de réussite.",
+              "Avec cette scène, vous êtes en mesure de faire de l'interruption autre chose qu’une simple fin négative. Vous en faites une conclusion explicative, utile, parfois sévère, mais toujours lisible, et adaptée au parcours réalisé. Même l’échec peut être structuré, interprété et intégré à l’expérience narrative.",
             ],
             type: "diagnosis",
             ending: true,
@@ -4929,7 +4936,7 @@
           diagnostic_collapse: {
             chapter: "Diagnostic",
             title: "Diagnostic final",
-            text: ["Cette scène s’affichera si une règle d’effondrement y redirige le jeu."],
+            text: ["Cette scène s’affichera si une règle d’interruption y redirige le jeu."],
             type: "diagnosis",
             ending: true,
             diagnosis: true,
@@ -5037,7 +5044,7 @@
       incomingScenesList: document.getElementById("incomingScenesList"),
       choicesList: document.getElementById("choicesList"),
 
-           jsonPreview: document.getElementById("jsonPreview"),
+      jsonPreview: document.getElementById("jsonPreview"),
       validationBox: document.getElementById("validationBox"),
       textAnalysisBox: document.getElementById("textAnalysisBox"),
       refreshJsonAnalysisBtn: document.getElementById("refreshJsonAnalysisBtn"),
@@ -6284,7 +6291,7 @@
 
       proj.rules.collapse.forEach((rule) => {
         if (!rule.goto || !proj.scenes[rule.goto]) {
-          errors.push(`La règle d’effondrement '${rule.name}' pointe vers une scène inexistante : '${rule.goto}'.`);
+          errors.push(`La règle d’interruption '${rule.name}' pointe vers une scène inexistante : '${rule.goto}'.`);
         }
         (rule.conditions || []).forEach((cond) => {
           if (!varNames.includes(cond.variable)) {
@@ -6609,9 +6616,9 @@
                 <button type="button" class="helpIcon" data-help-toggle="help-ruleName-${idx}" aria-label="Aide sur le nom de la règle" aria-expanded="false">?</button>
               </div>
               <div class="helpBubble" id="help-ruleName-${idx}" role="note">
-                <strong>Nom de la règle</strong>
-                Donnez un nom clair à la règle d’effondrement. Cela aide à comprendre rapidement la logique de bascule vers le diagnostic.
-              </div>
+  <strong>Nom de la règle</strong>
+  Donnez un nom clair à la règle d’interruption. Cela aide à comprendre rapidement la logique de redirection déclenchée par le système.
+</div>
               <input data-action="ruleName" data-index="${idx}" value="${escapeAttr(rule.name || "")}" />
             </div>
           <div>
@@ -6620,9 +6627,9 @@
             <button type="button" class="helpIcon" data-help-toggle="help-ruleOperator-${idx}" aria-label="Aide sur la combinaison des conditions" aria-expanded="false">?</button>
           </div>
           <div class="helpBubble" id="help-ruleOperator-${idx}" role="note">
-            <strong>Combinaison des conditions</strong>
-            Vous pouvez décider que cet effondrement se produit en raison de plusieurs conditions. Choisissez ET si toutes les conditions doivent être vraies ensemble. Choisissez OU si une seule condition vraie parmi les différentes conditions suffit à déclencher la règle.
-          </div>
+  <strong>Combinaison des conditions</strong>
+  Vous pouvez décider que cette interruption se produit en raison de plusieurs conditions. Choisissez ET si toutes les conditions doivent être vraies ensemble. Choisissez OU si une seule condition vraie parmi les différentes conditions suffit à déclencher la règle.
+</div>
               <select data-action="ruleOperator" data-index="${idx}">
                 <option value="AND" ${rule.operator === "AND" ? "selected" : ""}>ET</option>
                 <option value="OR" ${rule.operator === "OR" ? "selected" : ""}>OU</option>
@@ -7170,7 +7177,7 @@
   </div>
   <div class="helpBubble" id="help-choiceRisk-${idx}" role="note">
     <strong>Risque</strong>
-    Renseignez l’impact du choix sur le niveau de fragilité globale. Plus cette valeur augmente, plus le jeu se rapproche d’un effondrement du parcours.
+    Renseignez l’impact du choix sur le niveau de fragilité globale. Plus cette valeur augmente, plus le jeu se rapproche d’une interruption du parcours.
   </div>
   <input type="number" data-action="choiceRisk" data-index="${idx}" value="${Number(choice.effects?.risk || 0)}" />
 </div>
@@ -7407,13 +7414,14 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
     function renderStructureAnalysisLimitMessage() {
       const complexity = getStructureAnalysisComplexity();
       const message =
-        `Analyse désactivée pour ce projet. ` +
+        `Projet trop complexe. Analyse désactivée. ` +
         `Scènes : ${complexity.sceneCount}. ` +
         `Choix : ${complexity.choiceCount}. ` +
         `Retours arrière : ${complexity.backLinkCount}. ` +
         `Boucles directes : ${complexity.selfLoopCount}. ` +
         `Destinations invalides : ${complexity.invalidGotoCount}. ` +
-        `Score de complexité : ${complexity.score}.`;
+        `Score de complexité : ${complexity.score}. ` +
+        `Vous pouvez toujours lancer l'analyse des textes.`;
 
       if (els.validationBox) {
         els.validationBox.innerHTML = `
@@ -7473,7 +7481,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       return cachedValidationResult;
     }
 
-        function getKnownTemplateVariableNames() {
+    function getKnownTemplateVariableNames() {
       return new Set(
         [
           ...RESERVED_VARS.map((v) => String(v.name || "").trim().toLowerCase()),
@@ -7552,7 +7560,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         const text = entry.text;
         const location = entry.location;
 
-                       const templateControlTokens = [
+        const templateControlTokens = [
           ...text.matchAll(/\{\{if\b[\s\S]*?\}\}|\{\{endif\}\}/g),
         ];
 
@@ -7590,7 +7598,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
           );
         }
 
-              const TEMPLATE_RESERVED_KEYWORDS = new Set(["if", "endif"]);
+        const TEMPLATE_RESERVED_KEYWORDS = new Set(["if", "endif"]);
 
         const variableTokens = [...text.matchAll(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g)];
         variableTokens.forEach((match) => {
@@ -7684,7 +7692,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       if (!issues.length) {
         els.textAnalysisBox.innerHTML = `
           <div class="notice">
-            Analyse des textes terminée. Aucune anomalie détectée dans les chaînes rendues.
+            Analyse des textes terminée. ✅ Aucune anomalie détectée dans les chaînes rendues.
           </div>
         `;
         return;
@@ -7692,7 +7700,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
 
       const blocks = issues.map((issue) => `
         <div class="notice ${issue.kind === "error" ? "warn" : ""}">
-          <strong>${issue.kind === "error" ? "Erreur de texte" : "Alerte de texte"}</strong><br>
+          <strong>${issue.kind === "error" ? "❌ Erreur de texte" : "⚠️ Alerte de texte"}</strong><br>
           ${escapeHtml(issue.location)}<br>
           ${escapeHtml(issue.message)}
           <div class="small muted" style="margin-top:8px;">
@@ -7703,7 +7711,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
 
       els.textAnalysisBox.innerHTML = `
         <div class="notice">
-          ${issues.length} anomalie(s) détectée(s) dans les textes rendus.
+          ⚠️${issues.length} anomalie(s) détectée(s) dans les textes rendus.
         </div>
         ${blocks.join("")}
       `;
@@ -8799,7 +8807,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       });
     }
 
-        function invalidatePerformanceCaches() {
+    function invalidatePerformanceCaches() {
       cachedValidationResult = null;
       cachedValidationSignature = "";
       cachedGraphData = null;
@@ -10712,7 +10720,7 @@ function normalizeInlineOperator(operator) {
         const el = document.getElementById("scene");
         
         if (!scene) {
-          el.innerHTML = \`<div class="error-box"><strong>Erreur :</strong> scène introuvable (\${escapeHtml(state.current || "")}).</div>\`;
+          el.innerHTML = \`<div class="error-box"><strong>❌ Erreur :</strong> scène introuvable (\${escapeHtml(state.current || "")}).</div>\`;
           return;
         }
 
@@ -11305,7 +11313,7 @@ if (document.readyState === "loading") {
       renderValidationIfNeeded(true);
     });
 
-        els.analyzeTextsBtn?.addEventListener("click", () => {
+    els.analyzeTextsBtn?.addEventListener("click", () => {
       renderTextAnalysis();
     });
 
@@ -11476,7 +11484,7 @@ if (document.readyState === "loading") {
     document.getElementById("exportHtmlBtn").addEventListener("click", () => {
       const result = validateProject(project);
       if (result.errors.length) {
-        alert("Le projet contient des erreurs bloquantes. Consultez l’onglet JSON pour les voir.");
+        alert("❌ Le projet contient des erreurs bloquantes. Consultez l’onglet JSON pour les voir.");
         switchTab("json");
         return;
       }
