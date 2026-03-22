@@ -10375,6 +10375,16 @@ function normalizeInlineOperator(operator) {
   }
 );
 
+        output = output.replace(
+          /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g,
+          function(match, key) {
+            const variableDef = findVariable(key);
+            const resolvedKey = variableDef?.name || key.trim();
+            const value = getStateValue(resolvedKey, state);
+            return formatStateValue(resolvedKey, value);
+          }
+        );
+
         output = output.replace(/\{\{endif\}\}/g, "");
 
         return output;
