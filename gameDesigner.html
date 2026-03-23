@@ -1584,7 +1584,7 @@
       stroke: rgba(116, 213, 163, 0.45);
     }
 
-    .graphNode.type-diagnosis rect {
+    .graphNode.type-analysis rect {
       fill: rgba(90, 71, 32, 0.94);
       stroke: rgba(243, 202, 112, 0.5);
     }
@@ -2251,7 +2251,7 @@
       <div class="tabs" style="margin-bottom: 1em">
         <button class="tabBtn active" data-tab="editor">Éditeur</button>
         <button class="tabBtn" data-simple-hide="advanced" data-tab="graph">Graphe des scènes</button>
-        <button class="tabBtn" data-tab="preview">Prévisualisation</button>       
+        <button class="tabBtn" data-tab="preview">Prévisualisation</button>
         <button class="tabBtn" data-tab="json" data-simple-hide="advanced">Analyse projet</button>
         <button class="tabBtn" data-tab="journal">Journal</button>
       </div>
@@ -2319,8 +2319,8 @@
                 </button>
 
                 <button class="tabBtn desktopEditorTabBtn desktopSidebarIconBtn" type="button"
-                  data-desktop-tab="diagnostics" data-simple-hide="advanced" aria-label="Diagnostics"
-                  data-sidebar-label="Diagnostics">
+                  data-desktop-tab="analyses" data-simple-hide="advanced" aria-label="Analyses"
+                  data-sidebar-label="Analyses">
                   <span class="desktopSidebarIconFace" aria-hidden="true">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
                       <path fill="#ffffff" fill-rule="evenodd" d="
@@ -2342,7 +2342,7 @@
                       " />
                     </svg>
                   </span>
-                  <span class="desktopSidebarIconLabel">Diagnostics</span>
+                  <span class="desktopSidebarIconLabel">Analyses</span>
                 </button>
               </div>
             </section>
@@ -2518,7 +2518,7 @@
                             <strong>Ce que change cette personnalisation</strong>
                             Vous changez uniquement le terme affiché dans la barre de suivi. Cela ne modifie pas la
                             variable technique
-                            <code>risk</code>, ni les règles d’interruption, ni les diagnostics, ni les effets déjà
+                            <code>risk</code>, ni les règles d’interruption, ni les analyses, ni les effets déjà
                             configurés dans les choix.
                             <br /><br />
                             <strong>Bon usage</strong>
@@ -2640,7 +2640,7 @@
                           <strong>Comment les utiliser</strong>
                           Utilisez les scènes pour structurer le parcours étape par étape. Chaque scène peut faire
                           avancer l’histoire, ouvrir une
-                          remédiation, conduire à une fin ou afficher un diagnostic. Les choix d’une scène permettent de
+                          remédiation, conduire à une fin ou afficher une analyse. Les choix d’une scène permettent de
                           relier cette scène à
                           d’autres et de construire les embranchements du jeu.
                           <br /><br />
@@ -2736,7 +2736,7 @@
                           </ul>
                           <strong>Pourquoi c’est utile</strong>
                           Ces informations permettent au jeu d’adapter la suite du parcours, de déclencher des
-                          diagnostics ou de produire une
+                          interruptions, ou de produire une
                           analyse finale cohérente avec les décisions prises.
                           <br /><br />
 
@@ -2768,8 +2768,8 @@
 
                           <br /><br />
 
-                          Il permet notamment d’évaluer la qualité globale du parcours, d’aider à produire certains
-                          diagnostics, de structurer les
+                          Il permet notamment d’évaluer la qualité globale du parcours, d’aider à produire certaines
+                          analyses, de structurer les
                           fins positives.
 
                           <br /><br />
@@ -2858,7 +2858,7 @@
                           <br /><br />
                           <strong>Bon usage</strong>
                           Utilisez ces règles pour modéliser des bifurcations automatiques du récit, des alertes, des
-                          diagnostics, des remédiations ou des fins conditionnelles. Une bonne règle d’interruption
+                          analyses, des remédiations ou des fins conditionnelles. Une bonne règle d’interruption
                           traduit une logique de système lisible.
                         </div>
                         <p class="muted small">Si l’une de ces règles devient vraie, le jeu est interrompu et redirigé
@@ -2875,44 +2875,45 @@
                 </details>
               </section>
 
-              <section class="card" data-simple-hide="advanced" data-desktop-section="diagnostics">
+              <section class="card" data-simple-hide="advanced" data-desktop-section="analyses">
                 <details class="editorSection">
-                  <summary class="editorSectionSummary">Diagnostics</summary>
+                  <summary class="editorSectionSummary">Analyses</summary>
                   <div class="section">
                     <div class="itemHead">
                       <div>
                         <div class="fieldLabel">
-                          <h2 style="margin: 0">Diagnostics</h2>
-                          <button type="button" class="helpIcon" data-help-toggle="help-diagnostics-section"
-                            aria-label="Aide sur les diagnostics" aria-expanded="false">
+                          <h2 style="margin: 0">Analyses</h2>
+                          <button type="button" class="helpIcon" data-help-toggle="help-analyses-section"
+                            aria-label="Aide sur les analyses" aria-expanded="false">
                             ?
                           </button>
                         </div>
-                        <div class="helpBubble" id="help-diagnostics-section" role="note">
-                          <strong>Ce que sont les diagnostics</strong>
-                          Les diagnostics sont les messages d’analyse affichés à la fin d’un parcours en difficulté. Ils
-                          expliquent au joueur
-                          quelles fragilités ont été activées dans le système.
+                        <div class="helpBubble" id="help-analyses-section" role="note">
+                          <strong>Ce que sont les analyses</strong>
+                          Les analyses sont les messages d’analyse affichés à lorsque vous le souhaitez, sous conditions
+                          que des critères de variables soient satisfaits. Elles
+                          donnent au joueur toutes sortes d'informations que vous aurez décidé d'afficher lorsque les
+                          conditions sont remplies, dans une scène de type analyse.
                           <br /><br />
                           <strong>Comment les utiliser</strong>
-                          Chaque diagnostic est relié à une ou plusieurs conditions. Lorsqu’elles sont vraies, le
-                          diagnostic apparaît dans la scène
-                          finale de diagnostic.
+                          Chaque analyse est relié à une ou plusieurs conditions. Lorsqu’elles sont vraies, l'analyse
+                          apparaît dans la scène
+                          finale d'analyse.
                           <br /><br />
                           <strong>Bon usage</strong>
-                          Rédigez des diagnostics explicatifs et utiles, pas seulement des constats. Ils doivent aider à
+                          Rédigez des analyses explicatives et utiles, pas seulement des constats. Elles doivent aider à
                           comprendre le cheminement
                           qui a conduit à la dégradation du parcours réalisé.
                         </div>
-                        <p class="muted small">Cartes affichées dans la scène de diagnostic final.</p>
+                        <p class="muted small">Cartes affichées dans les scène d'analyse.</p>
                       </div>
                       <button id="addDiagBtn">Ajouter</button>
                     </div>
                     <div class="filterBar">
-                      <input id="diagnosticsFilterInput" class="filterInput" type="search"
-                        placeholder="Rechercher un diagnostic" aria-label="Rechercher un diagnostic" />
+                      <input id="analysesFilterInput" class="filterInput" type="search"
+                        placeholder="Rechercher une analyse" aria-label="Rechercher une analyse" />
                     </div>
-                    <div id="diagnosticsList" class="list"></div>
+                    <div id="analysesList" class="list"></div>
                   </div>
                 </details>
               </section>
@@ -3027,7 +3028,7 @@
                               <strong>Type de scène</strong>
                               Choisissez la fonction de la scène dans le parcours. Une scène normale fait avancer le
                               récit, une finale clôt le jeu,
-                              une scène diagnostic affiche l’analyse des erreurs, une scène de remédiation permet au
+                              une scène analyse affiche des analyses prédéfinies, une scène de remédiation permet au
                               joueur de corriger une erreur
                               ou de rééquilibrer son avancement après une décision qui a fragilisé la qualité de son
                               parcours.
@@ -3647,7 +3648,7 @@
         },
         type: "normal",
         ending: false,
-        diagnosis: false,
+        analysis: false,
         choices: [],
       };
     }
@@ -3686,7 +3687,7 @@
         id: uid("rule"),
         name: "Nouvelle règle",
         operator: "AND",
-        goto: "diagnostic_collapse",
+        goto: "analyse_collapse",
         conditions: [conditionTemplate(variableName)],
       };
     }
@@ -3694,8 +3695,8 @@
     function diagTemplate(variableName = "risk") {
       return {
         id: uid("diag"),
-        title: "Nouveau diagnostic",
-        text: "Texte du diagnostic.",
+        title: "Nouvelle analyse",
+        text: "Texte de l'analyse.",
         operator: "AND",
         conditions: [conditionTemplate(variableName)],
       };
@@ -3768,10 +3769,10 @@
             "Ce projet est un template complet destiné à vous montrer comment structurer un récit à embranchements avec SCENE. Il ne s’agit pas d’une histoire à utiliser telle quelle, mais d’un exemple technique et narratif que vous pouvez transformer pour créer votre propre expérience.",
             "Vous pouvez commencer par parcourir les scènes existantes pour comprendre leur rôle. Chaque scène illustre une fonction classique dans un récit interactif : introduction, exploration, montée de tension, erreur, remédiation, consolidation et fins possibles. L’objectif est de vous montrer une architecture réutilisable plutôt qu’un contenu définitif.",
             "Vous pouvez ensuite modifier progressivement le projet. Commencez par adapter le contexte narratif dans les textes des scènes sans changer immédiatement la structure. Une fois que vous avez compris les liens entre les scènes, vous pouvez modifier les choix, ajouter des variables ou ajuster les effets pour adapter le système à votre propre histoire.",
-            "Avec ce template, vous êtes en mesure d’observer comment les variables influencent la progression. Certaines variables représentent la qualité du parcours, d’autres les risques ou les erreurs. Elles permettent de déclencher des diagnostics, d’ouvrir des voies spécifiques ou d’orienter les fins. Vous pouvez vous en inspirer pour modéliser vos propres logiques narratives.",
+            "Avec ce template, vous êtes en mesure d’observer comment les variables influencent la progression. Certaines variables représentent la qualité du parcours, d’autres les risques ou les erreurs. Elles permettent de déclencher des analyses, d’ouvrir des voies spécifiques ou d’orienter les fins. Vous pouvez vous en inspirer pour modéliser vos propres logiques narratives.",
             "Pensez à utiliser la prévisualisation pour tester régulièrement votre scénario. Cela permet de vérifier que les choix conduisent bien aux bonnes scènes et que les effets produisent les résultats attendus. Le graphe des scènes peut également vous aider à visualiser la structure globale et à repérer les scènes isolées ou les branches déséquilibrées.",
-            "Pensez aussi à utiliser l'onglet l'analyse de la structure : un outil de diagnostic vous avertit si des choses ne vont pas dans la structure de votre récit.",
-            "Pour personnaliser ce template, vous pouvez procéder par étapes. Remplacez d’abord les titres et les textes des scènes. Adaptez ensuite les variables pour qu’elles correspondent à ce que vous voulez suivre dans votre récit. Ajustez enfin les règles d’interruption et les diagnostics pour refléter la logique de votre univers narratif.",
+            "Pensez aussi à utiliser l'onglet l'analyse de la structure : un outil d'analyse vous avertit si des choses ne vont pas dans la structure de votre récit.",
+            "Pour personnaliser ce template, vous pouvez procéder par étapes. Remplacez d’abord les titres et les textes des scènes. Adaptez ensuite les variables pour qu’elles correspondent à ce que vous voulez suivre dans votre récit. Ajustez enfin les règles d’interruption et les analyses pour refléter la logique de votre univers narratif.",
             "Vous pouvez aussi dupliquer des scènes existantes pour créer rapidement de nouvelles branches. Cette méthode permet de conserver une structure cohérente tout en enrichissant progressivement votre histoire.",
             "Cet exemple est conçu comme une base de travail. Vous pouvez le simplifier si votre récit est court, ou au contraire l’enrichir avec de nouvelles variables, de nouvelles conditions, de nouvelles scènes, et de nouvelles fins si votre projet devient plus complexe.",
             "Conseil de pro : modifiez progressivement, testez souvent, et conservez une structure claire. Chaque scène doit avoir un rôle identifiable dans la progression du récit.",
@@ -3858,7 +3859,7 @@
               id: "c1",
               name: "Risque critique",
               operator: "AND",
-              goto: "diagnostic_interruption",
+              goto: "analyse_interruption",
               conditions: [
                 {
                   variable: "risk",
@@ -3871,7 +3872,7 @@
               id: "c2",
               name: "Erreurs critiques",
               operator: "AND",
-              goto: "diagnostic_interruption",
+              goto: "analyse_interruption",
               conditions: [
                 {
                   variable: "compteur_erreurs",
@@ -3882,7 +3883,7 @@
             },
           ],
         },
-        diagnostics: [
+        analyses: [
           {
             id: "d1",
             title: "Manque de clarté",
@@ -3935,7 +3936,7 @@
             ],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Observer avant agir",
@@ -4021,7 +4022,7 @@
             ],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Analyser situation",
@@ -4081,7 +4082,7 @@
             ],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Continuer",
@@ -4141,7 +4142,7 @@
             ],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Structurer",
@@ -4204,7 +4205,7 @@
             ],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Utiliser outil",
@@ -4261,7 +4262,7 @@
             ],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Approche stable",
@@ -4361,7 +4362,7 @@
             ],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Stabiliser",
@@ -4420,7 +4421,7 @@
             ],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Comprendre",
@@ -4479,7 +4480,7 @@
             ],
             type: "remediation",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Reprendre",
@@ -4516,7 +4517,7 @@
             ],
             type: "remediation",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Continuer",
@@ -4556,7 +4557,7 @@
             ],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Réparer",
@@ -4611,7 +4612,7 @@
             ],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Activer voie",
@@ -4666,7 +4667,7 @@
             ],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Résolution optimale",
@@ -4739,7 +4740,7 @@
             ],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [
               {
                 title: "Accéder",
@@ -4777,7 +4778,7 @@
             ],
             type: "ending",
             ending: true,
-            diagnosis: false,
+            analysis: false,
             choices: [],
             image: {
               src: "",
@@ -4796,7 +4797,7 @@
             ],
             type: "ending",
             ending: true,
-            diagnosis: false,
+            analysis: false,
             choices: [],
             image: {
               src: "",
@@ -4815,7 +4816,7 @@
             ],
             type: "ending",
             ending: true,
-            diagnosis: false,
+            analysis: false,
             choices: [],
             image: {
               src: "",
@@ -4834,27 +4835,27 @@
             ],
             type: "ending",
             ending: true,
-            diagnosis: false,
+            analysis: false,
             choices: [],
             image: {
               src: "",
               alt: "",
             },
           },
-          diagnostic_interruption: {
+          analyse_interruption: {
             chapter: "07_end",
-            title: "[DIAGNOSTIC] Interruption de parcours",
+            title: "[ANALYSE] Interruption de parcours",
             text: [
-              "STRUCTURE : scène d’interruption automatique.\nUne scène de diagnostic n'est pas nécessairement reliée au reste de la narration. Elle s'affiche lorsque les conditions d'interruption définies dans les règles d'interruption sont atteintes.",
-              "Rôle : afficher diagnostics.",
+              "STRUCTURE : scène d’interruption automatique.\nUne scène d'analyse n'est pas nécessairement reliée au reste de la narration. Elle s'affiche lorsque les conditions d'interruption définies dans les règles d'interruption sont atteintes.",
+              "Rôle : afficher analyses.",
               "Conseil : toujours prévoir analyse des causes.",
               "Avec cette scène, vous pouvez transformer l’interruption en moment de lecture du parcours. Au lieu de terminer brutalement, vous prenez le temps de montrer ce qui a conduit à cette interruption et de rendre visibles les causes de la rupture.",
-              "Cette scène affichera les informations que vous avez renseignées dans les Diagnostics, en fonction des variables calculées par le système. Vous pouvez l’utiliser comme une scène d’analyse, de révélation, de constat ou de mise en perspective. Elle fonctionne particulièrement bien lorsque votre outil ou votre structure narrative permet d’afficher des diagnostics, des indicateurs ou des motifs d’échec ou de réussite.",
+              "Cette scène affichera les informations que vous avez renseignées dans les analyses, en fonction des variables calculées par le système. Vous pouvez l’utiliser comme une scène d’analyse, de révélation, de constat ou de mise en perspective. Elle fonctionne particulièrement bien lorsque votre outil ou votre structure narrative permet d’afficher des analyses, des indicateurs ou des motifs d’échec ou de réussite.",
               "Avec cette scène, vous êtes en mesure de faire de l'interruption autre chose qu’une simple fin négative. Vous en faites une conclusion explicative, utile, parfois sévère, mais toujours lisible, et adaptée au parcours réalisé. Même l’échec peut être structuré, interprété et intégré à l’expérience narrative.",
             ],
-            type: "diagnosis",
-            ending: true,
-            diagnosis: true,
+            type: "analysis",
+            ending: false,
+            analysis: true,
             choices: [],
             image: {
               src: "",
@@ -4921,7 +4922,7 @@
         rules: {
           collapse: [],
         },
-        diagnostics: [],
+        analyses: [],
         journal: [],
         scenes: {
           intro: {
@@ -4930,16 +4931,16 @@
             text: [""],
             type: "normal",
             ending: false,
-            diagnosis: false,
+            analysis: false,
             choices: [],
           },
-          diagnostic_collapse: {
-            chapter: "Diagnostic",
-            title: "Diagnostic final",
+          analyse_collapse: {
+            chapter: "Analyses",
+            title: "Analyse finale",
             text: ["Cette scène s’affichera si une règle d’interruption y redirige le jeu."],
-            type: "diagnosis",
-            ending: true,
-            diagnosis: true,
+            type: "analysis",
+            ending: false,
+            analysis: true,
             choices: [],
           },
         },
@@ -5005,12 +5006,12 @@
       variablesFilterInput: document.getElementById("variablesFilterInput"),
       rulesList: document.getElementById("rulesList"),
       rulesFilterInput: document.getElementById("rulesFilterInput"),
-      diagnosticsList: document.getElementById("diagnosticsList"),
-      diagnosticsFilterInput: document.getElementById("diagnosticsFilterInput"),
+      analysesList: document.getElementById("analysesList"),
+      analysesFilterInput: document.getElementById("analysesFilterInput"),
       scenesFilterInput: document.getElementById("scenesFilterInput"),
       variablesFilterInput: document.getElementById("variablesFilterInput"),
       rulesFilterInput: document.getElementById("rulesFilterInput"),
-      diagnosticsFilterInput: document.getElementById("diagnosticsFilterInput"),
+      analysesFilterInput: document.getElementById("analysesFilterInput"),
 
       sceneEditor: document.getElementById("sceneEditor"),
       sceneEditorEmpty: document.getElementById("sceneEditorEmpty"),
@@ -5146,7 +5147,7 @@
       if (!Array.isArray(proj.variables)) proj.variables = [];
       if (!proj.rules) proj.rules = { collapse: [] };
       if (!Array.isArray(proj.rules.collapse)) proj.rules.collapse = [];
-      if (!Array.isArray(proj.diagnostics)) proj.diagnostics = [];
+      if (!Array.isArray(proj.analyses)) proj.analyses = [];
       if (!Array.isArray(proj.journal)) proj.journal = [];
       proj.journal = proj.journal
         .filter((note) => note && typeof note === "object")
@@ -5182,7 +5183,7 @@
 
         if (!Array.isArray(scene.choices)) scene.choices = [];
         if (typeof scene.ending !== "boolean") scene.ending = scene.type === "ending";
-        if (typeof scene.diagnosis !== "boolean") scene.diagnosis = scene.type === "diagnosis";
+        if (typeof scene.analysis !== "boolean") scene.analysis = scene.type === "analysis";
         scene.choices.forEach((choice) => {
           if (!choice.effects) choice.effects = {};
           choice.effects.score ??= 0;
@@ -5393,7 +5394,7 @@
         : [
           { value: "normal", label: "Normale" },
           { value: "ending", label: "Finale" },
-          { value: "diagnosis", label: "Diagnostic" },
+          { value: "analysis", label: "Analyse" },
           { value: "remediation", label: "Remédiation" },
         ];
 
@@ -5801,7 +5802,7 @@
       const buttons = document.querySelectorAll(".desktopEditorTabBtn");
 
       const advancedHidden = isSimpleMode();
-      const allowedTabs = advancedHidden ? ["project", "scenes"] : ["project", "scenes", "variables", "rules", "diagnostics"];
+      const allowedTabs = advancedHidden ? ["project", "scenes"] : ["project", "scenes", "variables", "rules", "analyses"];
 
       if (!allowedTabs.includes(currentDesktopEditorTab)) {
         currentDesktopEditorTab = "project";
@@ -5879,7 +5880,7 @@
       const labels = {
         normal: "Normale",
         ending: "Fin",
-        diagnosis: "Diagnostic",
+        analysis: "Analyse",
         remediation: "Remédiation",
       };
       return labels[type] || type || "Normale";
@@ -6197,8 +6198,8 @@
         errors.push("Aucune scène n’est définie.");
       }
 
-      if (!proj.scenes.diagnostic_collapse) {
-        warnings.push("La scène 'diagnostic_collapse' n’existe pas. Certaines règles peuvent pointer vers une scène absente.");
+      if (!proj.scenes.analyse_collapse) {
+        warnings.push("La scène 'analyse_collapse' n’existe pas. Certaines règles peuvent pointer vers une scène absente.");
       }
 
       const seenVarNames = new Set();
@@ -6300,10 +6301,10 @@
         });
       });
 
-      proj.diagnostics.forEach((diag) => {
+      proj.analyses.forEach((diag) => {
         (diag.conditions || []).forEach((cond) => {
           if (!varNames.includes(cond.variable)) {
-            errors.push(`Le diagnostic '${diag.title}' utilise une variable inconnue : '${cond.variable}'.`);
+            errors.push(`L'analyse '${diag.title}' utilise une variable inconnue : '${cond.variable}'.`);
           }
         });
       });
@@ -6348,7 +6349,7 @@
       scenes: "",
       variables: "",
       rules: "",
-      diagnostics: "",
+      analyses: "",
     };
 
     function normalizeSearchText(value) {
@@ -6371,7 +6372,7 @@
         ["scenesFilterInput", "scenes", renderScenesList],
         ["variablesFilterInput", "variables", renderVariables],
         ["rulesFilterInput", "rules", renderRules],
-        ["diagnosticsFilterInput", "diagnostics", renderDiagnostics],
+        ["analysesFilterInput", "analyses", renderAnalyses],
       ];
 
       bindings.forEach(([elKey, filterKey, renderFn]) => {
@@ -6454,7 +6455,7 @@
               </div>
               <div class="helpBubble" id="help-varName-${idx}" role="note">
                 <strong>Nom technique</strong>
-                Saisissez un identifiant technique unique et simple pour la variable. Il sera utilisé dans les effets, les règles et les diagnostics.
+                Saisissez un identifiant technique unique et simple pour la variable. Il sera utilisé dans les effets, les règles et les analyses.
               </div>
               <input data-action="varName" data-index="${idx}" value="${escapeAttr(v.name)}" />
             </div>
@@ -6642,7 +6643,7 @@
           </div>
           <div class="helpBubble" id="help-ruleGoto-${idx}" role="note">
             <strong>Ce qui est attendu</strong>
-            Sélectionnez la scène vers laquelle le jeu basculera si cette règle devient vraie. Il s’agit généralement d’une scène de diagnostic.
+            Sélectionnez la scène vers laquelle le jeu basculera si cette règle devient vraie. Il s’agit généralement d’une scène d'analyse.
           </div>
           <select data-action="ruleGoto" data-index="${idx}">
             ${sceneIds.map((id) => `<option value="${escapeAttr(id)}" ${rule.goto === id ? "selected" : ""}>${escapeHtml(id)}</option>`).join("")}
@@ -6732,11 +6733,11 @@
         .join("");
     }
 
-    function renderDiagnostics() {
+    function renderAnalyses() {
       const varNames = getAllVariableNames();
-      const filterValue = editorFilters.diagnostics;
+      const filterValue = editorFilters.analyses;
 
-      els.diagnosticsList.innerHTML = project.diagnostics
+      els.analysesList.innerHTML = project.analyses
         .filter((diag) =>
           textMatchesFilter(
             [
@@ -6752,7 +6753,7 @@
           (diag, idx) => `
         <div class="diagBlock">
           <div class="itemHead">
-            <strong>Diagnostic ${idx + 1}</strong>
+            <strong>Analyse ${idx + 1}</strong>
             <div class="itemActions">
               <button data-action="duplicateDiag" data-index="${idx}">Dupliquer</button>
               <button data-action="deleteDiag" data-index="${idx}" class="bad">Supprimer</button>
@@ -6763,21 +6764,21 @@
 <div>
   <div class="fieldLabel">
     <label>Titre</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-diagTitle-${idx}" aria-label="Aide sur le titre du diagnostic" aria-expanded="false">?</button>
+    <button type="button" class="helpIcon" data-help-toggle="help-diagTitle-${idx}" aria-label="Aide sur le titre de l'analyse" aria-expanded="false">?</button>
   </div>
   <div class="helpBubble" id="help-diagTitle-${idx}" role="note">
-    <strong>Titre du diagnostic</strong>
-    Donnez un titre synthétique au diagnostic. Il doit permettre d’identifier rapidement la nature du problème détecté.
+    <strong>Titre de l'analyse</strong>
+    Donnez un titre synthétique à l'analyse. Il doit permettre d’identifier rapidement la nature de l'objet analysé.
   </div>
   <input data-action="diagTitle" data-index="${idx}" value="${escapeAttr(diag.title || "")}" />
 </div>
 <div>
   <div class="fieldLabel">
     <label>Texte</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-diagText-${idx}" aria-label="Aide sur le texte du diagnostic" aria-expanded="false">?</button>
+    <button type="button" class="helpIcon" data-help-toggle="help-diagText-${idx}" aria-label="Aide sur le texte de l'analyse" aria-expanded="false">?</button>
   </div>
   <div class="helpBubble" id="help-diagText-${idx}" role="note">
-    <strong>Texte du diagnostic</strong>
+    <strong>Texte de l'analyse</strong>
     Rédigez une explication claire du problème diagnostiqué. Ce texte doit aider le joueur à comprendre la logique de l’échec ou de la fragilité constatée.
   </div>
   <textarea data-action="diagText" data-index="${idx}">${escapeHtml(diag.text || "")}</textarea>
@@ -6806,11 +6807,11 @@
  <div>
   <div class="fieldLabel">
     <label>Variable</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-diagCondVariable-${idx}-${cIdx}" aria-label="Aide sur la variable du diagnostic" aria-expanded="false">?</button>
+    <button type="button" class="helpIcon" data-help-toggle="help-diagCondVariable-${idx}-${cIdx}" aria-label="Aide sur la variable de l'analyse" aria-expanded="false">?</button>
   </div>
   <div class="helpBubble" id="help-diagCondVariable-${idx}-${cIdx}" role="note">
     <strong>Variable</strong>
-    Choisissez la variable qui servira à décider si ce diagnostic doit apparaître à la fin du jeu.
+    Choisissez la variable qui servira à décider si cette analyse doit apparaître dans une scène de type analyse.
   </div>
   <select data-action="diagCondVariable" data-index="${idx}" data-cindex="${cIdx}">
                       ${varNames.map((name) => `<option value="${escapeAttr(name)}" ${cond.variable === name ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}
@@ -6819,11 +6820,11 @@
       <div>
   <div class="fieldLabel">
     <label>Opérateur</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-diagCondOperator-${idx}-${cIdx}" aria-label="Aide sur l’opérateur du diagnostic" aria-expanded="false">?</button>
+    <button type="button" class="helpIcon" data-help-toggle="help-diagCondOperator-${idx}-${cIdx}" aria-label="Aide sur l’opérateur de l'analyse" aria-expanded="false">?</button>
   </div>
   <div class="helpBubble" id="help-diagCondOperator-${idx}-${cIdx}" role="note">
     <strong>Opérateur</strong>
-    L’opérateur indique comment la variable doit être comparée à la valeur pour décider d’afficher ce diagnostic.
+    L’opérateur indique comment la variable doit être comparée à la valeur pour décider d’afficher cette analyse.
   </div>
   <select data-action="diagCondOperator" data-index="${idx}" data-cindex="${cIdx}">
                       ${["==", "!=", ">", "<", ">=", "<="].map((op) => `<option value="${op}" ${cond.operator === op ? "selected" : ""}>${op}</option>`).join("")}
@@ -6832,11 +6833,11 @@
 <div>
   <div class="fieldLabel">
     <label>Valeur</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-diagCondValue-${idx}-${cIdx}" aria-label="Aide sur la valeur du diagnostic" aria-expanded="false">?</button>
+    <button type="button" class="helpIcon" data-help-toggle="help-diagCondValue-${idx}-${cIdx}" aria-label="Aide sur la valeur de l'analyse" aria-expanded="false">?</button>
   </div>
   <div class="helpBubble" id="help-diagCondValue-${idx}-${cIdx}" role="note">
     <strong>Valeur</strong>
-    Saisissez la valeur de référence qui permettra de décider si ce diagnostic doit être affiché.
+    Saisissez la valeur de référence qui permettra de décider si cette analyse doit être affichée.
     <br><br>
     <strong>Exemples</strong>
     Vous pouvez utiliser <em>true</em> pour un état présent, ou un nombre comme <em>1</em>, <em>2</em> ou <em>3</em> pour un seuil de déclenchement.
@@ -6903,7 +6904,7 @@
         .filter((id) => {
           const scene = project.scenes[id];
           return textMatchesFilter(
-            [id, scene.title, scene.chapter, scene.type, scene.text, scene.ending ? "fin" : "", scene.diagnosis ? "diagnostic" : ""],
+            [id, scene.title, scene.chapter, scene.type, scene.text, scene.ending ? "fin" : "", scene.analysis ? "analyse" : ""],
             filterValue,
           );
         })
@@ -6916,7 +6917,7 @@
           const tags = [];
           if (project.meta.startScene === id) tags.push("départ");
           if (scene.ending) tags.push("fin");
-          if (scene.diagnosis) tags.push("diagnostic");
+          if (scene.analysis) tags.push("analyse");
           if (scene.type === "remediation") tags.push("remédiation");
 
           return `
@@ -7464,7 +7465,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         meta: proj.meta,
         variables: proj.variables,
         rules: proj.rules,
-        diagnostics: proj.diagnostics,
+        analyses: proj.analyses,
         scenes: proj.scenes,
       });
     }
@@ -7514,9 +7515,9 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         pushEntry(`Aide, paragraphe ${index + 1}`, text);
       });
 
-      (proj.diagnostics || []).forEach((diag, diagIndex) => {
-        pushEntry(`Diagnostic ${diagIndex + 1}, titre`, diag.title || "");
-        pushEntry(`Diagnostic ${diagIndex + 1}, texte`, diag.text || "");
+      (proj.analyses || []).forEach((diag, diagIndex) => {
+        pushEntry(`Analyse ${diagIndex + 1}, titre`, diag.title || "");
+        pushEntry(`Analyse ${diagIndex + 1}, texte`, diag.text || "");
       });
 
       Object.entries(proj.scenes || {}).forEach(([sceneId, scene]) => {
@@ -8636,8 +8637,8 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
 
           const typeClass = scene?.ending
             ? "type-ending"
-            : scene?.diagnosis
-              ? "type-diagnosis"
+            : scene?.analysis
+              ? "type-analysis"
               : scene?.type === "remediation"
                 ? "type-remediation"
                 : "type-normal";
@@ -8895,7 +8896,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       renderMeta();
       renderVariables();
       renderRules();
-      renderDiagnostics();
+      renderAnalyses();
       renderScenesList();
       bindEditorFilters();
       renderSceneEditor();
@@ -9700,7 +9701,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
     .log-item.warn{background:rgba(255, 128, 128, 0.08);border-color:rgba(255, 128, 128, 0.35);color:#dde5ff}
     .decision-item{background:#202847;border:1px solid var(--border);border-left:4px solid rgba(124,200,255,.55);border-radius:12px;padding:10px;font-size:.9rem;color:#eef2ff}
     .ending{border-left:4px solid var(--accent);padding-left:12px;margin:8px 0 14px}
-    .diagnosis{display:grid;gap:10px;margin:12px 0 14px}
+    .analysis{display:grid;gap:10px;margin:12px 0 14px}
     .diag{background:#202847;border:1px solid var(--border);border-radius:14px;padding:12px}
     .error-box{background:rgba(255,128,128,.10);border:1px solid rgba(255,128,128,.35);color:#ffdada;border-radius:14px;padding:12px}
     .footer-note{text-align:center;font-size:.82rem;color:var(--muted);padding:0 8px 8px}
@@ -10120,16 +10121,16 @@ font-style:italic;
         });
       }
 
-      function buildDiagnosisItems(flags, state) {
-        return (project.diagnostics || [])
+      function buildAnalysisItems(flags, state) {
+        return (project.analyses || [])
           .filter(diag => evaluateConditions(state, diag.conditions || [], diag.operator || "AND"))
           .map(diag => ({
             title: diag.title,
             text: diag.text
           }))
           .concat(
-            (project.diagnostics || []).length === 0
-              ? [{ title: "Diagnostic", text: "Aucun diagnostic n’a été configuré pour ce projet." }]
+            (project.analyses || []).length === 0
+              ? [{ title: "Analyse", text: "Aucune analyse n’a été configurée pour ce projet." }]
               : []
           );
       }
@@ -10144,7 +10145,7 @@ font-style:italic;
         const matched = (project.rules?.collapse || []).find(rule =>
           evaluateConditions(state, rule.conditions || [], rule.operator || "AND")
         );
-        return matched?.goto || "diagnostic_collapse";
+        return matched?.goto || "analyse_collapse";
       }
 
       const TOTAL_STEPS = project.meta?.totalSteps || 8;
@@ -10737,28 +10738,46 @@ function normalizeInlineOperator(operator) {
           \${(scene.text || []).map(p => renderSimpleMarkdown(resolveTemplateText(p, state))).join("")}
         \`;
 
-        if (scene.diagnosis) {
-          const items = buildDiagnosisItems(state.flags, state);
+                    if (scene.analysis) {
+          const items = buildAnalysisItems(state.flags, state);
           html += \`
             <div class="ending">
-              <p class="bad"><strong>Échec ! Voyons pourquoi. Pensez à regarder les journaux.</strong></p>
+              <p class="bad"><strong>Analyse du parcours</strong></p>
               <p class="muted">Score : \${state.score}. Risque : \${state.risk}. Étape atteinte : \${state.step} / \${TOTAL_STEPS}.</p>
             </div>
-            <div class="diagnosis">
+            <div class="analysis">
               \${items.map(item => \`
                 <div class="diag">
                   <strong>\${escapeHtml(item.title)}</strong>
-                    <div style="margin-top:8px;">\${renderSimpleMarkdown(resolveTemplateText(item.text, state))}</div>
+                  <div style="margin-top:8px;">\${renderSimpleMarkdown(resolveTemplateText(item.text, state))}</div>
                 </div>
               \`).join("")}
             </div>
-            <div class="choices">
-                            <button class="choice" data-action="restart">
-                <span class="choice-title">\${renderInlineMarkdown(project.ui?.labels?.restart || "Rejouer")}</span>
-                <span class="choice-desc">Repartir du début.</span>
-              </button>
-            </div>
           \`;
+
+          const choices = (scene.choices || []).filter(visible);
+
+          if (scene.ending) {
+            html += \`
+              <div class="choices">
+                <button class="choice" data-action="restart">
+                  <span class="choice-title">\${renderInlineMarkdown(project.ui?.labels?.restart || "Rejouer")}</span>
+                  <span class="choice-desc">Repartir du début.</span>
+                </button>
+              </div>
+            \`;
+          } else {
+            html += \`<div class="choices">\`;
+            choices.forEach((choice, index) => {
+              html += \`
+                <button class="choice" data-choice="\${index}">
+                  <span class="choice-title">\${renderInlineMarkdown(choice.title || "")}</span>
+                  <span class="choice-desc">\${renderInlineMarkdown(choice.desc || "")}</span>
+                </button>
+              \`;
+            });
+            html += \`</div>\`;
+          }
         } else if (scene.ending) {
           html += \`
             <div class="choices">
@@ -10785,21 +10804,21 @@ function normalizeInlineOperator(operator) {
         el.innerHTML = html;
 playSceneTransition(el);
 
-if (scene.ending) {
+        if (scene.ending) {
           const restartBtn = el.querySelector('[data-action="restart"]');
           if (restartBtn) restartBtn.addEventListener("click", restart);
-        } else {
-          const availableChoices = (scene.choices || []).filter(visible);
-          el.querySelectorAll("[data-choice]").forEach(btn => {
-            btn.addEventListener("click", () => {
-              const idx = Number(btn.dataset.choice);
-              const choice = availableChoices[idx];
-              if (!choice) return;
-              choose(choice);
-            });
-          });
         }
-      }          
+
+        const availableChoices = (scene.choices || []).filter(visible);
+        el.querySelectorAll("[data-choice]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const idx = Number(btn.dataset.choice);
+            const choice = availableChoices[idx];
+            if (!choice) return;
+            choose(choice);
+          });
+        });   
+            } 
 
             function renderHelp() {
         document.getElementById("gameTitle").textContent = project.meta?.title || "Jeu narratif";
@@ -11243,7 +11262,7 @@ if (document.readyState === "loading") {
 
     document.getElementById("addDiagBtn").addEventListener("click", () => {
       captureEditorSnapshot();
-      project.diagnostics.push(diagTemplate(getAllVariableNames()[0] || "risk"));
+      project.analyses.push(diagTemplate(getAllVariableNames()[0] || "risk"));
       clearEditorUndoFocusTarget();
       renderAll();
     });
@@ -11647,9 +11666,14 @@ if (document.readyState === "loading") {
       captureEditorSnapshot();
       const scene = project.scenes[selectedSceneId];
       scene.type = els.sceneType.value;
-      scene.ending = scene.type === "ending" || scene.ending;
-      scene.diagnosis = scene.type === "diagnosis";
-      if (scene.type === "ending") scene.ending = true;
+      scene.analysis = scene.type === "analysis";
+
+      if (scene.type === "ending") {
+        scene.ending = true;
+      } else if (scene.type === "analysis") {
+        scene.ending = false;
+      }
+
       clearEditorUndoFocusTarget();
       renderAll();
     });
@@ -11822,29 +11846,29 @@ if (document.readyState === "loading") {
 
       if (action === "duplicateDiag") {
         captureEditorSnapshot();
-        project.diagnostics.splice(idx + 1, 0, clone(project.diagnostics[idx]));
-        project.diagnostics[idx + 1].id = uid("diag");
+        project.analyses.splice(idx + 1, 0, clone(project.analyses[idx]));
+        project.analyses[idx + 1].id = uid("diag");
         clearEditorUndoFocusTarget();
         renderAll();
       }
 
       if (action === "deleteDiag") {
         captureEditorSnapshot();
-        project.diagnostics.splice(idx, 1);
+        project.analyses.splice(idx, 1);
         clearEditorUndoFocusTarget();
         renderAll();
       }
 
       if (action === "addDiagCondition") {
         captureEditorSnapshot();
-        project.diagnostics[idx].conditions.push(conditionTemplate(getAllVariableNames()[0] || "risk"));
+        project.analyses[idx].conditions.push(conditionTemplate(getAllVariableNames()[0] || "risk"));
         clearEditorUndoFocusTarget();
         renderAll();
       }
 
       if (action === "deleteDiagCondition") {
         captureEditorSnapshot();
-        project.diagnostics[idx].conditions.splice(cIdx, 1);
+        project.analyses[idx].conditions.splice(cIdx, 1);
         clearEditorUndoFocusTarget();
         renderAll();
       }
@@ -11978,17 +12002,17 @@ if (document.readyState === "loading") {
       } else if (action === "ruleCondValue") {
         project.rules.collapse[idx].conditions[cIdx].value = el.value;
       } else if (action === "diagTitle") {
-        project.diagnostics[idx].title = el.value;
+        project.analyses[idx].title = el.value;
       } else if (action === "diagText") {
-        project.diagnostics[idx].text = el.value;
+        project.analyses[idx].text = el.value;
       } else if (action === "diagOperator") {
-        project.diagnostics[idx].operator = el.value;
+        project.analyses[idx].operator = el.value;
       } else if (action === "diagCondVariable") {
-        project.diagnostics[idx].conditions[cIdx].variable = el.value;
+        project.analyses[idx].conditions[cIdx].variable = el.value;
       } else if (action === "diagCondOperator") {
-        project.diagnostics[idx].conditions[cIdx].operator = el.value;
+        project.analyses[idx].conditions[cIdx].operator = el.value;
       } else if (action === "diagCondValue") {
-        project.diagnostics[idx].conditions[cIdx].value = el.value;
+        project.analyses[idx].conditions[cIdx].value = el.value;
       } else {
         const scene = project.scenes[selectedSceneId];
         if (!scene) return;
@@ -12003,6 +12027,7 @@ if (document.readyState === "loading") {
           needsFullRender = true;
         } else if (action === "choiceShowIf") {
           choice.showIf = el.value;
+          needsFullRender = true;
         } else if (action === "choiceScore") choice.effects.score = Number(el.value) || 0;
         else if (action === "choiceRisk") choice.effects.risk = Number(el.value) || 0;
         else if (action === "choiceStepDelta") choice.effects.stepDelta = Number(el.value) || 0;
