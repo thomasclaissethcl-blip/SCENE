@@ -2727,12 +2727,14 @@
 
                           <br /><br />
 
-                          <strong>Deux types simples</strong>
+                          <strong>Trois types simples</strong>
                           Une variable peut être :
                           <ul>
                             <li>un état vrai ou faux (par exemple : les critères sont définis ou non),</li>
                             <li>un compteur qui augmente ou diminue (par exemple : le niveau de risque ou le nombre
-                              d’erreurs).</li>
+                              d’erreurs),</li>
+                            <li>un texte (par exemple : novice, confirmé, expert, ou encore un statut comme en_attente).
+                            </li>
                           </ul>
                           <strong>Pourquoi c’est utile</strong>
                           Ces informations permettent au jeu d’adapter la suite du parcours, de déclencher des
@@ -6477,11 +6479,12 @@
               </div>
               <div class="helpBubble" id="help-varType-${idx}" role="note">
                 <strong>Type</strong>
-                Choisissez booléen pour un état vrai ou faux, et nombre pour un compteur ou un niveau d’intensité.
+                Choisissez booléen pour un état vrai ou faux, nombre pour un compteur ou un niveau d’intensité, et texte pour mémoriser une valeur textuelle comme un statut, un profil, un nom de rôle ou une catégorie.
               </div>
               <select data-action="varType" data-index="${idx}">
                             <option value="boolean" ${v.type === "boolean" ? "selected" : ""}>Booléen</option>
                             <option value="number" ${v.type === "number" ? "selected" : ""}>Nombre</option>
+                            <option value="text" ${v.type === "text" ? "selected" : ""}>Texte</option>
                           </select>
                         </div>
             <div>
@@ -6498,7 +6501,9 @@
                                 <option value="true" ${v.initial === true ? "selected" : ""}>true</option>
                                 <option value="false" ${v.initial === false ? "selected" : ""}>false</option>
                               </select>`
-            : `<input type="number" data-action="varInitialNumber" data-index="${idx}" value="${Number(v.initial || 0)}" />`
+            : v.type === "number"
+              ? `<input type="number" data-action="varInitialNumber" data-index="${idx}" value="${Number(v.initial || 0)}" />`
+              : `<input type="text" data-action="varInitialText" data-index="${idx}" value="${escapeAttr(String(v.initial ?? ""))}" />`
           }
                         </div>
             <div>
@@ -11979,12 +11984,20 @@ if (document.readyState === "loading") {
         project.variables[idx].label = el.value;
       } else if (action === "varType") {
         project.variables[idx].type = el.value;
-        project.variables[idx].initial = el.value === "boolean" ? false : 0;
+        if (el.value === "boolean") {
+          project.variables[idx].initial = false;
+        } else if (el.value === "number") {
+          project.variables[idx].initial = 0;
+        } else {
+          project.variables[idx].initial = "";
+        }
         needsFullRender = true;
       } else if (action === "varInitialBool") {
         project.variables[idx].initial = el.value === "true";
       } else if (action === "varInitialNumber") {
         project.variables[idx].initial = Number(el.value) || 0;
+      } else if (action === "varInitialText") {
+        project.variables[idx].initial = el.value;
       } else if (action === "varCategory") {
         project.variables[idx].category = el.value;
       } else if (action === "varDescription") {
@@ -12027,7 +12040,6 @@ if (document.readyState === "loading") {
           needsFullRender = true;
         } else if (action === "choiceShowIf") {
           choice.showIf = el.value;
-          needsFullRender = true;
         } else if (action === "choiceScore") choice.effects.score = Number(el.value) || 0;
         else if (action === "choiceRisk") choice.effects.risk = Number(el.value) || 0;
         else if (action === "choiceStepDelta") choice.effects.stepDelta = Number(el.value) || 0;
