@@ -1,1398 +1,1321 @@
 <!doctype html>
 <html lang="fr">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SCENE — Générateur de templates</title>
-  <style>
-    :root {
-      --bg: #0b1020;
-      --bg2: #151c35;
-      --panel: #171d36;
-      --panel2: #202847;
-      --panel3: #263059;
-      --text: #eef2ff;
-      --muted: #b8c2df;
-      --accent: #7cc8ff;
-      --good: #74d5a3;
-      --warn: #f3ca70;
-      --bad: #ff8080;
-      --border: rgba(255, 255, 255, 0.1);
-      --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-      --radius: 16px;
-      --radiusSm: 12px;
-      --max: 1800px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      min-height: 100vh;
-      background: radial-gradient(circle at top, #243066 0%, #11152a 42%, #090c16 100%);
-      color: var(--text);
-      font-family:
-        Inter,
-        ui-sans-serif,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Arial,
-        sans-serif;
-      line-height: 1.45;
-      padding: 14px;
-    }
-
-    .app {
-  max-width: var(--max);
-  margin: 0 auto;
-  display: grid;
-  gap: 12px;
-  min-height: calc(100vh - 28px);
-}
-
-    .card {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .topbar {
-      padding: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-    }
-
-    .topbarToolbarSlot {
-  display: none;
-  flex: 0 0 auto;
-  min-width: 0;
-}
-
-    .topbar h1 {
-      margin: 0;
-      font-size: 1.25rem;
-      line-height: 1.15;
-    }
-
-    .topbar p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .titleBlock {
-      display: flex;
-      align-items: stretch;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      flex: 0 0 auto;
-    }
-
-    .logo svg {
-      display: block;
-      height: 80px;
-      width: auto;
-      color: currentColor;
-    }
-
-    .titleText {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-width: 0;
-    }
-
-    .titleText h1,
-    .titleText p {
-      margin: 0;
-    }
-
-    .titleText p + p {
-      margin-top: 4px;
-    }
-
-    .topbarMeta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      min-height: 32px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 0.78rem;
-      border: 1px solid var(--border);
-      background: #222c50;
-      color: #dfe7ff;
-    }
-
-    .toolbarCard {
-      padding: 12px 16px;
-    }
-
-    .toolbar {
-      display: flex;
-      gap: 8px;
-      flex-wrap: nowrap;
-      align-items: center;
-      justify-content: flex-end;
-      width: 100%;
-      overflow: hidden;
-    }
-
-    .toolbarActionGroup {
-      display: flex;
-      align-items: stretch;
-      justify-content: flex-end;
-      gap: 8px;
-      flex: 1 1 auto;
-      min-width: 0;
-      flex-wrap: nowrap;
-    }
-
-    .toolbarIconBtn {
-      position: relative;
-      flex: 1 1 0;
-      min-width: 56px;
-      max-width: 110px;
-      height: 56px;
-      padding: 0;
-      display: inline-flex;
-      align-items: stretch;
-      justify-content: stretch;
-      overflow: hidden;
-      white-space: nowrap;
-      touch-action: manipulation;
-      -webkit-touch-callout: none;
-      user-select: none;
-      border: none;
-      border-radius: 12px;
-      background: #273158;
-      color: var(--text);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .toolbarIconBtn:hover,
-    .toolbarIconBtn:focus {
-      outline: none;
-      background: #314071;
-    }
-
-    .toolbarIconBtn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .toolbarIconBtn.is-active {
-      background: #1e4a3b;
-    }
-
-    .toolbarIconFace {
-      width: 100%;
-      height: 100%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: currentColor;
-      font-size: 1.2rem;
-      font-weight: 700;
-    }
-
-    .toolbarIconFace svg {
-      width: clamp(22px, 2vw, 28px);
-      height: clamp(22px, 2vw, 28px);
-      display: block;
-      stroke: currentColor;
-    }
-
-    .toolbarIconLabel {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 6px;
-      background: rgba(5, 10, 20, 0.6);
-      color: #fff;
-      font-size: 0.7rem;
-      font-weight: 700;
-      line-height: 1.2;
-      text-align: center;
-      opacity: 0;
-      transition: opacity 0.18s ease;
-      pointer-events: none;
-      text-wrap: balance;
-    }
-
-    .toolbarIconBtn:hover .toolbarIconLabel,
-    .toolbarIconBtn:focus-visible .toolbarIconLabel,
-    .toolbarIconBtn.show-touch-label .toolbarIconLabel {
-      opacity: 1;
-    }
-
-    .modeIndicator {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border);
-      font-size: 18px;
-      line-height: 1;
-      flex: 0 0 auto;
-    }
-
-    button,
-    .btn {
-      border: none;
-      border-radius: 12px;
-      padding: 10px 12px;
-      background: #273158;
-      color: var(--text);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      font-weight: 600;
-      font: inherit;
-    }
-
-    button:hover,
-    button:focus,
-    .btn:hover,
-    .btn:focus {
-      outline: none;
-      background: #314071;
-    }
-
-    button:disabled,
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    button.secondary {
-      background: #202847;
-    }
-
-    button.good {
-      background: #1e4a3b;
-    }
-
-    button.warn {
-      background: #5a4720;
-    }
-
-    button.bad {
-      background: #5a2424;
-    }
-
-    input,
-    textarea,
-    select {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
-      background: #11182f;
-      color: var(--text);
-      font: inherit;
-    }
-
-    textarea {
-      min-height: 96px;
-      resize: vertical;
-    }
-
-    label {
-      display: block;
-      font-size: 0.88rem;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-
-    .layout {
-  display: grid;
-  gap: 12px;
-  align-items: start;
-  min-height: 0;
-}
-
-.builderCol,
-.previewCol {
-  min-width: 0;
-  min-height: 0;
-}
-
-.builderCol {
-  display: grid;
-  gap: 12px;
-  align-content: start;
-  grid-auto-rows: max-content;
-}
-
-.previewCol {
-  display: block;
-}
-
-.previewCol > .card {
-  display: flex;
-  flex-direction: column;
-}
-
-.desktopDivider {
-  display: none;
-}
-
-@media (min-width: 1171px) {
-  .layout {
-    --builder-col-width: 56%;
-    grid-template-columns: minmax(340px, var(--builder-col-width)) 12px minmax(435px, 1fr);
-    height: calc(100vh - 190px);
-    min-height: 560px;
-    min-width: 0;
-    min-height: 0;
-    align-items: stretch;
-    overflow: hidden;
-  }
-
-   .builderCol,
-  .previewCol {
-    height: 100%;
-    min-height: 0;
-    padding-right: 4px;
-    align-self: stretch;
-  }
-
-  .builderCol {
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-
-  .previewCol {
-    overflow: hidden;
-  }
-
-  .desktopDivider {
-    display: block;
-    width: 12px;
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.16), rgba(255,255,255,0.08));
-    border: 1px solid rgba(255,255,255,0.08);
-    cursor: col-resize;
-    position: relative;
-    touch-action: none;
-  }
-
-  .desktopDivider::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 4px;
-    height: 64px;
-    transform: translate(-50%, -50%);
-    border-radius: 999px;
-    background: rgba(255,255,255,0.35);
-    box-shadow:
-      0 -14px 0 rgba(255,255,255,0.2),
-      0 14px 0 rgba(255,255,255,0.2);
-  }
-
-  .desktopDivider.dragging {
-    background: linear-gradient(180deg, rgba(124, 200, 255, 0.22), rgba(124, 200, 255, 0.35), rgba(124, 200, 255, 0.22));
-    border-color: rgba(124, 200, 255, 0.45);
-  }
-
-    .previewCol > .card {
-  min-height: 100%;
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-}
-
-    .section {
-      padding: 14px;
-    }
-
-    .section h2,
-    .section h3 {
-      margin: 0 0 10px;
-      font-size: 1rem;
-    }
-
-    .sectionLead {
-      margin: 0 0 14px;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    .muted {
-      color: var(--muted);
-    }
-
-    .small {
-      font-size: 0.85rem;
-    }
-
-    .fieldGrid {
-      display: grid;
-      gap: 10px;
-    }
-
-    .fieldGrid.two {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .fieldGrid.three {
-      grid-template-columns: 1fr 1fr 1fr;
-    }
-
-    .stack {
-      display: grid;
-      gap: 10px;
-    }
-
-    .list {
-      display: grid;
-      gap: 10px;
-    }
-
-    details.editorSection {
-      background: #182241;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .editorSectionSummary {
-      list-style: none;
-      cursor: pointer;
-      padding: 14px 16px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      user-select: none;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-    }
-
-    .editorSectionSummary::-webkit-details-marker {
-      display: none;
-    }
-
-    .editorSectionSummary::after {
-      content: "▾";
-      font-size: 1rem;
-      line-height: 1;
-      color: var(--muted);
-      transition: transform 0.2s ease;
-    }
-
-    .editorSection:not([open]) .editorSectionSummary::after {
-      transform: rotate(-90deg);
-    }
-
-    .editorSectionBody {
-      padding: 0 14px 14px;
-      display: grid;
-      gap: 12px;
-    }
-
-    .itemCard {
-      background: #1a2343;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-    }
-
-    .itemHead {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-
-    .itemHead strong {
-      display: block;
-      font-size: 0.95rem;
-    }
-
-    .itemActions {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .itemActions button {
-      padding: 7px 9px;
-      font-size: 0.84rem;
-    }
-
-    .checkboxRow {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-height: 40px;
-      margin: 0;
-      color: var(--text);
-    }
-
-    .checkboxRow input {
-      width: auto;
-      margin: 0;
-      accent-color: var(--accent);
-    }
-
-    .inlineBtns {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-  flex: 0 0 auto;
-}
-
-.tabBtn.active {
-  background: #3b4c86;
-}
-
-.tabViewport {
-  flex: 1 1 auto;
-  min-height: 0;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.panel {
-  padding: 14px;
-  border-top: 1px solid var(--border);
-}
-
-.tabViewport > .panel:first-child {
-  border-top: none;
-}
-
-    .summaryGrid {
-      display: grid;
-      gap: 10px;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .summaryCard {
-      background: #1a2343;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      min-height: 86px;
-    }
-
-    .summaryCard .label {
-      display: block;
-      color: var(--muted);
-      font-size: 0.82rem;
-      margin-bottom: 6px;
-    }
-
-    .summaryCard .value {
-      font-size: 1.05rem;
-      font-weight: 700;
-      line-height: 1.2;
-    }
-
-    .structureTree {
-      display: grid;
-      gap: 10px;
-    }
-
-    .structureScene {
-      background: #1a2343;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-    }
-
-    .structureScene h4 {
-      margin: 0 0 8px;
-      font-size: 0.95rem;
-    }
-
-    .structureScene ul {
-      margin: 0;
-      padding-left: 18px;
-      color: var(--muted);
-    }
-
-    .jsonPreview {
-  background: #0d1429;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
-  overflow: auto;
-  max-height: none;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.82rem;
-  color: #dce6ff;
-}
-
-    .notice {
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #1a2343;
-      color: #dfe7ff;
-      font-size: 0.88rem;
-    }
-
-    .notice.good {
-      background: rgba(116, 213, 163, 0.08);
-      border-color: rgba(116, 213, 163, 0.3);
-      color: #dfffee;
-    }
-
-    .notice.warn {
-      background: rgba(243, 202, 112, 0.12);
-      border-color: rgba(243, 202, 112, 0.45);
-      color: #ffe7a8;
-    }
-
-    .notice.bad {
-      background: rgba(255, 128, 128, 0.08);
-      border-color: rgba(255, 128, 128, 0.35);
-      color: #ffdada;
-    }    
-
-    .hidden {
-      display: none !important;
-    }
-
-    @media (min-width: 1170px) {
-  .topbar {
-    align-items: center;
-  }
-
-  .topbarToolbarSlot {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-
-  .topbarToolbarSlot .toolbarCard {
-    padding: 0;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    overflow: visible;
-  }
-
-  .topbarToolbarSlot .toolbar {
-    width: auto;
-    justify-content: flex-end;
-    overflow: visible;
-  }
-
-  .topbarToolbarSlot .toolbarActionGroup {
-    flex: 0 0 auto;
-    width: auto;
-    justify-content: flex-end;
-  }
-
-  .topbarToolbarSlot .toolbarIconBtn {
-    flex: 0 0 auto;
-  }
-}
-
-    @media (max-width: 1170px) {
-  .layout {
-    grid-template-columns: 1fr;
-    height: auto;
-    align-items: start;
-  }
-
-  .desktopDivider {
-    display: none;
-  }
-
-  .builderCol,
-  .previewCol {
-    height: auto;
-    min-height: auto;
-    overflow: visible;
-    padding-right: 0;
-  }
-
-  .previewCol > .card {
-    height: auto;
-    min-height: auto;
-    overflow: visible;
-  }
-
-  .tabViewport {
-    overflow: visible;
-    max-height: none;
-  }
-
-  .fieldGrid.two,
-  .fieldGrid.three,
-  .summaryGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .topbar {
-    flex-direction: column;
-  }
-
-  .toolbarCard {
-    position: sticky;
-    top: 8px;
-    z-index: 80;
-    background: rgba(11, 16, 32, 0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
-  }
-
-  .toolbar {
-    width: 100%;
-    justify-content: flex-start;
-    overflow: visible;
-  }
-
-  .toolbarActionGroup {
-    width: 100%;
-    gap: 6px;
-    justify-content: flex-start;
-  }
-
-  .toolbarIconBtn {
-    min-width: 0;
-    flex: 1 1 0;
-    height: 44px;
-    border-radius: 10px;
-    max-width: none;
-  }
-
-  .toolbarIconFace svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  .toolbarIconLabel {
-    font-size: 0.62rem;
-    padding: 4px;
-  }
-}
-
-    @media (max-width: 720px) {
-      .modeIndicator {
-        display: none;
-      }
-
-      .titleBlock {
-        align-items: flex-start;
-      }
-
-      .logo svg {
-        height: 64px;
-      }      
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      .toolbarIconBtn {
-        cursor: pointer;
-      }
-    }
-
-    @media (hover: none) {
-      .toolbarIconBtn:hover .toolbarIconLabel {
-        opacity: 0;
-      }
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCENE — Générateur de templates</title>
+    <style>
+        :root {
+            --bg: #0b1020;
+            --bg2: #151c35;
+            --panel: #171d36;
+            --panel2: #202847;
+            --panel3: #263059;
+            --text: #eef2ff;
+            --muted: #b8c2df;
+            --accent: #7cc8ff;
+            --good: #74d5a3;
+            --warn: #f3ca70;
+            --bad: #ff8080;
+            --border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+            --radius: 16px;
+            --radiusSm: 12px;
+            --max: 1800px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at top, #243066 0%, #11152a 42%, #090c16 100%);
+            color: var(--text);
+            font-family:
+                Inter,
+                ui-sans-serif,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+            line-height: 1.45;
+            padding: 14px;
+        }
+
+        .app {
+            max-width: var(--max);
+            margin: 0 auto;
+            display: grid;
+            gap: 12px;
+            min-height: calc(100vh - 28px);
+        }
+
+        .card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .topbar {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .topbarToolbarSlot {
+            display: none;
+            flex: 0 0 auto;
+            min-width: 0;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            line-height: 1.15;
+        }
+
+        .topbar p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .titleBlock {
+            display: flex;
+            align-items: stretch;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            flex: 0 0 auto;
+        }
+
+        .logo svg {
+            display: block;
+            height: 80px;
+            width: auto;
+            color: currentColor;
+        }
+
+        .titleText {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        .titleText h1,
+        .titleText p {
+            margin: 0;
+        }
+
+        .titleText p+p {
+            margin-top: 4px;
+        }
+
+        .topbarMeta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            min-height: 32px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            border: 1px solid var(--border);
+            background: #222c50;
+            color: #dfe7ff;
+        }
+
+        .toolbarCard {
+            padding: 12px 16px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .toolbarActionGroup {
+            display: flex;
+            align-items: stretch;
+            justify-content: flex-end;
+            gap: 8px;
+            flex: 1 1 auto;
+            min-width: 0;
+            flex-wrap: nowrap;
+        }
+
+        .toolbarIconBtn {
+            position: relative;
+            flex: 1 1 0;
+            min-width: 56px;
+            max-width: 110px;
+            height: 56px;
+            padding: 0;
+            display: inline-flex;
+            align-items: stretch;
+            justify-content: stretch;
+            overflow: hidden;
+            white-space: nowrap;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            user-select: none;
+            border: none;
+            border-radius: 12px;
+            background: #273158;
+            color: var(--text);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .toolbarIconBtn:hover,
+        .toolbarIconBtn:focus {
+            outline: none;
+            background: #314071;
+        }
+
+        .toolbarIconBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .toolbarIconBtn.is-active {
+            background: #1e4a3b;
+        }
+
+        .toolbarIconFace {
+            width: 100%;
+            height: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: currentColor;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .toolbarIconFace svg {
+            width: clamp(22px, 2vw, 28px);
+            height: clamp(22px, 2vw, 28px);
+            display: block;
+            stroke: currentColor;
+        }
+
+        .toolbarIconLabel {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            background: rgba(5, 10, 20, 0.6);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1.2;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.18s ease;
+            pointer-events: none;
+            text-wrap: balance;
+        }
+
+        .toolbarIconBtn:hover .toolbarIconLabel,
+        .toolbarIconBtn:focus-visible .toolbarIconLabel,
+        .toolbarIconBtn.show-touch-label .toolbarIconLabel {
+            opacity: 1;
+        }
+
+        .modeIndicator {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            font-size: 18px;
+            line-height: 1;
+            flex: 0 0 auto;
+        }
+
+        button,
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: #273158;
+            color: var(--text);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-weight: 600;
+            font: inherit;
+        }
+
+        button:hover,
+        button:focus,
+        .btn:hover,
+        .btn:focus {
+            outline: none;
+            background: #314071;
+        }
+
+        button:disabled,
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button.secondary {
+            background: #202847;
+        }
+
+        button.good {
+            background: #1e4a3b;
+        }
+
+        button.warn {
+            background: #5a4720;
+        }
+
+        button.bad {
+            background: #5a2424;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #11182f;
+            color: var(--text);
+            font: inherit;
+        }
+
+        textarea {
+            min-height: 96px;
+            resize: vertical;
+        }
+
+        label {
+            display: block;
+            font-size: 0.88rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .layout {
+            display: grid;
+            gap: 12px;
+            align-items: start;
+            min-height: 0;
+        }
+
+        .builderCol,
+        .previewCol {
+            min-width: 0;
+            min-height: 0;
+        }
+
+        .builderCol {
+            display: grid;
+            gap: 12px;
+            align-content: start;
+            grid-auto-rows: max-content;
+        }
+
+        .previewCol {
+            display: block;
+        }
+
+        .previewCol>.card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .desktopDivider {
+            display: none;
+        }
+
+        @media (min-width: 1171px) {
+            .layout {
+                --builder-col-width: 56%;
+                grid-template-columns: minmax(340px, var(--builder-col-width)) 12px minmax(435px, 1fr);
+                height: calc(100vh - 190px);
+                min-height: 560px;
+                min-width: 0;
+                min-height: 0;
+                align-items: stretch;
+                overflow: hidden;
+            }
+
+            .builderCol,
+            .previewCol {
+                height: 100%;
+                min-height: 0;
+                padding-right: 4px;
+                align-self: stretch;
+            }
+
+            .builderCol {
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+
+            .previewCol {
+                overflow: hidden;
+            }
+
+            .desktopDivider {
+                display: block;
+                width: 12px;
+                height: 100%;
+                border-radius: 999px;
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08));
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                cursor: col-resize;
+                position: relative;
+                touch-action: none;
+            }
+
+            .desktopDivider::before {
+                content: "";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 4px;
+                height: 64px;
+                transform: translate(-50%, -50%);
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.35);
+                box-shadow:
+                    0 -14px 0 rgba(255, 255, 255, 0.2),
+                    0 14px 0 rgba(255, 255, 255, 0.2);
+            }
+
+            .desktopDivider.dragging {
+                background: linear-gradient(180deg, rgba(124, 200, 255, 0.22), rgba(124, 200, 255, 0.35), rgba(124, 200, 255, 0.22));
+                border-color: rgba(124, 200, 255, 0.45);
+            }
+
+            .previewCol>.card {
+                min-height: 100%;
+                height: 100%;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        .section {
+            padding: 14px;
+        }
+
+        .section h2,
+        .section h3 {
+            margin: 0 0 10px;
+            font-size: 1rem;
+        }
+
+        .sectionLead {
+            margin: 0 0 14px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .small {
+            font-size: 0.85rem;
+        }
+
+        .fieldGrid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .fieldGrid.two {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .fieldGrid.three {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .stack {
+            display: grid;
+            gap: 10px;
+        }
+
+        .list {
+            display: grid;
+            gap: 10px;
+        }
+
+        details.editorSection {
+            background: #182241;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .editorSectionSummary {
+            list-style: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            user-select: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .editorSectionSummary::-webkit-details-marker {
+            display: none;
+        }
+
+        .editorSectionSummary::after {
+            content: "▾";
+            font-size: 1rem;
+            line-height: 1;
+            color: var(--muted);
+            transition: transform 0.2s ease;
+        }
+
+        .editorSection:not([open]) .editorSectionSummary::after {
+            transform: rotate(-90deg);
+        }
+
+        .editorSectionBody {
+            padding: 0 14px 14px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .itemCard {
+            background: #1a2343;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .itemHead {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .itemHead strong {
+            display: block;
+            font-size: 0.95rem;
+        }
+
+        .itemActions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .itemActions button {
+            padding: 7px 9px;
+            font-size: 0.84rem;
+        }
+
+        .checkboxRow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 40px;
+            margin: 0;
+            color: var(--text);
+        }
+
+        .checkboxRow input {
+            width: auto;
+            margin: 0;
+            accent-color: var(--accent);
+        }
+
+        .inlineBtns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            flex: 0 0 auto;
+        }
+
+        .tabBtn.active {
+            background: #3b4c86;
+        }
+
+        .tabViewport {
+            flex: 1 1 auto;
+            min-height: 0;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .panel {
+            padding: 14px;
+            border-top: 1px solid var(--border);
+        }
+
+        .tabViewport>.panel:first-child {
+            border-top: none;
+        }
+
+        .summaryGrid {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .summaryCard {
+            background: #1a2343;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            min-height: 86px;
+        }
+
+        .summaryCard .label {
+            display: block;
+            color: var(--muted);
+            font-size: 0.82rem;
+            margin-bottom: 6px;
+        }
+
+        .summaryCard .value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .structureTree {
+            display: grid;
+            gap: 10px;
+        }
+
+        .structureScene {
+            background: #1a2343;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .structureScene h4 {
+            margin: 0 0 8px;
+            font-size: 0.95rem;
+        }
+
+        .structureScene ul {
+            margin: 0;
+            padding-left: 18px;
+            color: var(--muted);
+        }
+
+        .jsonPreview {
+            background: #0d1429;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            overflow: auto;
+            max-height: none;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.82rem;
+            color: #dce6ff;
+        }
+
+        .notice {
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #1a2343;
+            color: #dfe7ff;
+            font-size: 0.88rem;
+        }
+
+        .notice.good {
+            background: rgba(116, 213, 163, 0.08);
+            border-color: rgba(116, 213, 163, 0.3);
+            color: #dfffee;
+        }
+
+        .notice.warn {
+            background: rgba(243, 202, 112, 0.12);
+            border-color: rgba(243, 202, 112, 0.45);
+            color: #ffe7a8;
+        }
+
+        .notice.bad {
+            background: rgba(255, 128, 128, 0.08);
+            border-color: rgba(255, 128, 128, 0.35);
+            color: #ffdada;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (min-width: 1170px) {
+            .topbar {
+                align-items: center;
+            }
+
+            .topbarToolbarSlot {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+            }
+
+            .topbarToolbarSlot .toolbarCard {
+                padding: 0;
+                background: transparent;
+                border: none;
+                box-shadow: none;
+                overflow: visible;
+            }
+
+            .topbarToolbarSlot .toolbar {
+                width: auto;
+                justify-content: flex-end;
+                overflow: visible;
+            }
+
+            .topbarToolbarSlot .toolbarActionGroup {
+                flex: 0 0 auto;
+                width: auto;
+                justify-content: flex-end;
+            }
+
+            .topbarToolbarSlot .toolbarIconBtn {
+                flex: 0 0 auto;
+            }
+        }
+
+        @media (max-width: 1170px) {
+            .layout {
+                grid-template-columns: 1fr;
+                height: auto;
+                align-items: start;
+            }
+
+            .desktopDivider {
+                display: none;
+            }
+
+            .builderCol,
+            .previewCol {
+                height: auto;
+                min-height: auto;
+                overflow: visible;
+                padding-right: 0;
+            }
+
+            .previewCol>.card {
+                height: auto;
+                min-height: auto;
+                overflow: visible;
+            }
+
+            .tabViewport {
+                overflow: visible;
+                max-height: none;
+            }
+
+            .fieldGrid.two,
+            .fieldGrid.three,
+            .summaryGrid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                flex-direction: column;
+            }
+
+            .toolbarCard {
+                position: sticky;
+                top: 8px;
+                z-index: 80;
+                background: rgba(11, 16, 32, 0.92);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+            }
+
+            .toolbar {
+                width: 100%;
+                justify-content: flex-start;
+                overflow: visible;
+            }
+
+            .toolbarActionGroup {
+                width: 100%;
+                gap: 6px;
+                justify-content: flex-start;
+            }
+
+            .toolbarIconBtn {
+                min-width: 0;
+                flex: 1 1 0;
+                height: 44px;
+                border-radius: 10px;
+                max-width: none;
+            }
+
+            .toolbarIconFace svg {
+                width: 22px;
+                height: 22px;
+            }
+
+            .toolbarIconLabel {
+                font-size: 0.62rem;
+                padding: 4px;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .modeIndicator {
+                display: none;
+            }
+
+            .titleBlock {
+                align-items: flex-start;
+            }
+
+            .logo svg {
+                height: 64px;
+            }
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .toolbarIconBtn {
+                cursor: pointer;
+            }
+        }
+
+        @media (hover: none) {
+            .toolbarIconBtn:hover .toolbarIconLabel {
+                opacity: 0;
+            }
+        }
+    </style>
 </head>
+
 <body>
-  <main class="app">
-    <section id="topbarCard" class="card topbar">
-  <div class="titleBlock">
-    <div class="logo" aria-hidden="true">
-      <svg viewBox="0 0 64 64" fill="none">
-        <rect x="8" y="8" width="48" height="48" rx="12" stroke="currentColor" stroke-width="4"></rect>
-        <circle cx="22" cy="20" r="4" fill="currentColor"></circle>
-        <circle cx="42" cy="20" r="4" fill="currentColor"></circle>
-        <circle cx="32" cy="42" r="4" fill="currentColor"></circle>
-        <path d="M22 24V30C22 32 23 33 25 34L32 38" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-        <path d="M42 24V30C42 32 41 33 39 34L32 38" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-      </svg>
-    </div>
-
-    <div class="titleText">
-      <h1>SCENE — Générateur de templates</h1>
-      <p style="font-size: 0.9em">Système de Création d'Expériences Narratives à Embranchements</p>
-      <p>Un template pour les gouverner tous.</p>          
-    </div>
-  </div>
-
-  <div id="topbarToolbarSlot" class="topbarToolbarSlot"></div>
-</section>
-
-    <div id="toolbarMobileAnchor"></div>
-    <section id="toolbarCard" class="card toolbarCard">
-      <div class="toolbar">
-        <div class="toolbarActionGroup" aria-label="Actions principales du générateur">
-          <button id="newConfigBtn" class="secondary toolbarIconBtn" type="button" aria-label="Nouveau paramétrage" title="Réinitialiser le paramétrage">
-            <span class="toolbarIconFace" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9">
-                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-linecap="round"></path>
-              </svg>
-            </span>
-            <span class="toolbarIconLabel">Nouveau</span>
-          </button>
-
-          <button id="loadExampleBtn" class="secondary toolbarIconBtn" type="button" aria-label="Charger un exemple" title="Charger un exemple de template">
-            <span class="toolbarIconFace" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9">
-                <path d="M6 5h9l3 3v11a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V5Z" stroke="currentColor" stroke-linejoin="round"></path>
-                <path d="M9 12h6M9 16h6M9 8h3" stroke="currentColor" stroke-linecap="round"></path>
-              </svg>
-            </span>
-            <span class="toolbarIconLabel">Exemple</span>
-          </button>
-
-          <button id="copyStructureBtn" class="secondary toolbarIconBtn" type="button" aria-label="Copier la structure" title="Copier la structure textuelle">
-            <span class="toolbarIconFace" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9">
-                <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor"></rect>
-                <path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-linecap="round"></path>
-              </svg>
-            </span>
-            <span class="toolbarIconLabel">Structure</span>
-          </button>
-
-          <button id="copyJsonBtn" class="secondary toolbarIconBtn" type="button" aria-label="Copier le JSON" title="Copier le JSON">
-            <span class="toolbarIconFace" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9">
-                <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor"></rect>
-                <path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-linecap="round"></path>
-                <path d="M12 13h4" stroke="currentColor" stroke-linecap="round"></path>
-              </svg>
-            </span>
-            <span class="toolbarIconLabel">JSON</span>
-          </button>
-
-          <button id="exportJsonBtn" class="good toolbarIconBtn" type="button" aria-label="Exporter le JSON" title="Exporter le JSON">
-            <span class="toolbarIconFace" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9">
-                <path d="M12 4v10" stroke="currentColor" stroke-linecap="round"></path>
-                <path d="M8.5 10.5 12 14l3.5-3.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path>
-                <path d="M5 19h14" stroke="currentColor" stroke-linecap="round"></path>
-              </svg>
-            </span>
-            <span class="toolbarIconLabel">Exporter</span>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section class="layout" id="mainLayout">
-  <div class="builderCol">
-        <details class="editorSection card" open>
-          <summary class="editorSectionSummary">Informations du projet</summary>
-          <div class="editorSectionBody">
-            <p class="sectionLead">Définissez l’identité générale du template.</p>
-
-            <div class="fieldGrid two">
-              <div>
-                <label for="projectTitle">Titre</label>
-                <input id="projectTitle" type="text" value="Mon histoire interactive">
-              </div>
-              <div>
-                <label for="projectId">Identifiant du projet</label>
-                <input id="projectId" type="text" value="">
-              </div>
-            </div>
-
-            <div class="fieldGrid two">
-              <div>
-                <label for="projectSubtitle">Sous-titre</label>
-                <input id="projectSubtitle" type="text" value="Template généré automatiquement">
-              </div>
-              <div>
-                <label for="projectAuthor">Auteur</label>
-                <input id="projectAuthor" type="text" value="">
-              </div>
-            </div>
-
-            <div class="fieldGrid three">
-              <div>
-                <label for="projectVersion">Version</label>
-                <input id="projectVersion" type="text" value="1.0">
-              </div>
-              <div>
-                <label for="startSceneId">Scène de départ</label>
-                <input id="startSceneId" type="text" value="intro">
-              </div>
-              <div>
-                <label for="totalSteps">Nombre total d’étapes</label>
-                <input id="totalSteps" type="number" min="1" value="10">
-              </div>
-            </div>
-
-            <div>
-              <label for="projectDescription">Description</label>
-              <textarea id="projectDescription">Template de départ pour créer une histoire interactive dans SCENE.</textarea>
-            </div>
-          </div>
-        </details>
-
-        <details class="editorSection card">
-          <summary class="editorSectionSummary">Structure narrative</summary>
-          <div class="editorSectionBody">
-            <p class="sectionLead">Choisissez la forme générale du squelette à générer.</p>
-
-            <div class="fieldGrid two">
-              <div>
-                <label for="structureType">Type de structure</label>
-                <select id="structureType">
-                  <option value="linear">Linéaire</option>
-                  <option value="branched" selected>Ramifiée simple</option>
-                  <option value="branched_remediation">Ramifiée avec remédiation</option>
-                </select>
-              </div>
-              <div>
-                <label for="choicesPerScene">Nombre de choix par scène</label>
-                <input id="choicesPerScene" type="number" min="1" max="4" value="2">
-              </div>
-            </div>
-
-            <div class="fieldGrid three">
-              <div>
-                <label for="mainSceneCount">Scènes principales</label>
-                <input id="mainSceneCount" type="number" min="1" value="4">
-              </div>
-              <div>
-                <label for="endingCount">Fins</label>
-                <input id="endingCount" type="number" min="1" value="2">
-              </div>
-              <div>
-                <label for="remediationCount">Remédiations</label>
-                <input id="remediationCount" type="number" min="0" value="1">
-              </div>
-            </div>
-
-            <label class="checkboxRow">
-              <input id="includeIntro" type="checkbox" checked>
-              <span>Inclure une scène d’introduction</span>
-            </label>
-
-            <label class="checkboxRow">
-              <input id="includeAnalysisScene" type="checkbox" checked>
-              <span>Inclure une scène d’analyse finale</span>
-            </label>
-          </div>
-        </details>
-
-        <details class="editorSection card">
-          <summary class="editorSectionSummary">Variables</summary>
-          <div class="editorSectionBody">
-            <p class="sectionLead">Ajoutez les variables à préparer dans le template.</p>
-
-            <label class="checkboxRow">
-              <input id="includeReservedVars" type="checkbox" checked>
-              <span>Ajouter les variables de pilotage par défaut : score, risk, step</span>
-            </label>
-
-            <div class="inlineBtns">
-              <button id="addVariableBtn" type="button">Ajouter une variable</button>
-            </div>
-
-            <div id="variablesList" class="list"></div>
-          </div>
-        </details>
-
-        <details class="editorSection card">
-          <summary class="editorSectionSummary">Paramètres d’interface</summary>
-          <div class="editorSectionBody">
-            <p class="sectionLead">Préparez les libellés et l’aide affichés dans le projet.</p>
-
-            <label class="checkboxRow">
-              <input id="openHelpOnStart" type="checkbox" checked>
-              <span>Ouvrir l’aide au démarrage</span>
-            </label>
-
-            <div class="fieldGrid two">
-              <div>
-                <label for="helpTitle">Titre de l’aide</label>
-                <input id="helpTitle" type="text" value="Comment jouer">
-              </div>
-              <div>
-                <label for="themePreset">Preset visuel</label>
-                <select id="themePreset">
-                  <option value="default" selected>Défaut</option>
-                  <option value="corporate">Corporate</option>
-                  <option value="contrast">Contraste</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label for="helpContent">Texte d’aide</label>
-              <textarea id="helpContent">Utilisez ce template comme base, puis personnalisez vos scènes, choix et analyses dans l’outil auteur.</textarea>
-            </div>
-
-            <div class="fieldGrid two">
-              <div>
-                <label for="progressLabel">Libellé progression</label>
-                <input id="progressLabel" type="text" value="Progression">
-              </div>
-              <div>
-                <label for="scoreLabel">Libellé score</label>
-                <input id="scoreLabel" type="text" value="Score">
-              </div>
-            </div>
-
-            <div class="fieldGrid two">
-              <div>
-                <label for="riskLabel">Libellé risque</label>
-                <input id="riskLabel" type="text" value="Risque">
-              </div>
-              <div>
-                <label for="inventoryLabel">Libellé inventaire</label>
-                <input id="inventoryLabel" type="text" value="Inventaire">
-              </div>
-            </div>
-
-            <div class="fieldGrid two">
-              <div>
-                <label for="typographyPreset">Preset typographique</label>
-                <select id="typographyPreset">
-                  <option value="inter" selected>Inter</option>
-                  <option value="system">System</option>
-                </select>
-              </div>
-              <div>
-                <label for="transitionPreset">Preset de transition</label>
-                <select id="transitionPreset">
-                  <option value="smooth" selected>Douce</option>
-                  <option value="none">Aucune</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </details>
-
-        <details class="editorSection card">
-          <summary class="editorSectionSummary">Règles et analyses</summary>
-          <div class="editorSectionBody">
-            <p class="sectionLead">Préparez une logique simple d’interruption et des analyses textuelles.</p>
-
-            <label class="checkboxRow">
-              <input id="enableCollapseRule" type="checkbox">
-              <span>Activer une règle d’interruption simple</span>
-            </label>
-
-            <div id="collapseRuleBlock" class="itemCard hidden">
-              <div class="fieldGrid two">
-                <div>
-                  <label for="collapseVariable">Variable</label>
-                  <select id="collapseVariable"></select>
+    <main class="app">
+        <section id="topbarCard" class="card topbar">
+            <div class="titleBlock">
+                <div class="logo" aria-hidden="true">
+                    <svg viewBox="0 0 64 64" fill="none">
+                        <rect x="8" y="8" width="48" height="48" rx="12" stroke="currentColor" stroke-width="4"></rect>
+                        <circle cx="22" cy="20" r="4" fill="currentColor"></circle>
+                        <circle cx="42" cy="20" r="4" fill="currentColor"></circle>
+                        <circle cx="32" cy="42" r="4" fill="currentColor"></circle>
+                        <path d="M22 24V30C22 32 23 33 25 34L32 38" stroke="currentColor" stroke-width="4"
+                            stroke-linecap="round"></path>
+                        <path d="M42 24V30C42 32 41 33 39 34L32 38" stroke="currentColor" stroke-width="4"
+                            stroke-linecap="round"></path>
+                    </svg>
                 </div>
-                <div>
-                  <label for="collapseOperator">Opérateur</label>
-                  <select id="collapseOperator">
-                    <option value=">=">&gt;=</option>
-                    <option value="<=">&lt;=</option>
-                    <option value="===">===</option>
-                    <option value="!==">!==</option>
-                  </select>
+
+                <div class="titleText">
+                    <h1>SCENE — Générateur de templates</h1>
+                    <p style="font-size: 0.9em">Système de Création d'Expériences Narratives à Embranchements</p>
+                    <p>Un template pour les gouverner tous.</p>
                 </div>
-              </div>
-
-              <div class="fieldGrid two">
-                <div>
-                  <label for="collapseValue">Valeur</label>
-                  <input id="collapseValue" type="text" value="1">
-                </div>
-                <div>
-                  <label for="collapseGoto">Scène cible</label>
-                  <input id="collapseGoto" type="text" value="analyse_collapse">
-                </div>
-              </div>
-
-              <div>
-                <label for="collapseLabel">Titre de la règle</label>
-                <input id="collapseLabel" type="text" value="Règle d’interruption">
-              </div>
             </div>
 
-            <div class="inlineBtns">
-              <button id="addAnalysisBtn" type="button">Ajouter une analyse</button>
-            </div>
-
-            <div id="analysesList" class="list"></div>
-          </div>
-        </details>
-
-        <details class="editorSection card">
-          <summary class="editorSectionSummary">Pré-génération des scènes</summary>
-          <div class="editorSectionBody">
-            <p class="sectionLead">Définissez les préfixes et contenus provisoires utilisés pour générer le squelette.</p>
-
-            <div class="fieldGrid two">
-              <div>
-                <label for="mainScenePrefix">Préfixe scènes principales</label>
-                <input id="mainScenePrefix" type="text" value="scene">
-              </div>
-              <div>
-                <label for="endingPrefix">Préfixe fins</label>
-                <input id="endingPrefix" type="text" value="fin">
-              </div>
-            </div>
-
-            <div class="fieldGrid two">
-              <div>
-                <label for="remediationPrefix">Préfixe remédiations</label>
-                <input id="remediationPrefix" type="text" value="remediation">
-              </div>
-              <div>
-                <label for="analysisSceneId">Identifiant scène d’analyse</label>
-                <input id="analysisSceneId" type="text" value="analyse_collapse">
-              </div>
-            </div>
-
-            <div>
-              <label for="defaultSceneText">Texte provisoire des scènes</label>
-              <textarea id="defaultSceneText">Rédigez ici le contenu de la scène.</textarea>
-            </div>
-
-            <div>
-              <label for="defaultChoiceTitle">Préfixe de titre des choix</label>
-              <input id="defaultChoiceTitle" type="text" value="Choix">
-            </div>
-          </div>
-        </details>
-      </div>
-
-        <div id="desktopDivider" class="desktopDivider" aria-hidden="true"></div>
-
-               <aside class="previewCol">
-        <section class="card">
-          <div class="tabs">
-            <button class="tabBtn active" type="button" data-tab="summary">Résumé</button>
-            <button class="tabBtn" type="button" data-tab="structure">Structure</button>
-            <button class="tabBtn" type="button" data-tab="json">JSON</button>
-            <button class="tabBtn" type="button" data-tab="graph" disabled>Vue graphique</button>
-          </div>
-
-          <div class="tabViewport">
-            <div class="panel" id="summaryPanel">
-              <div id="summaryContent"></div>
-            </div>
-
-            <div class="panel hidden" id="structurePanel">
-              <div id="structureContent"></div>
-            </div>
-
-            <div class="panel hidden" id="jsonPanel">
-              <pre id="jsonPreview" class="jsonPreview"></pre>
-            </div>
-
-            <div class="panel">
-              <h2>Vérifications</h2>
-              <div id="validationContent" class="stack"></div>
-            </div>
-          </div>          
+            <div id="topbarToolbarSlot" class="topbarToolbarSlot"></div>
         </section>
-      </aside>
-    </section>
-  </main>
 
-  <script>
-    const RESERVED_VARS = [
-      {
-        name: "score",
-        label: "Score",
-        type: "number",
-        initial: 0,
-        category: "pilotage",
-        description: "Score global du parcours."
-      },
-      {
-        name: "risk",
-        label: "Risque",
-        type: "number",
-        initial: 0,
-        category: "pilotage",
-        description: "Niveau de risque ou de tension."
-      },
-      {
-        name: "step",
-        label: "Étape",
-        type: "number",
-        initial: 0,
-        category: "pilotage",
-        description: "Progression dans le parcours."
-      }
-    ];
+        <div id="toolbarMobileAnchor"></div>
+        <section id="toolbarCard" class="card toolbarCard">
+            <div class="toolbar">
+                <div class="toolbarActionGroup" aria-label="Actions principales du générateur">
+                    <button id="newConfigBtn" class="secondary toolbarIconBtn" type="button"
+                        aria-label="Nouveau paramétrage" title="Réinitialiser le paramétrage">
+                        <span class="toolbarIconFace" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9">
+                                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-linecap="round"></path>
+                            </svg>
+                        </span>
+                        <span class="toolbarIconLabel">Nouveau</span>
+                    </button>
 
-    const STORAGE_KEY = "scene-template-generator-draft-v1";
+                    <button id="loadExampleBtn" class="secondary toolbarIconBtn" type="button"
+                        aria-label="Charger un exemple" title="Charger un exemple de template">
+                        <span class="toolbarIconFace" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9">
+                                <path d="M6 5h9l3 3v11a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V5Z" stroke="currentColor"
+                                    stroke-linejoin="round"></path>
+                                <path d="M9 12h6M9 16h6M9 8h3" stroke="currentColor" stroke-linecap="round"></path>
+                            </svg>
+                        </span>
+                        <span class="toolbarIconLabel">Exemple</span>
+                    </button>
 
-    const els = {};
-    let state = createDefaultState();
+                    <button id="copyStructureBtn" class="secondary toolbarIconBtn" type="button"
+                        aria-label="Copier la structure" title="Copier la structure textuelle">
+                        <span class="toolbarIconFace" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9">
+                                <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor"></rect>
+                                <path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" stroke="currentColor"
+                                    stroke-linecap="round"></path>
+                            </svg>
+                        </span>
+                        <span class="toolbarIconLabel">Structure</span>
+                    </button>
 
-    function createDefaultState() {
-      return {
-        project: {
-          title: "Mon histoire interactive",
-          id: "",
-          subtitle: "Template généré automatiquement",
-          author: "",
-          version: "1.0",
-          description: "Template de départ pour créer une histoire interactive dans SCENE.",
-          startScene: "intro",
-          totalSteps: 10
-        },
-        structure: {
-          type: "branched",
-          includeIntro: true,
-          includeAnalysisScene: true,
-          mainSceneCount: 4,
-          choicesPerScene: 2,
-          endingCount: 2,
-          remediationCount: 1
-        },
-        options: {
-          includeReservedVars: true,
-          openHelpOnStart: true,
-          enableCollapseRule: false
-        },
-        ui: {
-          helpTitle: "Comment jouer",
-          helpContent: "Utilisez ce template comme base, puis personnalisez vos scènes, choix et analyses dans l’outil auteur.",
-          progressLabel: "Progression",
-          scoreLabel: "Score",
-          riskLabel: "Risque",
-          inventoryLabel: "Inventaire",
-          themePreset: "default",
-          typographyPreset: "inter",
-          transitionPreset: "smooth"
-        },
-        collapseRule: {
-          variable: "score",
-          operator: ">=",
-          value: "1",
-          goto: "analyse_collapse",
-          label: "Règle d’interruption"
-        },
-        scenePreset: {
-          mainScenePrefix: "scene",
-          endingPrefix: "fin",
-          remediationPrefix: "remediation",
-          analysisSceneId: "analyse_collapse",
-          defaultSceneText: "Rédigez ici le contenu de la scène.",
-          defaultChoiceTitle: "Choix"
-        },
-        variables: [],
-        analyses: [],
-        activeTab: "summary"
-      };
-    }
+                    <button id="copyJsonBtn" class="secondary toolbarIconBtn" type="button" aria-label="Copier le JSON"
+                        title="Copier le JSON">
+                        <span class="toolbarIconFace" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9">
+                                <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor"></rect>
+                                <path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" stroke="currentColor"
+                                    stroke-linecap="round"></path>
+                                <path d="M12 13h4" stroke="currentColor" stroke-linecap="round"></path>
+                            </svg>
+                        </span>
+                        <span class="toolbarIconLabel">JSON</span>
+                    </button>
 
-    function variableFactory() {
-      return {
-        id: cryptoRandomId(),
-        name: "",
-        label: "",
-        type: "number",
-        initial: "0",
-        category: "",
-        description: ""
-      };
-    }
+                    <button id="exportJsonBtn" class="good toolbarIconBtn" type="button" aria-label="Exporter le JSON"
+                        title="Exporter le JSON">
+                        <span class="toolbarIconFace" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9">
+                                <path d="M12 4v10" stroke="currentColor" stroke-linecap="round"></path>
+                                <path d="M8.5 10.5 12 14l3.5-3.5" stroke="currentColor" stroke-linecap="round"
+                                    stroke-linejoin="round"></path>
+                                <path d="M5 19h14" stroke="currentColor" stroke-linecap="round"></path>
+                            </svg>
+                        </span>
+                        <span class="toolbarIconLabel">Exporter</span>
+                    </button>
+                </div>
+            </div>
+        </section>
 
-    function analysisFactory() {
-      return {
-        id: cryptoRandomId(),
-        title: "Nouvelle analyse",
-        text: "Texte d’analyse à personnaliser.",
-        variable: "score",
-        operator: ">=",
-        value: "0",
-        priority: "1"
-      };
-    }
+        <section class="layout" id="mainLayout">
+            <div class="builderCol">
+                <details class="editorSection card" open>
+                    <summary class="editorSectionSummary">Informations du projet</summary>
+                    <div class="editorSectionBody">
+                        <p class="sectionLead">Définissez l’identité générale du template.</p>
 
-    function cryptoRandomId() {
-      return Math.random().toString(36).slice(2, 10);
-    }
+                        <div class="fieldGrid two">
+                            <div>
+                                <label for="projectTitle">Titre</label>
+                                <input id="projectTitle" type="text" value="Mon histoire interactive">
+                            </div>
+                            <div>
+                                <label for="projectId">Identifiant du projet</label>
+                                <input id="projectId" type="text" value="">
+                            </div>
+                        </div>
 
-    function slugify(value) {
-      return String(value || "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_+|_+$/g, "")
-        .replace(/_{2,}/g, "_");
-    }
+                        <div class="fieldGrid two">
+                            <div>
+                                <label for="projectSubtitle">Sous-titre</label>
+                                <input id="projectSubtitle" type="text" value="Template généré automatiquement">
+                            </div>
+                            <div>
+                                <label for="projectAuthor">Auteur</label>
+                                <input id="projectAuthor" type="text" value="">
+                            </div>
+                        </div>
 
-    function escapeHtml(value) {
-      return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
+                        <div class="fieldGrid three">
+                            <div>
+                                <label for="projectVersion">Version</label>
+                                <input id="projectVersion" type="text" value="1.0">
+                            </div>
+                            <div>
+                                <label for="startSceneId">Scène de départ</label>
+                                <input id="startSceneId" type="text" value="intro">
+                            </div>
+                            <div>
+                                <label for="totalSteps">Nombre total d’étapes</label>
+                                <input id="totalSteps" type="number" min="1" value="10">
+                            </div>
+                        </div>
 
-    function deepClone(value) {
-      return JSON.parse(JSON.stringify(value));
-    }
+                        <div>
+                            <label for="projectDescription">Description</label>
+                            <textarea
+                                id="projectDescription">Template de départ pour créer une histoire interactive dans SCENE.</textarea>
+                        </div>
+                    </div>
+                </details>
 
-    function normalizeNumericInput(value, fallback) {
-      const n = Number(value);
-      return Number.isFinite(n) ? n : fallback;
-    }
+                <details class="editorSection card">
+                    <summary class="editorSectionSummary">Structure narrative</summary>
+                    <div class="editorSectionBody">
+                        <p class="sectionLead">Choisissez la forme générale du squelette à générer.</p>
+
+                        <div class="fieldGrid two">
+                            <div>
+                                <label for="structureType">Type de structure</label>
+                                <select id="structureType">
+                                    <option value="linear">Linéaire</option>
+                                    <option value="branched" selected>Ramifiée progressive</option>
+                                    <option value="tree">Arborescente</option>
+                                    <option value="layered">À paliers</option>
+                                    <option value="branched_remediation">Ramifiée avec interruptions et remédiations
+                                    </option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="choicesPerScene">Nombre maximal de choix par scène</label>
+                                <input id="choicesPerScene" type="number" min="1" max="4" value="3">
+                            </div>
+                        </div>
+
+                        <div class="fieldGrid three">
+                            <div>
+                                <label for="mainSceneCount">Scènes principales</label>
+                                <input id="mainSceneCount" type="number" min="1" value="8">
+                            </div>
+                            <div>
+                                <label for="endingCount">Fins</label>
+                                <input id="endingCount" type="number" min="1" value="3">
+                            </div>
+                            <div>
+                                <label for="analysisSceneCount">Scènes d’analyse</label>
+                                <input id="analysisSceneCount" type="number" min="0" value="2">
+                            </div>
+                        </div>
+
+                        <div class="fieldGrid three">
+                            <div>
+                                <label for="remediationsPerAnalysis">Remédiations par scène d’analyse</label>
+                                <input id="remediationsPerAnalysis" type="number" min="0" value="2">
+                            </div>
+                        </div>
+
+                        <label class="checkboxRow">
+                            <input id="includeIntro" type="checkbox" checked>
+                            <span>Inclure une scène d’introduction</span>
+                        </label>
+                    </div>
+                </details>
+
+                <details class="editorSection card">
+                    <summary class="editorSectionSummary">Paramètres d’interface</summary>
+                    <div class="editorSectionBody">
+                        <p class="sectionLead">Préparez les libellés et l’aide affichés dans le projet.</p>
+
+                        <label class="checkboxRow">
+                            <input id="openHelpOnStart" type="checkbox" checked>
+                            <span>Ouvrir l’aide au démarrage</span>
+                        </label>
+
+                        <div class="fieldGrid two">
+                            <div>
+                                <label for="helpTitle">Titre de l’aide</label>
+                                <input id="helpTitle" type="text" value="Comment jouer">
+                            </div>
+                            <div>
+                                <label for="themePreset">Preset visuel</label>
+                                <select id="themePreset">
+                                    <option value="default" selected>Défaut</option>
+                                    <option value="corporate">Corporate</option>
+                                    <option value="contrast">Contraste</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="helpContent">Texte d’aide</label>
+                            <textarea
+                                id="helpContent">Utilisez ce template comme base, puis personnalisez vos scènes, choix et analyses dans l’outil auteur.</textarea>
+                        </div>
+
+                        <div class="fieldGrid two">
+                            <div>
+                                <label for="progressLabel">Libellé progression</label>
+                                <input id="progressLabel" type="text" value="Progression">
+                            </div>
+                            <div>
+                                <label for="scoreLabel">Libellé score</label>
+                                <input id="scoreLabel" type="text" value="Score">
+                            </div>
+                        </div>
+
+                        <div class="fieldGrid two">
+                            <div>
+                                <label for="riskLabel">Libellé risque</label>
+                                <input id="riskLabel" type="text" value="Risque">
+                            </div>
+                            <div>
+                                <label for="inventoryLabel">Libellé inventaire</label>
+                                <input id="inventoryLabel" type="text" value="Inventaire">
+                            </div>
+                        </div>
+
+                        <div class="fieldGrid two">
+                            <div>
+                                <label for="typographyPreset">Preset typographique</label>
+                                <select id="typographyPreset">
+                                    <option value="inter" selected>Inter</option>
+                                    <option value="system">System</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="transitionPreset">Preset de transition</label>
+                                <select id="transitionPreset">
+                                    <option value="smooth" selected>Douce</option>
+                                    <option value="none">Aucune</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="editorSection card">
+                    <summary class="editorSectionSummary">Interruptions et remédiations</summary>
+                    <div class="editorSectionBody">
+                        <p class="sectionLead">Les interruptions, les scènes d’analyse, les remédiations associées et
+                            les variables techniques nécessaires sont générées automatiquement par le moteur à partir du
+                            type de structure choisi et du nombre de scènes d’analyse demandé.</p>
+
+                        <div class="notice">
+                            Dans ce générateur, vous ne paramétrez pas les règles d’interruption ni les variables
+                            techniques. Vous préparerez ensuite ces éléments plus finement dans le builder, à partir du
+                            template généré.
+                        </div>
+                    </div>
+                </details>
+
+                <details class="editorSection card">
+                    <summary class="editorSectionSummary">Pré-génération des scènes</summary>
+                    <div class="editorSectionBody">
+                        <p class="sectionLead">Définissez les préfixes et contenus provisoires utilisés pour générer le
+                            squelette.</p>
+
+                        <div class="fieldGrid two">
+    <div>
+        <label for="mainScenePrefix">Préfixe scènes principales</label>
+        <input id="mainScenePrefix" type="text" value="scene">
+    </div>
+    <div>
+        <label for="endingPrefix">Préfixe fins</label>
+        <input id="endingPrefix" type="text" value="fin">
+    </div>
+</div>
+
+<div class="fieldGrid two">
+    <div>
+        <label for="remediationPrefix">Préfixe remédiations</label>
+        <input id="remediationPrefix" type="text" value="remediation">
+    </div>
+    <div>
+        <label for="analysisScenePrefix">Préfixe scènes d’analyse</label>
+        <input id="analysisScenePrefix" type="text" value="analyse">
+    </div>
+</div>
+
+                        <div>
+                            <label for="defaultSceneText">Texte provisoire des scènes</label>
+                            <textarea id="defaultSceneText">Rédigez ici le contenu de la scène.</textarea>
+                        </div>
+
+                        <div>
+                            <label for="defaultChoiceTitle">Préfixe de titre des choix</label>
+                            <input id="defaultChoiceTitle" type="text" value="Choix">
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <div id="desktopDivider" class="desktopDivider" aria-hidden="true"></div>
+
+            <aside class="previewCol">
+                <section class="card">
+                    <div class="tabs">
+                        <button class="tabBtn active" type="button" data-tab="summary">Résumé</button>
+                        <button class="tabBtn" type="button" data-tab="structure">Structure</button>
+                        <button class="tabBtn" type="button" data-tab="json">JSON</button>
+                        <button class="tabBtn" type="button" data-tab="graph" disabled>Vue graphique</button>
+                    </div>
+
+                    <div class="tabViewport">
+                        <div class="panel" id="summaryPanel">
+                            <div id="summaryContent"></div>
+                        </div>
+
+                        <div class="panel hidden" id="structurePanel">
+                            <div id="structureContent"></div>
+                        </div>
+
+                        <div class="panel hidden" id="jsonPanel">
+                            <pre id="jsonPreview" class="jsonPreview"></pre>
+                        </div>
+
+                        <div class="panel">
+                            <h2>Vérifications</h2>
+                            <div id="validationContent" class="stack"></div>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+        </section>
+    </main>
+
+    <script>
+        const BUILTIN_RUNTIME_VARS = [
+            {
+                name: "score",
+                label: "Score"
+            },
+            {
+                name: "risk",
+                label: "Risque"
+            },
+            {
+                name: "step",
+                label: "Étape"
+            }
+        ];
+
+        function getBuiltinRuntimeVarNames() {
+            return BUILTIN_RUNTIME_VARS.map((item) => item.name);
+        }
+
+        const STORAGE_KEY = "scene-template-generator-draft-v1";
+
+        const els = {};
+        let state = createDefaultState();
+
+        function createDefaultState() {
+            return {
+                project: {
+                    title: "Mon histoire interactive",
+                    id: "",
+                    subtitle: "Template généré automatiquement",
+                    author: "",
+                    version: "1.0",
+                    description: "Template de départ pour créer une histoire interactive dans SCENE.",
+                    startScene: "intro",
+                    totalSteps: 10
+                },
+                structure: {
+                    type: "branched",
+                    includeIntro: true,
+                    mainSceneCount: 8,
+                    choicesPerScene: 3,
+                    endingCount: 3,
+                    analysisSceneCount: 2,
+                    remediationsPerAnalysis: 2
+                },
+                options: {
+                    openHelpOnStart: true
+                },
+                ui: {
+                    helpTitle: "Comment jouer",
+                    helpContent: "Utilisez ce template comme base, puis personnalisez vos scènes, choix et analyses dans l’outil auteur.",
+                    progressLabel: "Progression",
+                    scoreLabel: "Score",
+                    riskLabel: "Risque",
+                    inventoryLabel: "Inventaire",
+                    themePreset: "default",
+                    typographyPreset: "inter",
+                    transitionPreset: "smooth"
+                },
+                scenePreset: {
+                    mainScenePrefix: "scene",
+                    endingPrefix: "fin",
+                    remediationPrefix: "remediation",
+                    analysisScenePrefix: "analyse",
+                    defaultSceneText: "Rédigez ici le contenu de la scène.",
+                    defaultChoiceTitle: "Choix"
+                },
+                activeTab: "summary"
+            };
+        }
+
+        function cryptoRandomId() {
+            return Math.random().toString(36).slice(2, 10);
+        }
+
+        function slugify(value) {
+            return String(value || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "_")
+                .replace(/^_+|_+$/g, "")
+                .replace(/_{2,}/g, "_");
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        function deepClone(value) {
+            return JSON.parse(JSON.stringify(value));
+        }
+
+        function normalizeNumericInput(value, fallback) {
+            const n = Number(value);
+            return Number.isFinite(n) ? n : fallback;
+        }
 
         function cacheDom() {
-      [
+    [
         "projectTitle",
         "projectId",
         "projectSubtitle",
@@ -1405,10 +1328,9 @@
         "choicesPerScene",
         "mainSceneCount",
         "endingCount",
-        "remediationCount",
+        "analysisSceneCount",
+        "remediationsPerAnalysis",
         "includeIntro",
-        "includeAnalysisScene",
-        "includeReservedVars",
         "openHelpOnStart",
         "helpTitle",
         "helpContent",
@@ -1419,596 +1341,557 @@
         "themePreset",
         "typographyPreset",
         "transitionPreset",
-        "enableCollapseRule",
-        "collapseVariable",
-        "collapseOperator",
-        "collapseValue",
-        "collapseGoto",
-        "collapseLabel",
         "mainScenePrefix",
         "endingPrefix",
         "remediationPrefix",
-        "analysisSceneId",
+        "analysisScenePrefix",
         "defaultSceneText",
         "defaultChoiceTitle",
-        "variablesList",
-        "analysesList",
         "summaryContent",
         "structureContent",
         "jsonPreview",
         "validationContent",
-        "collapseRuleBlock",
         "newConfigBtn",
         "loadExampleBtn",
         "copyStructureBtn",
         "copyJsonBtn",
-        "exportJsonBtn",
-        "addVariableBtn",
-        "addAnalysisBtn"
-      ].forEach((id) => {
+        "exportJsonBtn"
+    ].forEach((id) => {
         els[id] = document.getElementById(id);
-      });
+    });
 
-      els.tabButtons = Array.from(document.querySelectorAll(".tabBtn"));
-      els.summaryPanel = document.getElementById("summaryPanel");
-      els.structurePanel = document.getElementById("structurePanel");
-      els.jsonPanel = document.getElementById("jsonPanel");
-      els.mainLayout = document.getElementById("mainLayout");
-      els.desktopDivider = document.getElementById("desktopDivider");
-    }
+    els.tabButtons = Array.from(document.querySelectorAll(".tabBtn"));
+    els.summaryPanel = document.getElementById("summaryPanel");
+    els.structurePanel = document.getElementById("structurePanel");
+    els.jsonPanel = document.getElementById("jsonPanel");
+    els.mainLayout = document.getElementById("mainLayout");
+    els.desktopDivider = document.getElementById("desktopDivider");
+}
 
-    function syncStateFromForm() {
-      state.project.title = els.projectTitle.value.trim();
-      state.project.id = els.projectId.value.trim();
-      state.project.subtitle = els.projectSubtitle.value.trim();
-      state.project.author = els.projectAuthor.value.trim();
-      state.project.version = els.projectVersion.value.trim();
-      state.project.description = els.projectDescription.value.trim();
-      state.project.startScene = els.startSceneId.value.trim() || "intro";
-      state.project.totalSteps = normalizeNumericInput(els.totalSteps.value, 10);
+        function syncStateFromForm() {
+            state.project.title = els.projectTitle.value.trim();
+            state.project.id = els.projectId.value.trim();
+            state.project.subtitle = els.projectSubtitle.value.trim();
+            state.project.author = els.projectAuthor.value.trim();
+            state.project.version = els.projectVersion.value.trim();
+            state.project.description = els.projectDescription.value.trim();
+            state.project.startScene = els.startSceneId.value.trim() || "intro";
+            state.project.totalSteps = normalizeNumericInput(els.totalSteps.value, 10);
 
-      state.structure.type = els.structureType.value;
-      state.structure.choicesPerScene = normalizeNumericInput(els.choicesPerScene.value, 2);
-      state.structure.mainSceneCount = normalizeNumericInput(els.mainSceneCount.value, 4);
-      state.structure.endingCount = normalizeNumericInput(els.endingCount.value, 2);
-      state.structure.remediationCount = normalizeNumericInput(els.remediationCount.value, 1);
-      state.structure.includeIntro = els.includeIntro.checked;
-      state.structure.includeAnalysisScene = els.includeAnalysisScene.checked;
+            state.structure.type = els.structureType.value;
+            state.structure.choicesPerScene = normalizeNumericInput(els.choicesPerScene.value, 2);
+            state.structure.mainSceneCount = normalizeNumericInput(els.mainSceneCount.value, 8);
+            state.structure.endingCount = normalizeNumericInput(els.endingCount.value, 3);
+            state.structure.analysisSceneCount = normalizeNumericInput(els.analysisSceneCount.value, 2);
+            state.structure.remediationsPerAnalysis = normalizeNumericInput(els.remediationsPerAnalysis.value, 2);
+            state.structure.includeIntro = els.includeIntro.checked;
 
-      state.options.includeReservedVars = els.includeReservedVars.checked;
-      state.options.openHelpOnStart = els.openHelpOnStart.checked;
-      state.options.enableCollapseRule = els.enableCollapseRule.checked;
+            state.options.openHelpOnStart = els.openHelpOnStart.checked;
 
-      state.ui.helpTitle = els.helpTitle.value.trim();
-      state.ui.helpContent = els.helpContent.value.trim();
-      state.ui.progressLabel = els.progressLabel.value.trim();
-      state.ui.scoreLabel = els.scoreLabel.value.trim();
-      state.ui.riskLabel = els.riskLabel.value.trim();
-      state.ui.inventoryLabel = els.inventoryLabel.value.trim();
-      state.ui.themePreset = els.themePreset.value;
-      state.ui.typographyPreset = els.typographyPreset.value;
-      state.ui.transitionPreset = els.transitionPreset.value;
+            state.ui.helpTitle = els.helpTitle.value.trim();
+            state.ui.helpContent = els.helpContent.value.trim();
+            state.ui.progressLabel = els.progressLabel.value.trim();
+            state.ui.scoreLabel = els.scoreLabel.value.trim();
+            state.ui.riskLabel = els.riskLabel.value.trim();
+            state.ui.inventoryLabel = els.inventoryLabel.value.trim();
+            state.ui.themePreset = els.themePreset.value;
+            state.ui.typographyPreset = els.typographyPreset.value;
+            state.ui.transitionPreset = els.transitionPreset.value;
 
-      state.collapseRule.variable = els.collapseVariable.value;
-      state.collapseRule.operator = els.collapseOperator.value;
-      state.collapseRule.value = els.collapseValue.value.trim();
-      state.collapseRule.goto = els.collapseGoto.value.trim();
-      state.collapseRule.label = els.collapseLabel.value.trim();
+            state.scenePreset.mainScenePrefix = els.mainScenePrefix.value.trim() || "scene";
+            state.scenePreset.endingPrefix = els.endingPrefix.value.trim() || "fin";
+            state.scenePreset.remediationPrefix = els.remediationPrefix.value.trim() || "remediation";
+            state.scenePreset.analysisScenePrefix = els.analysisScenePrefix.value.trim() || "analyse";
+            state.scenePreset.defaultSceneText = els.defaultSceneText.value.trim();
+            state.scenePreset.defaultChoiceTitle = els.defaultChoiceTitle.value.trim() || "Choix";
 
-      state.scenePreset.mainScenePrefix = els.mainScenePrefix.value.trim() || "scene";
-      state.scenePreset.endingPrefix = els.endingPrefix.value.trim() || "fin";
-      state.scenePreset.remediationPrefix = els.remediationPrefix.value.trim() || "remediation";
-      state.scenePreset.analysisSceneId = els.analysisSceneId.value.trim() || "analyse_collapse";
-      state.scenePreset.defaultSceneText = els.defaultSceneText.value.trim();
-      state.scenePreset.defaultChoiceTitle = els.defaultChoiceTitle.value.trim() || "Choix";
-
-      state.analyses = collectAnalysesFromDom();
-      state.variables = collectVariablesFromDom();
-
-      if (!state.project.id && state.project.title) {
-        state.project.id = slugify(state.project.title);
-        els.projectId.value = state.project.id;
-      }
-    }
-
-    function collectVariablesFromDom() {
-      return Array.from(els.variablesList.querySelectorAll("[data-variable-id]")).map((node) => ({
-        id: node.dataset.variableId,
-        name: node.querySelector('[data-field="name"]').value.trim(),
-        label: node.querySelector('[data-field="label"]').value.trim(),
-        type: node.querySelector('[data-field="type"]').value,
-        initial: node.querySelector('[data-field="initial"]').value.trim(),
-        category: node.querySelector('[data-field="category"]').value.trim(),
-        description: node.querySelector('[data-field="description"]').value.trim()
-      }));
-    }
-
-    function collectAnalysesFromDom() {
-      return Array.from(els.analysesList.querySelectorAll("[data-analysis-id]")).map((node) => ({
-        id: node.dataset.analysisId,
-        title: node.querySelector('[data-field="title"]').value.trim(),
-        text: node.querySelector('[data-field="text"]').value.trim(),
-        variable: node.querySelector('[data-field="variable"]').value,
-        operator: node.querySelector('[data-field="operator"]').value,
-        value: node.querySelector('[data-field="value"]').value.trim(),
-        priority: node.querySelector('[data-field="priority"]').value.trim()
-      }));
-    }
-
-    function buildVariableDefinitions(currentState) {
-      const vars = [];
-
-      if (currentState.options.includeReservedVars) {
-        RESERVED_VARS.forEach((item) => vars.push(deepClone(item)));
-      }
-
-      currentState.variables.forEach((item) => {
-        if (!item.name) return;
-        vars.push({
-          name: item.name,
-          label: item.label || item.name,
-          type: item.type || "number",
-          initial: coerceInitialValue(item.type, item.initial),
-          category: item.category || "",
-          description: item.description || ""
-        });
-      });
-
-      return vars;
-    }
-
-    function coerceInitialValue(type, value) {
-      if (type === "number") {
-        const n = Number(value);
-        return Number.isFinite(n) ? n : 0;
-      }
-      if (type === "boolean") {
-        return String(value).toLowerCase() === "true";
-      }
-      return value ?? "";
-    }
-
-    function buildProjectFromState(currentState) {
-      const variables = buildVariableDefinitions(currentState);
-
-      const project = {
-        meta: {
-          id: currentState.project.id || slugify(currentState.project.title) || "template_scene",
-          title: currentState.project.title || "Projet sans titre",
-          subtitle: currentState.project.subtitle || "",
-          version: currentState.project.version || "1.0",
-          author: currentState.project.author || "",
-          description: currentState.project.description || "",
-          startScene: currentState.project.startScene || "intro",
-          totalSteps: normalizeNumericInput(currentState.project.totalSteps, 10)
-        },
-        ui: {
-          openHelpOnStart: !!currentState.options.openHelpOnStart,
-          labels: {
-            progressLabel: currentState.ui.progressLabel || "Progression",
-            scoreLabel: currentState.ui.scoreLabel || "Score",
-            riskLabel: currentState.ui.riskLabel || "Risque",
-            inventoryLabel: currentState.ui.inventoryLabel || "Inventaire"
-          },
-          theme: {
-            preset: currentState.ui.themePreset || "default"
-          },
-          typography: {
-            preset: currentState.ui.typographyPreset || "inter"
-          },
-          transitions: {
-            preset: currentState.ui.transitionPreset || "smooth"
-          }
-        },
-        help: {
-          title: currentState.ui.helpTitle || "Comment jouer",
-          content: currentState.ui.helpContent || ""
-        },
-        variables,
-        rules: {
-          collapse: []
-        },
-        analyses: [],
-        journal: [],
-        scenes: {}
-      };
-
-      const scenes = buildScenes(currentState);
-      project.scenes = scenes;
-
-      if (currentState.options.enableCollapseRule) {
-        project.rules.collapse.push({
-          id: "collapse_1",
-          label: currentState.collapseRule.label || "Règle d’interruption",
-          when: {
-            variable: currentState.collapseRule.variable || "score",
-            operator: currentState.collapseRule.operator || ">=",
-            value: parseMaybeNumber(currentState.collapseRule.value)
-          },
-          goto: currentState.collapseRule.goto || currentState.scenePreset.analysisSceneId || "analyse_collapse"
-        });
-      }
-
-      project.analyses = currentState.analyses
-        .filter((item) => item.title || item.text)
-        .map((item, index) => ({
-          id: `analysis_${index + 1}`,
-          title: item.title || `Analyse ${index + 1}`,
-          text: item.text || "",
-          when: {
-            variable: item.variable || "score",
-            operator: item.operator || ">=",
-            value: parseMaybeNumber(item.value)
-          },
-          priority: Number(item.priority) || index + 1
-        }));
-
-      return project;
-    }
-
-    function parseMaybeNumber(value) {
-      const n = Number(value);
-      return Number.isFinite(n) ? n : value;
-    }
-
-    function buildScenes(currentState) {
-      const scenes = {};
-      const mainIds = [];
-      const remediationIds = [];
-      const endingIds = [];
-      const analysisId = currentState.scenePreset.analysisSceneId || "analyse_collapse";
-
-      for (let i = 1; i <= currentState.structure.mainSceneCount; i += 1) {
-        mainIds.push(`${slugify(currentState.scenePreset.mainScenePrefix || "scene")}_${i}`);
-      }
-
-      for (let i = 1; i <= currentState.structure.remediationCount; i += 1) {
-        remediationIds.push(`${slugify(currentState.scenePreset.remediationPrefix || "remediation")}_${i}`);
-      }
-
-      for (let i = 1; i <= currentState.structure.endingCount; i += 1) {
-        endingIds.push(`${slugify(currentState.scenePreset.endingPrefix || "fin")}_${i}`);
-      }
-
-      if (currentState.structure.includeIntro) {
-        scenes.intro = {
-          chapter: 1,
-          title: "Introduction",
-          text: currentState.scenePreset.defaultSceneText || "Rédigez ici le contenu de la scène.",
-          image: "",
-          type: "normal",
-          ending: false,
-          analysis: false,
-          choices: [
-            {
-              title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} 1`,
-              description: "Commencer le parcours",
-              goto: mainIds[0] || endingIds[0] || analysisId,
-              effects: {
-                stepDelta: 1
-              }
+            if (!state.project.id && state.project.title) {
+                state.project.id = slugify(state.project.title);
+                els.projectId.value = state.project.id;
             }
-          ]
-        };
-      }
-
-      mainIds.forEach((sceneId, index) => {
-        const choices = [];
-        const nextMain = mainIds[index + 1];
-        const remediationTarget = remediationIds[index % Math.max(remediationIds.length, 1)] || null;
-        const endingTarget = endingIds[index % Math.max(endingIds.length, 1)] || null;
-        const isLastMain = index === mainIds.length - 1;
-
-        if (currentState.structure.type === "linear") {
-          choices.push({
-            title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} 1`,
-            description: isLastMain ? "Terminer le parcours" : "Continuer",
-            goto: isLastMain ? (endingTarget || analysisId) : nextMain,
-            effects: { stepDelta: 1 }
-          });
-        } else if (currentState.structure.type === "branched") {
-          choices.push({
-            title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} 1`,
-            description: isLastMain ? "Conclure positivement" : "Poursuivre vers la scène suivante",
-            goto: isLastMain ? (endingIds[0] || analysisId) : nextMain,
-            effects: { score: 1, stepDelta: 1 }
-          });
-          choices.push({
-            title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} 2`,
-            description: isLastMain ? "Conclure autrement" : "Prendre une voie alternative",
-            goto: isLastMain ? (endingIds[1] || endingIds[0] || analysisId) : (endingTarget || nextMain || analysisId),
-            effects: { risk: 1, stepDelta: 1 }
-          });
-        } else {
-          choices.push({
-            title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} 1`,
-            description: isLastMain ? "Conclure le parcours" : "Poursuivre",
-            goto: isLastMain ? (endingIds[0] || analysisId) : nextMain,
-            effects: { score: 1, stepDelta: 1 }
-          });
-          choices.push({
-            title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} 2`,
-            description: remediationTarget ? "Basculer vers une remédiation" : "Explorer une autre option",
-            goto: remediationTarget || endingTarget || nextMain || analysisId,
-            effects: { risk: 1, stepDelta: 1 }
-          });
         }
 
-        while (choices.length < currentState.structure.choicesPerScene) {
-          choices.push({
-            title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} ${choices.length + 1}`,
-            description: "Choix à personnaliser",
-            goto: nextMain || endingTarget || analysisId,
-            effects: { stepDelta: 1 }
-          });
+        function buildVariableDefinitions(currentState) {
+            const vars = [];
+            const structureType = currentState.structure.type || "branched";
+            const analysisSceneCount = Math.max(0, Number(currentState.structure.analysisSceneCount) || 0);
+
+            if (structureType === "branched_remediation" && analysisSceneCount > 0) {
+                vars.push({
+                    name: "interruptions_count",
+                    label: "Interruptions déclenchées",
+                    type: "number",
+                    initial: 0,
+                    category: "technique",
+                    description: "Compteur technique généré automatiquement pour piloter les interruptions."
+                });
+            }
+
+            if (analysisSceneCount > 0) {
+                vars.push({
+                    name: "last_analysis_index",
+                    label: "Dernière analyse atteinte",
+                    type: "number",
+                    initial: 0,
+                    category: "technique",
+                    description: "Repère technique généré automatiquement pour suivre la dernière scène d’analyse atteinte."
+                });
+            }
+
+            return vars;
         }
 
-        scenes[sceneId] = {
-          chapter: currentState.structure.includeIntro ? 2 : 1,
-          title: `Scène ${index + 1}`,
-          text: currentState.scenePreset.defaultSceneText || "Rédigez ici le contenu de la scène.",
-          image: "",
-          type: "normal",
-          ending: false,
-          analysis: false,
-          choices
-        };
-      });
-
-      remediationIds.forEach((sceneId, index) => {
-        scenes[sceneId] = {
-          chapter: currentState.structure.includeIntro ? 3 : 2,
-          title: `Remédiation ${index + 1}`,
-          text: currentState.scenePreset.defaultSceneText || "Rédigez ici le contenu de la scène.",
-          image: "",
-          type: "remediation",
-          ending: false,
-          analysis: false,
-          choices: [
-            {
-              title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} 1`,
-              description: "Revenir au parcours principal",
-              goto: mainIds[Math.min(index + 1, Math.max(mainIds.length - 1, 0))] || endingIds[0] || analysisId,
-              effects: { score: 1, stepDelta: 1 }
+        function coerceInitialValue(type, value) {
+            if (type === "number") {
+                const n = Number(value);
+                return Number.isFinite(n) ? n : 0;
             }
-          ]
-        };
-      });
+            if (type === "boolean") {
+                return String(value).toLowerCase() === "true";
+            }
+            return value ?? "";
+        }
 
-      endingIds.forEach((sceneId, index) => {
-        scenes[sceneId] = {
-          chapter: currentState.structure.includeIntro ? 4 : 3,
-          title: `Fin ${index + 1}`,
-          text: "Rédigez ici la conclusion de cette branche.",
-          image: "",
-          type: "ending",
-          ending: true,
-          analysis: false,
-          choices: []
-        };
-      });
+        function buildAnalysisSceneIds(currentState) {
+            const prefix = slugify(currentState.scenePreset.analysisScenePrefix || "analyse");
+            const count = Math.max(0, Number(currentState.structure.analysisSceneCount) || 0);
+            return Array.from({ length: count }, (_, index) => `${prefix}_${index + 1}`);
+        }
 
-      if (currentState.structure.includeAnalysisScene || currentState.options.enableCollapseRule) {
-        scenes[analysisId] = {
-          chapter: currentState.structure.includeIntro ? 5 : 4,
-          title: "Analyse finale",
-          text: "Rédigez ici l’analyse, le bilan ou la synthèse.",
-          image: "",
-          type: "analysis",
-          ending: false,
-          analysis: true,
-          choices: []
-        };
-      }
+        function buildCollapseRules(currentState, analysisSceneIds) {
+            if (!analysisSceneIds.length) {
+                return [];
+            }
 
-      return scenes;
-    }
+            const structureType = currentState.structure.type || "branched";
+            const builtinSequence =
+                structureType === "linear"
+                    ? ["step"]
+                    : structureType === "tree"
+                        ? ["risk", "score", "step"]
+                        : structureType === "layered"
+                            ? ["step", "score"]
+                            : structureType === "branched_remediation"
+                                ? ["risk", "score", "interruptions_count"]
+                                : ["score", "step"];
 
-    function validateProject(project) {
-      const messages = [];
-      const sceneIds = Object.keys(project.scenes);
-      const startSceneExists = sceneIds.includes(project.meta.startScene);
+            return analysisSceneIds.map((analysisId, index) => {
+                const variable = builtinSequence[index % builtinSequence.length];
+                const usesBuiltin = getBuiltinRuntimeVarNames().includes(variable);
 
-      if (startSceneExists) {
-        messages.push({ type: "good", text: `La scène de départ « ${project.meta.startScene} » existe.` });
-      } else {
-        messages.push({ type: "bad", text: `La scène de départ « ${project.meta.startScene} » est introuvable.` });
-      }
+                return {
+                    id: `collapse_${index + 1}`,
+                    label: `Interruption ${index + 1}`,
+                    when: {
+                        variable,
+                        operator: usesBuiltin ? ">=" : "===",
+                        value: usesBuiltin ? index + 1 : index
+                    },
+                    goto: analysisId
+                };
+            });
+        }
 
-      const choiceTargetErrors = [];
-      sceneIds.forEach((sceneId) => {
-        const scene = project.scenes[sceneId];
-        (scene.choices || []).forEach((choice, index) => {
-          if (!sceneIds.includes(choice.goto)) {
-            choiceTargetErrors.push(`Destination absente : ${sceneId} → choix ${index + 1} → ${choice.goto}`);
-          }
-        });
-      });
+        function buildProjectFromState(currentState) {
+            const variables = buildVariableDefinitions(currentState);
 
-      if (choiceTargetErrors.length === 0) {
-        messages.push({ type: "good", text: "Toutes les destinations de choix pointent vers une scène existante." });
-      } else {
-        messages.push({ type: "bad", text: choiceTargetErrors[0] });
-      }
+            const project = {
+                meta: {
+                    id: currentState.project.id || slugify(currentState.project.title) || "template_scene",
+                    title: currentState.project.title || "Projet sans titre",
+                    subtitle: currentState.project.subtitle || "",
+                    version: currentState.project.version || "1.0",
+                    author: currentState.project.author || "",
+                    description: currentState.project.description || "",
+                    startScene: currentState.project.startScene || "intro",
+                    totalSteps: normalizeNumericInput(currentState.project.totalSteps, 10)
+                },
+                ui: {
+                    openHelpOnStart: !!currentState.options.openHelpOnStart,
+                    labels: {
+                        progressLabel: currentState.ui.progressLabel || "Progression",
+                        scoreLabel: currentState.ui.scoreLabel || "Score",
+                        riskLabel: currentState.ui.riskLabel || "Risque",
+                        inventoryLabel: currentState.ui.inventoryLabel || "Inventaire"
+                    },
+                    theme: {
+                        preset: currentState.ui.themePreset || "default"
+                    },
+                    typography: {
+                        preset: currentState.ui.typographyPreset || "inter"
+                    },
+                    transitions: {
+                        preset: currentState.ui.transitionPreset || "smooth"
+                    }
+                },
+                help: {
+                    title: currentState.ui.helpTitle || "Comment jouer",
+                    content: currentState.ui.helpContent || ""
+                },
+                variables,
+                rules: {
+                    collapse: []
+                },
+                analyses: [],
+                journal: [],
+                scenes: {}
+            };
 
-      const varNames = project.variables.map((v) => v.name).filter(Boolean);
-      const duplicateVarNames = varNames.filter((name, index) => varNames.indexOf(name) !== index);
+            const generated = buildScenes(currentState);
+            project.scenes = generated.scenes;
+            project.rules.collapse = buildCollapseRules(currentState, generated.analysisSceneIds);
 
-      if (duplicateVarNames.length === 0) {
-        messages.push({ type: "good", text: "Aucun nom de variable en double." });
-      } else {
-        messages.push({ type: "bad", text: `Variable dupliquée : ${duplicateVarNames[0]}` });
-      }
+            project.analyses = generated.analysisSceneIds.map((analysisId, index) => ({
+                id: `analysis_${index + 1}`,
+                title: `Analyse ${index + 1}`,
+                text: `Analyse générée automatiquement pour la scène ${analysisId}.`,
+                when: {
+                    variable: project.rules.collapse[index]?.when?.variable || "score",
+                    operator: project.rules.collapse[index]?.when?.operator || ">=",
+                    value: project.rules.collapse[index]?.when?.value ?? index + 1
+                },
+                priority: index + 1
+            }));
 
-      if (sceneIds.length > 0) {
-        messages.push({ type: "good", text: `${sceneIds.length} scène(s) générée(s).` });
-      } else {
-        messages.push({ type: "bad", text: "Aucune scène n’a été générée." });
-      }
+            return project;
+        }
 
-      if (project.analyses.length > 0) {
-        messages.push({ type: "good", text: `${project.analyses.length} analyse(s) préparée(s).` });
-      } else {
-        messages.push({ type: "warn", text: "Aucune analyse textuelle n’a été ajoutée." });
-      }
+        function parseMaybeNumber(value) {
+            const n = Number(value);
+            return Number.isFinite(n) ? n : value;
+        }
 
-      return messages;
-    }
+        function buildScenes(currentState) {
+            const scenes = {};
+            const mainIds = [];
+            const endingIds = [];
+            const analysisSceneIds = buildAnalysisSceneIds(currentState);
 
-    function renderVariablesList() {
-      if (!state.variables.length) {
-        els.variablesList.innerHTML = `<div class="notice">Aucune variable personnalisée pour le moment.</div>`;
-        refreshCollapseVariableOptions();
-        return;
-      }
+            const mainPrefix = slugify(currentState.scenePreset.mainScenePrefix || "scene");
+            const endingPrefix = slugify(currentState.scenePreset.endingPrefix || "fin");
+            const remediationPrefix = slugify(currentState.scenePreset.remediationPrefix || "remediation");
 
-      els.variablesList.innerHTML = state.variables.map((item, index) => `
-        <article class="itemCard" data-variable-id="${escapeHtml(item.id)}">
-          <div class="itemHead">
-            <div>
-              <strong>Variable ${index + 1}</strong>
-              <div class="muted small">Variable personnalisée du template</div>
-            </div>
-            <div class="itemActions">
-              <button type="button" class="bad" data-remove-variable="${escapeHtml(item.id)}">Supprimer</button>
-            </div>
-          </div>
+            const mainCount = Math.max(1, Number(currentState.structure.mainSceneCount) || 1);
+            const endingCount = Math.max(1, Number(currentState.structure.endingCount) || 1);
+            const remediationsPerAnalysis = Math.max(0, Number(currentState.structure.remediationsPerAnalysis) || 0);
+            const choicesPerScene = Math.max(1, Math.min(4, Number(currentState.structure.choicesPerScene) || 2));
 
-          <div class="fieldGrid two">
-            <div>
-              <label>Nom technique</label>
-              <input data-field="name" type="text" value="${escapeHtml(item.name)}">
-            </div>
-            <div>
-              <label>Libellé</label>
-              <input data-field="label" type="text" value="${escapeHtml(item.label)}">
-            </div>
-          </div>
+            for (let i = 1; i <= mainCount; i += 1) {
+                mainIds.push(`${mainPrefix}_${i}`);
+            }
 
-          <div class="fieldGrid three">
-            <div>
-              <label>Type</label>
-              <select data-field="type">
-                <option value="number" ${item.type === "number" ? "selected" : ""}>Nombre</option>
-                <option value="boolean" ${item.type === "boolean" ? "selected" : ""}>Booléen</option>
-                <option value="text" ${item.type === "text" ? "selected" : ""}>Texte</option>
-              </select>
-            </div>
-            <div>
-              <label>Valeur initiale</label>
-              <input data-field="initial" type="text" value="${escapeHtml(item.initial)}">
-            </div>
-            <div>
-              <label>Catégorie</label>
-              <input data-field="category" type="text" value="${escapeHtml(item.category)}">
-            </div>
-          </div>
+            for (let i = 1; i <= endingCount; i += 1) {
+                endingIds.push(`${endingPrefix}_${i}`);
+            }
 
-          <div>
-            <label>Description</label>
-            <textarea data-field="description">${escapeHtml(item.description)}</textarea>
-          </div>
-        </article>
-      `).join("");
+            const remediationGroups = analysisSceneIds.map((analysisId, analysisIndex) =>
+                Array.from({ length: remediationsPerAnalysis }, (_, remediationIndex) =>
+                    `${remediationPrefix}_${analysisIndex + 1}_${remediationIndex + 1}`
+                )
+            );
 
-      refreshCollapseVariableOptions();
-    }
+            function uniqueNonEmpty(values) {
+                return Array.from(new Set(values.filter(Boolean)));
+            }
 
-    function refreshCollapseVariableOptions() {
-      const vars = [
-        ...(state.options.includeReservedVars ? RESERVED_VARS.map((item) => item.name) : []),
-        ...state.variables.map((item) => item.name).filter(Boolean)
-      ];
+            function getStructureProfile(type, sceneCount) {
+                switch (type) {
+                    case "linear":
+                        return { branchFactor: 1, maxJump: 1, endingShortcut: false, spread: false };
+                    case "tree":
+                        return {
+                            branchFactor: sceneCount >= 10 ? 4 : 3,
+                            maxJump: Math.max(2, Math.ceil(sceneCount / 3)),
+                            endingShortcut: true,
+                            spread: true
+                        };
+                    case "layered":
+                        return {
+                            branchFactor: sceneCount >= 8 ? 3 : 2,
+                            maxJump: Math.max(2, Math.ceil(sceneCount / 2)),
+                            endingShortcut: true,
+                            spread: true
+                        };
+                    case "branched_remediation":
+                        return {
+                            branchFactor: sceneCount >= 8 ? 3 : 2,
+                            maxJump: Math.max(2, Math.ceil(sceneCount / 4)),
+                            endingShortcut: true,
+                            spread: false
+                        };
+                    case "branched":
+                    default:
+                        return {
+                            branchFactor: sceneCount >= 8 ? 3 : 2,
+                            maxJump: Math.max(2, Math.ceil(sceneCount / 4)),
+                            endingShortcut: true,
+                            spread: false
+                        };
+                }
+            }
 
-      const uniqueVars = Array.from(new Set(vars.length ? vars : ["score"]));
+            function pickForwardTargets(index, profile) {
+                const targets = [];
+                const lastIndex = mainIds.length - 1;
 
-      const currentCollapseVar = state.collapseRule.variable || uniqueVars[0] || "score";
-      els.collapseVariable.innerHTML = uniqueVars
-        .map((name) => `<option value="${escapeHtml(name)}" ${name === currentCollapseVar ? "selected" : ""}>${escapeHtml(name)}</option>`)
-        .join("");
+                if (index >= lastIndex) {
+                    return endingIds.slice(0, choicesPerScene);
+                }
 
-      document.querySelectorAll('[data-field="variable"]').forEach((select) => {
-        const current = select.dataset.currentValue || select.value || uniqueVars[0];
-        select.innerHTML = uniqueVars
-          .map((name) => `<option value="${escapeHtml(name)}" ${name === current ? "selected" : ""}>${escapeHtml(name)}</option>`)
-          .join("");
-      });
-    }
+                const candidateOffsets = profile.spread
+                    ? [1, Math.ceil(profile.maxJump / 2), profile.maxJump]
+                    : [1, 2, profile.maxJump];
 
-    function renderAnalysesList() {
-      if (!state.analyses.length) {
-        els.analysesList.innerHTML = `<div class="notice">Aucune analyse ajoutée pour le moment.</div>`;
-        return;
-      }
+                candidateOffsets.forEach((offset) => {
+                    const target = mainIds[index + offset];
+                    if (target) targets.push(target);
+                });
 
-      const variableNames = [
-        ...(state.options.includeReservedVars ? RESERVED_VARS.map((item) => item.name) : []),
-        ...state.variables.map((item) => item.name).filter(Boolean)
-      ];
-      const options = Array.from(new Set(variableNames.length ? variableNames : ["score"]));
+                for (let lookAhead = 1; lookAhead < mainIds.length && targets.length < profile.branchFactor; lookAhead += 1) {
+                    const target = mainIds[index + lookAhead];
+                    if (target) targets.push(target);
+                }
 
-      els.analysesList.innerHTML = state.analyses.map((item, index) => `
-        <article class="itemCard" data-analysis-id="${escapeHtml(item.id)}">
-          <div class="itemHead">
-            <div>
-              <strong>Analyse ${index + 1}</strong>
-              <div class="muted small">Texte conditionnel préparé pour le projet</div>
-            </div>
-            <div class="itemActions">
-              <button type="button" class="bad" data-remove-analysis="${escapeHtml(item.id)}">Supprimer</button>
-            </div>
-          </div>
+                const remainingMainScenes = mainIds.length - index - 1;
+                if (profile.endingShortcut && remainingMainScenes <= profile.branchFactor + 1) {
+                    endingIds.forEach((endingId) => targets.push(endingId));
+                }
 
-          <div>
-            <label>Titre</label>
-            <input data-field="title" type="text" value="${escapeHtml(item.title)}">
-          </div>
+                const uniqueTargets = uniqueNonEmpty(targets);
 
-          <div>
-            <label>Texte</label>
-            <textarea data-field="text">${escapeHtml(item.text)}</textarea>
-          </div>
+                while (uniqueTargets.length < choicesPerScene) {
+                    const fallbackTarget =
+                        mainIds[index + uniqueTargets.length + 1] ||
+                        endingIds[(uniqueTargets.length - profile.branchFactor) % endingIds.length] ||
+                        endingIds[0];
+                    if (!fallbackTarget) break;
+                    uniqueTargets.push(fallbackTarget);
+                }
 
-          <div class="fieldGrid three">
-            <div>
-              <label>Variable</label>
-              <select data-field="variable" data-current-value="${escapeHtml(item.variable || options[0])}">
-                ${options.map((name) => `<option value="${escapeHtml(name)}" ${name === (item.variable || options[0]) ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}
-              </select>
-            </div>
-            <div>
-              <label>Opérateur</label>
-              <select data-field="operator">
-                <option value=">=" ${item.operator === ">=" ? "selected" : ""}>&gt;=</option>
-                <option value="<=" ${item.operator === "<=" ? "selected" : ""}>&lt;=</option>
-                <option value="===" ${item.operator === "===" ? "selected" : ""}>===</option>
-                <option value="!==" ${item.operator === "!==" ? "selected" : ""}>!==</option>
-              </select>
-            </div>
-            <div>
-              <label>Priorité</label>
-              <input data-field="priority" type="number" min="1" value="${escapeHtml(item.priority)}">
-            </div>
-          </div>
+                return uniqueNonEmpty(uniqueTargets).slice(0, choicesPerScene);
+            }
 
-          <div>
-            <label>Valeur</label>
-            <input data-field="value" type="text" value="${escapeHtml(item.value)}">
-          </div>
-        </article>
-      `).join("");
-    }
+            function buildChoiceDescription(targetId, index, choiceIndex) {
+                if (endingIds.includes(targetId)) {
+                    return `Conduire vers ${targetId.replace(/_/g, " ")}`;
+                }
+                return index === 0 && choiceIndex === 0
+                    ? "Lancer une première bifurcation"
+                    : `Poursuivre vers ${targetId.replace(/_/g, " ")}`;
+            }
 
-    function renderSummary(project) {
-      const sceneIds = Object.keys(project.scenes);
-      const choiceCount = sceneIds.reduce((acc, sceneId) => acc + (project.scenes[sceneId].choices || []).length, 0);
+            function getAnalysisAnchorIndexes() {
+                if (!analysisSceneIds.length) return [];
+                return analysisSceneIds.map((_, index) => {
+                    const raw = Math.floor(((index + 1) * mainIds.length) / (analysisSceneIds.length + 1)) - 1;
+                    return Math.max(0, Math.min(mainIds.length - 1, raw));
+                });
+            }
 
-      els.summaryContent.innerHTML = `
+            const profile = getStructureProfile(currentState.structure.type, mainIds.length);
+            const analysisAnchorIndexes = getAnalysisAnchorIndexes();
+
+            if (currentState.structure.includeIntro) {
+                scenes.intro = {
+                    chapter: 1,
+                    title: "Introduction",
+                    text: currentState.scenePreset.defaultSceneText || "Rédigez ici le contenu de la scène.",
+                    image: "",
+                    type: "normal",
+                    ending: false,
+                    analysis: false,
+                    choices: [
+                        {
+                            title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} 1`,
+                            description: "Commencer le parcours",
+                            goto: mainIds[0],
+                            effects: {
+                                stepDelta: 1
+                            }
+                        }
+                    ]
+                };
+            }
+
+            mainIds.forEach((sceneId, index) => {
+                const targets = pickForwardTargets(index, profile);
+
+                scenes[sceneId] = {
+                    chapter: currentState.structure.includeIntro ? 2 : 1,
+                    title: `Scène ${index + 1}`,
+                    text: currentState.scenePreset.defaultSceneText || "Rédigez ici le contenu de la scène.",
+                    image: "",
+                    type: "normal",
+                    ending: false,
+                    analysis: false,
+                    choices: targets.map((targetId, choiceIndex) => ({
+                        title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} ${choiceIndex + 1}`,
+                        description: buildChoiceDescription(targetId, index, choiceIndex),
+                        goto: targetId,
+                        effects: {
+                            stepDelta: 1
+                        }
+                    }))
+                };
+            });
+
+            analysisSceneIds.forEach((analysisId, analysisIndex) => {
+                const linkedRemediations = remediationGroups[analysisIndex] || [];
+
+                scenes[analysisId] = {
+                    chapter: currentState.structure.includeIntro ? 3 : 2,
+                    title: `Analyse ${analysisIndex + 1}`,
+                    text: `Cette scène d’analyse correspond à l’interruption ${analysisIndex + 1}. Elle présente le diagnostic associé, puis propose une ou plusieurs voies de remédiation.`,
+                    image: "",
+                    type: "analysis",
+                    ending: false,
+                    analysis: true,
+                    choices: linkedRemediations.map((remediationId, choiceIndex) => ({
+                        title: `Remédiation ${choiceIndex + 1}`,
+                        description: `Basculer vers ${remediationId.replace(/_/g, " ")}`,
+                        goto: remediationId,
+                        effects: {}
+                    }))
+                };
+            });
+
+            remediationGroups.forEach((group, analysisIndex) => {
+                const anchorIndex = analysisAnchorIndexes[analysisIndex] ?? 0;
+
+                group.forEach((remediationId, remediationIndex) => {
+                    const reentryIndex = Math.min(
+                        mainIds.length - 1,
+                        anchorIndex + 1 + remediationIndex
+                    );
+
+                    const alternateIndex = Math.min(
+                        mainIds.length - 1,
+                        reentryIndex + 1
+                    );
+
+                    const targets = uniqueNonEmpty([
+                        mainIds[reentryIndex],
+                        mainIds[alternateIndex],
+                        endingIds[remediationIndex % endingIds.length]
+                    ]).filter((targetId) => {
+                        const targetMainIndex = mainIds.indexOf(targetId);
+                        return targetMainIndex === -1 || targetMainIndex > anchorIndex;
+                    });
+
+                    scenes[remediationId] = {
+                        chapter: currentState.structure.includeIntro ? 4 : 3,
+                        title: `Remédiation ${analysisIndex + 1}.${remediationIndex + 1}`,
+                        text: `Cette scène de remédiation prolonge l’analyse ${analysisIndex + 1} et réinjecte ensuite le joueur plus loin dans le parcours.`,
+                        image: "",
+                        type: "remediation",
+                        ending: false,
+                        analysis: false,
+                        choices: targets.slice(0, choicesPerScene).map((targetId, choiceIndex) => ({
+                            title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} ${choiceIndex + 1}`,
+                            description: targetId.startsWith(endingPrefix)
+                                ? "Conclure après remédiation"
+                                : `Réintégrer le parcours vers ${targetId.replace(/_/g, " ")}`,
+                            goto: targetId,
+                            effects: {
+                                stepDelta: 1
+                            }
+                        }))
+                    };
+                });
+            });
+
+            endingIds.forEach((sceneId, index) => {
+                scenes[sceneId] = {
+                    chapter: currentState.structure.includeIntro ? 5 : 4,
+                    title: `Fin ${index + 1}`,
+                    text: "Rédigez ici la conclusion de cette branche.",
+                    image: "",
+                    type: "ending",
+                    ending: true,
+                    analysis: false,
+                    choices: []
+                };
+            });
+
+            return {
+                scenes,
+                analysisSceneIds
+            };
+        }
+
+        function validateProject(project) {
+            const messages = [];
+            const sceneIds = Object.keys(project.scenes);
+            const startSceneExists = sceneIds.includes(project.meta.startScene);
+
+            if (startSceneExists) {
+                messages.push({ type: "good", text: `La scène de départ « ${project.meta.startScene} » existe.` });
+            } else {
+                messages.push({ type: "bad", text: `La scène de départ « ${project.meta.startScene} » est introuvable.` });
+            }
+
+            const choiceTargetErrors = [];
+            sceneIds.forEach((sceneId) => {
+                const scene = project.scenes[sceneId];
+                (scene.choices || []).forEach((choice, index) => {
+                    if (!sceneIds.includes(choice.goto)) {
+                        choiceTargetErrors.push(`Destination absente : ${sceneId} → choix ${index + 1} → ${choice.goto}`);
+                    }
+                });
+            });
+
+            if (choiceTargetErrors.length === 0) {
+                messages.push({ type: "good", text: "Toutes les destinations de choix pointent vers une scène existante." });
+            } else {
+                messages.push({ type: "bad", text: choiceTargetErrors[0] });
+            }
+
+            const varNames = project.variables.map((v) => v.name).filter(Boolean);
+            const duplicateVarNames = varNames.filter((name, index) => varNames.indexOf(name) !== index);
+
+            const builtinDuplicates = varNames.filter((name) => getBuiltinRuntimeVarNames().includes(name));
+            if (builtinDuplicates.length > 0) {
+                messages.push({
+                    type: "bad",
+                    text: `La variable moteur « ${builtinDuplicates[0]} » ne doit pas être redéfinie comme variable personnalisée.`
+                });
+            }
+
+            if (duplicateVarNames.length === 0) {
+                messages.push({ type: "good", text: "Aucun nom de variable en double." });
+            } else {
+                messages.push({ type: "bad", text: `Variable dupliquée : ${duplicateVarNames[0]}` });
+            }
+
+            if (sceneIds.length > 0) {
+                messages.push({ type: "good", text: `${sceneIds.length} scène(s) générée(s).` });
+            } else {
+                messages.push({ type: "bad", text: "Aucune scène n’a été générée." });
+            }
+
+            if (project.analyses.length > 0) {
+                messages.push({ type: "good", text: `${project.analyses.length} analyse(s) préparée(s).` });
+            } else {
+                messages.push({ type: "warn", text: "Aucune analyse textuelle n’a été ajoutée." });
+            }
+
+            return messages;
+        }        
+
+        function renderSummary(project) {
+            const sceneIds = Object.keys(project.scenes);
+            const choiceCount = sceneIds.reduce((acc, sceneId) => acc + (project.scenes[sceneId].choices || []).length, 0);
+
+            els.summaryContent.innerHTML = `
         <div class="summaryGrid">
           <div class="summaryCard">
-            <span class="label">Projet</span>
-            <div class="value">${escapeHtml(project.meta.title)}</div>
-          </div>
+  <span class="label">Analyses textuelles</span>
+  <div class="value">${project.analyses.length}</div>
+</div>
+<div class="summaryCard">
+  <span class="label">Scènes d’analyse</span>
+  <div class="value">${Object.values(project.scenes).filter((scene) => scene.analysis).length}</div>
+</div>
           <div class="summaryCard">
             <span class="label">Scène de départ</span>
             <div class="value">${escapeHtml(project.meta.startScene)}</div>
@@ -2022,434 +1905,332 @@
             <div class="value">${choiceCount}</div>
           </div>
           <div class="summaryCard">
-            <span class="label">Variables</span>
-            <div class="value">${project.variables.length}</div>
-          </div>
-          <div class="summaryCard">
-            <span class="label">Analyses</span>
-            <div class="value">${project.analyses.length}</div>
-          </div>
+  <span class="label">Variables techniques générées</span>
+  <div class="value">${project.variables.length}</div>
+</div>
+<div class="summaryCard">
+  <span class="label">Interruptions générées</span>
+  <div class="value">${project.rules.collapse.length}</div>
+</div>
         </div>
       `;
-    }
+        }
 
-    function renderStructure(project) {
-      const sceneIds = Object.keys(project.scenes);
+        function renderStructure(project) {
+            const sceneIds = Object.keys(project.scenes);
 
-      if (!sceneIds.length) {
-        els.structureContent.innerHTML = `<div class="notice bad">Aucune structure disponible.</div>`;
-        return;
-      }
+            if (!sceneIds.length) {
+                els.structureContent.innerHTML = `<div class="notice bad">Aucune structure disponible.</div>`;
+                return;
+            }
 
-      els.structureContent.innerHTML = `
+            els.structureContent.innerHTML = `
         <div class="structureTree">
           ${sceneIds.map((sceneId) => {
-            const scene = project.scenes[sceneId];
-            const choices = scene.choices || [];
-            return `
+                const scene = project.scenes[sceneId];
+                const choices = scene.choices || [];
+                return `
               <article class="structureScene">
                 <h4>${escapeHtml(sceneId)} — ${escapeHtml(scene.title || "")}</h4>
                 ${choices.length
-                  ? `<ul>${choices.map((choice) => `<li>${escapeHtml(choice.title)} → <strong>${escapeHtml(choice.goto)}</strong></li>`).join("")}</ul>`
-                  : `<div class="muted small">Aucun choix dans cette scène.</div>`}
+                        ? `<ul>${choices.map((choice) => `<li>${escapeHtml(choice.title)} → <strong>${escapeHtml(choice.goto)}</strong></li>`).join("")}</ul>`
+                        : `<div class="muted small">Aucun choix dans cette scène.</div>`}
               </article>
             `;
-          }).join("")}
+            }).join("")}
         </div>
       `;
-    }
-
-    function renderJson(project) {
-      els.jsonPreview.textContent = JSON.stringify(project, null, 2);
-    }
-
-    function renderValidation(project) {
-      const messages = validateProject(project);
-      els.validationContent.innerHTML = messages
-        .map((item) => `<div class="notice ${item.type}">${escapeHtml(item.text)}</div>`)
-        .join("");
-    }
-
-    function renderCollapseRuleVisibility() {
-      els.collapseRuleBlock.classList.toggle("hidden", !els.enableCollapseRule.checked);
-    }
-
-    function renderTabs() {
-      els.tabButtons.forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.tab === state.activeTab);
-      });
-
-      els.summaryPanel.classList.toggle("hidden", state.activeTab !== "summary");
-      els.structurePanel.classList.toggle("hidden", state.activeTab !== "structure");
-      els.jsonPanel.classList.toggle("hidden", state.activeTab !== "json");
-    }
-
-    function renderAll() {
-      syncStateFromForm();
-      renderCollapseRuleVisibility();
-      renderVariablesList();
-      renderAnalysesList();
-
-      const project = buildProjectFromState(state);
-      renderSummary(project);
-      renderStructure(project);
-      renderJson(project);
-      renderValidation(project);
-      renderTabs();
-    }
-
-    function setFormFromState(currentState) {
-      els.projectTitle.value = currentState.project.title;
-      els.projectId.value = currentState.project.id;
-      els.projectSubtitle.value = currentState.project.subtitle;
-      els.projectAuthor.value = currentState.project.author;
-      els.projectVersion.value = currentState.project.version;
-      els.projectDescription.value = currentState.project.description;
-      els.startSceneId.value = currentState.project.startScene;
-      els.totalSteps.value = currentState.project.totalSteps;
-
-      els.structureType.value = currentState.structure.type;
-      els.choicesPerScene.value = currentState.structure.choicesPerScene;
-      els.mainSceneCount.value = currentState.structure.mainSceneCount;
-      els.endingCount.value = currentState.structure.endingCount;
-      els.remediationCount.value = currentState.structure.remediationCount;
-      els.includeIntro.checked = currentState.structure.includeIntro;
-      els.includeAnalysisScene.checked = currentState.structure.includeAnalysisScene;
-
-      els.includeReservedVars.checked = currentState.options.includeReservedVars;
-      els.openHelpOnStart.checked = currentState.options.openHelpOnStart;
-      els.enableCollapseRule.checked = currentState.options.enableCollapseRule;
-
-      els.helpTitle.value = currentState.ui.helpTitle;
-      els.helpContent.value = currentState.ui.helpContent;
-      els.progressLabel.value = currentState.ui.progressLabel;
-      els.scoreLabel.value = currentState.ui.scoreLabel;
-      els.riskLabel.value = currentState.ui.riskLabel;
-      els.inventoryLabel.value = currentState.ui.inventoryLabel;
-      els.themePreset.value = currentState.ui.themePreset;
-      els.typographyPreset.value = currentState.ui.typographyPreset;
-      els.transitionPreset.value = currentState.ui.transitionPreset;
-
-      els.collapseOperator.value = currentState.collapseRule.operator;
-      els.collapseValue.value = currentState.collapseRule.value;
-      els.collapseGoto.value = currentState.collapseRule.goto;
-      els.collapseLabel.value = currentState.collapseRule.label;
-
-      els.mainScenePrefix.value = currentState.scenePreset.mainScenePrefix;
-      els.endingPrefix.value = currentState.scenePreset.endingPrefix;
-      els.remediationPrefix.value = currentState.scenePreset.remediationPrefix;
-      els.analysisSceneId.value = currentState.scenePreset.analysisSceneId;
-      els.defaultSceneText.value = currentState.scenePreset.defaultSceneText;
-      els.defaultChoiceTitle.value = currentState.scenePreset.defaultChoiceTitle;
-
-      state.variables = deepClone(currentState.variables);
-      state.analyses = deepClone(currentState.analyses);
-      state.activeTab = currentState.activeTab || "summary";
-
-      renderAll();
-    }
-
-    function buildExampleState() {
-      const example = createDefaultState();
-
-      example.project.title = "Gestion d’une crise qualité";
-      example.project.subtitle = "Cas ramifié avec remédiation";
-      example.project.author = "Votre équipe";
-      example.project.description = "Template de départ pour un cas métier avec embranchements, remédiation et analyse.";
-      example.structure.type = "branched_remediation";
-      example.structure.mainSceneCount = 5;
-      example.structure.endingCount = 3;
-      example.structure.remediationCount = 2;
-      example.structure.choicesPerScene = 2;
-      example.options.enableCollapseRule = true;
-
-      example.variables = [
-        {
-          id: cryptoRandomId(),
-          name: "confidence",
-          label: "Confiance",
-          type: "number",
-          initial: "0",
-          category: "pilotage",
-          description: "Confiance gagnée au fil des décisions."
-        },
-        {
-          id: cryptoRandomId(),
-          name: "alert_sent",
-          label: "Alerte envoyée",
-          type: "boolean",
-          initial: "false",
-          category: "traces",
-          description: "Indique si l’alerte a été transmise."
         }
-      ];
 
-      example.analyses = [
-        {
-          id: cryptoRandomId(),
-          title: "Analyse prudente",
-          text: "Le parcours montre une gestion attentive mais encore incomplète.",
-          variable: "risk",
-          operator: "<=",
-          value: "2",
-          priority: "1"
-        },
-        {
-          id: cryptoRandomId(),
-          title: "Analyse de performance",
-          text: "Le participant a pris des décisions efficaces et bien structurées.",
-          variable: "score",
-          operator: ">=",
-          value: "3",
-          priority: "2"
+        function renderJson(project) {
+            els.jsonPreview.textContent = JSON.stringify(project, null, 2);
         }
-      ];
 
-      example.collapseRule = {
-        variable: "risk",
-        operator: ">=",
-        value: "4",
-        goto: "analyse_collapse",
-        label: "Tension trop élevée"
-      };
+        function renderValidation(project) {
+            const messages = validateProject(project);
+            els.validationContent.innerHTML = messages
+                .map((item) => `<div class="notice ${item.type}">${escapeHtml(item.text)}</div>`)
+                .join("");
+        }        
 
-      return example;
-    }
-
-    function downloadJson(filename, data) {
-      const blob = new Blob([data], { type: "application/json;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    async function copyText(text, successMessage) {
-      try {
-        await navigator.clipboard.writeText(text);
-        alert(successMessage);
-      } catch (error) {
-        console.error(error);
-        alert("La copie a échoué. Votre navigateur ne l’autorise pas ici.");
-      }
-    }
-
-    function getStructureText(project) {
-      return Object.entries(project.scenes)
-        .map(([sceneId, scene]) => {
-          const lines = [`${sceneId} — ${scene.title}`];
-          if ((scene.choices || []).length) {
-            scene.choices.forEach((choice) => {
-              lines.push(`  ${choice.title} -> ${choice.goto}`);
+        function renderTabs() {
+            els.tabButtons.forEach((btn) => {
+                btn.classList.toggle("active", btn.dataset.tab === state.activeTab);
             });
-          } else {
-            lines.push("  [aucun choix]");
-          }
-          return lines.join("\n");
-        })
-        .join("\n\n");
-    }
 
-    function bindEvents() {
-      document.addEventListener("input", (event) => {
-        if (event.target.id === "projectTitle" && !els.projectId.value.trim()) {
-          els.projectId.value = slugify(els.projectTitle.value);
+            els.summaryPanel.classList.toggle("hidden", state.activeTab !== "summary");
+            els.structurePanel.classList.toggle("hidden", state.activeTab !== "structure");
+            els.jsonPanel.classList.toggle("hidden", state.activeTab !== "json");
         }
-        renderAll();
-      });
 
-      document.addEventListener("change", () => {
-        renderAll();
-      });
+        function renderAll() {
+    syncStateFromForm();
 
-      els.addVariableBtn.addEventListener("click", () => {
-        syncStateFromForm();
-        state.variables.push(variableFactory());
-        renderVariablesList();
-        renderAll();
-      });
+    const project = buildProjectFromState(state);
+    renderSummary(project);
+    renderStructure(project);
+    renderJson(project);
+    renderValidation(project);
+    renderTabs();
+}
 
-      els.variablesList.addEventListener("click", (event) => {
-        const removeBtn = event.target.closest("[data-remove-variable]");
-        if (!removeBtn) return;
-        syncStateFromForm();
-        state.variables = state.variables.filter((item) => item.id !== removeBtn.dataset.removeVariable);
-        renderVariablesList();
-        renderAll();
-      });
+        function setFormFromState(currentState) {
+  els.projectTitle.value = currentState.project.title;
+  els.projectId.value = currentState.project.id;
+  els.projectSubtitle.value = currentState.project.subtitle;
+  els.projectAuthor.value = currentState.project.author;
+  els.projectVersion.value = currentState.project.version;
+  els.projectDescription.value = currentState.project.description;
+  els.startSceneId.value = currentState.project.startScene;
+  els.totalSteps.value = currentState.project.totalSteps;
 
-      els.addAnalysisBtn.addEventListener("click", () => {
-        syncStateFromForm();
-        state.analyses.push(analysisFactory());
-        renderAnalysesList();
-        renderAll();
-      });
+  els.structureType.value = currentState.structure.type;
+  els.choicesPerScene.value = currentState.structure.choicesPerScene;
+  els.mainSceneCount.value = currentState.structure.mainSceneCount;
+  els.endingCount.value = currentState.structure.endingCount;
+  els.analysisSceneCount.value = currentState.structure.analysisSceneCount;
+  els.remediationsPerAnalysis.value = currentState.structure.remediationsPerAnalysis;
+  els.includeIntro.checked = currentState.structure.includeIntro;
 
-      els.analysesList.addEventListener("click", (event) => {
-        const removeBtn = event.target.closest("[data-remove-analysis]");
-        if (!removeBtn) return;
-        syncStateFromForm();
-        state.analyses = state.analyses.filter((item) => item.id !== removeBtn.dataset.removeAnalysis);
-        renderAnalysesList();
-        renderAll();
-      });
+  els.openHelpOnStart.checked = currentState.options.openHelpOnStart;
 
-      els.tabButtons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (btn.disabled) return;
-          state.activeTab = btn.dataset.tab;
-          renderTabs();
-        });
-      });
+  els.helpTitle.value = currentState.ui.helpTitle;
+  els.helpContent.value = currentState.ui.helpContent;
+  els.progressLabel.value = currentState.ui.progressLabel;
+  els.scoreLabel.value = currentState.ui.scoreLabel;
+  els.riskLabel.value = currentState.ui.riskLabel;
+  els.inventoryLabel.value = currentState.ui.inventoryLabel;
+  els.themePreset.value = currentState.ui.themePreset;
+  els.typographyPreset.value = currentState.ui.typographyPreset;
+  els.transitionPreset.value = currentState.ui.transitionPreset;
 
-            els.newConfigBtn.addEventListener("click", () => {
-        state = createDefaultState();
-        setFormFromState(state);
-      });
+  els.mainScenePrefix.value = currentState.scenePreset.mainScenePrefix;
+  els.endingPrefix.value = currentState.scenePreset.endingPrefix;
+  els.remediationPrefix.value = currentState.scenePreset.remediationPrefix;
+  els.analysisScenePrefix.value = currentState.scenePreset.analysisScenePrefix;
+  els.defaultSceneText.value = currentState.scenePreset.defaultSceneText;
+  els.defaultChoiceTitle.value = currentState.scenePreset.defaultChoiceTitle;
 
-      els.loadExampleBtn.addEventListener("click", () => {
-        state = buildExampleState();
-        setFormFromState(state);
-      });
+  renderAll();
+}
 
-      els.exportJsonBtn.addEventListener("click", exportCurrentProject);
+        function buildExampleState() {
+    const example = createDefaultState();
 
-      els.copyJsonBtn.addEventListener("click", async () => {
-        syncStateFromForm();
-        const project = buildProjectFromState(state);
-        await copyText(JSON.stringify(project, null, 2), "JSON copié dans le presse-papiers.");
-      });
+    example.project.title = "Gestion d’une crise qualité";
+    example.project.subtitle = "Cas ramifié avec interruptions et remédiations";
+    example.project.author = "Votre équipe";
+    example.project.description = "Template de départ pour un cas métier avec embranchements, interruptions, analyses et remédiations.";
 
-      els.copyStructureBtn.addEventListener("click", async () => {
-        syncStateFromForm();
-        const project = buildProjectFromState(state);
-        await copyText(getStructureText(project), "Structure copiée dans le presse-papiers.");
-      });
+    example.structure.type = "branched_remediation";
+    example.structure.mainSceneCount = 6;
+    example.structure.endingCount = 3;
+    example.structure.analysisSceneCount = 2;
+    example.structure.remediationsPerAnalysis = 2;
+    example.structure.choicesPerScene = 3;
 
-      makeToolbarTouchLabels();
-    }
+    example.scenePreset.mainScenePrefix = "situation";
+    example.scenePreset.endingPrefix = "fin";
+    example.scenePreset.analysisScenePrefix = "analyse";
+    example.scenePreset.remediationPrefix = "remediation";
+    example.scenePreset.defaultSceneText = "Rédigez ici le contenu de la scène.";
+    example.scenePreset.defaultChoiceTitle = "Option";
 
-    function makeToolbarTouchLabels() {
-      document.querySelectorAll(".toolbarIconBtn").forEach((btn) => {
-        let timeoutId = null;
-        btn.addEventListener("touchstart", () => {
-          btn.classList.add("show-touch-label");
-          window.clearTimeout(timeoutId);
-          timeoutId = window.setTimeout(() => {
-            btn.classList.remove("show-touch-label");
-          }, 1000);
-        }, { passive: true });
-      });
-    }
+    return example;
+}
 
-       function exportCurrentProject() {
-      syncStateFromForm();
-      const project = buildProjectFromState(state);
-      const filename = `${project.meta.id || "template_scene"}.json`;
-      downloadJson(filename, JSON.stringify(project, null, 2));
-    }
-
-    function moveToolbarForResponsiveLayout() {
-      const toolbarCard = document.getElementById("toolbarCard");
-      const topbarToolbarSlot = document.getElementById("topbarToolbarSlot");
-      const toolbarMobileAnchor = document.getElementById("toolbarMobileAnchor");
-
-      if (!toolbarCard || !topbarToolbarSlot || !toolbarMobileAnchor) return;
-
-      if (window.innerWidth >= 1170) {
-        if (toolbarCard.parentElement !== topbarToolbarSlot) {
-          topbarToolbarSlot.appendChild(toolbarCard);
+        function downloadJson(filename, data) {
+            const blob = new Blob([data], { type: "application/json;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
         }
-      } else {
-        if (toolbarCard.previousElementSibling !== toolbarMobileAnchor) {
-          toolbarMobileAnchor.insertAdjacentElement("afterend", toolbarCard);
+
+        async function copyText(text, successMessage) {
+            try {
+                await navigator.clipboard.writeText(text);
+                alert(successMessage);
+            } catch (error) {
+                console.error(error);
+                alert("La copie a échoué. Votre navigateur ne l’autorise pas ici.");
+            }
         }
-      }
-    }
 
-    function applyDesktopPaneWidth(percent) {
-      if (!els.mainLayout) return;
-
-      const min = 35;
-      const max = 75;
-      const safePercent = Math.max(min, Math.min(percent, max));
-      els.mainLayout.style.setProperty("--builder-col-width", `${safePercent}%`);
-    }
-
-    function initDesktopDivider() {
-      const divider = els.desktopDivider;
-      const layout = els.mainLayout;
-      if (!divider || !layout) return;
-
-      let dragging = false;
-
-      function isDesktopLayout() {
-        return window.innerWidth >= 1171;
-      }
-
-      function stopDrag() {
-        dragging = false;
-        divider.classList.remove("dragging");
-        document.body.style.cursor = "";
-        document.body.style.userSelect = "";
-      }
-
-      divider.addEventListener("pointerdown", (event) => {
-        if (!isDesktopLayout()) return;
-        dragging = true;
-        divider.classList.add("dragging");
-        document.body.style.cursor = "col-resize";
-        document.body.style.userSelect = "none";
-        divider.setPointerCapture?.(event.pointerId);
-      });
-
-      divider.addEventListener("pointermove", (event) => {
-        if (!dragging || !isDesktopLayout()) return;
-
-        const rect = layout.getBoundingClientRect();
-        const dividerWidth = divider.offsetWidth || 12;
-        const availableWidth = rect.width - dividerWidth;
-
-        if (availableWidth <= 0) return;
-
-        const nextLeftWidth = event.clientX - rect.left;
-        const nextPercent = (nextLeftWidth / availableWidth) * 100;
-
-        applyDesktopPaneWidth(nextPercent);
-      });
-
-      divider.addEventListener("pointerup", stopDrag);
-      divider.addEventListener("pointercancel", stopDrag);
-      divider.addEventListener("lostpointercapture", stopDrag);
-
-      window.addEventListener("resize", () => {
-        if (isDesktopLayout()) {
-          const current = parseFloat(getComputedStyle(layout).getPropertyValue("--builder-col-width")) || 56;
-          applyDesktopPaneWidth(current);
-        } else {
-          layout.style.removeProperty("--builder-col-width");
-          stopDrag();
+        function getStructureText(project) {
+            return Object.entries(project.scenes)
+                .map(([sceneId, scene]) => {
+                    const lines = [`${sceneId} — ${scene.title}`];
+                    if ((scene.choices || []).length) {
+                        scene.choices.forEach((choice) => {
+                            lines.push(`  ${choice.title} -> ${choice.goto}`);
+                        });
+                    } else {
+                        lines.push("  [aucun choix]");
+                    }
+                    return lines.join("\n");
+                })
+                .join("\n\n");
         }
-      });
-    }
 
-    function init() {
-      cacheDom();
-      moveToolbarForResponsiveLayout();
-      window.addEventListener("resize", moveToolbarForResponsiveLayout);
-      initDesktopDivider();
-      applyDesktopPaneWidth(56);
-      renderVariablesList();
-      renderAnalysesList();
-      bindEvents();
-      renderAll();
-    }
+        function bindEvents() {
+  document.querySelectorAll("input, textarea, select").forEach((field) => {
+    field.addEventListener("input", renderAll);
+    field.addEventListener("change", renderAll);
+  });
 
-    init();
-  </script>
+  els.tabButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.activeTab = btn.dataset.tab;
+      renderTabs();
+    });
+  });
+
+  els.newConfigBtn.addEventListener("click", () => {
+    state = createDefaultState();
+    setFormFromState(state);
+  });
+
+  els.loadExampleBtn.addEventListener("click", () => {
+    state = buildExampleState();
+    setFormFromState(state);
+  });
+
+  els.exportJsonBtn.addEventListener("click", exportCurrentProject);
+
+  els.copyJsonBtn.addEventListener("click", async () => {
+    syncStateFromForm();
+    const project = buildProjectFromState(state);
+    await copyText(JSON.stringify(project, null, 2), "JSON copié dans le presse-papiers.");
+  });
+
+  els.copyStructureBtn.addEventListener("click", async () => {
+    syncStateFromForm();
+    const project = buildProjectFromState(state);
+    await copyText(getStructureText(project), "Structure copiée dans le presse-papiers.");
+  });
+}
+
+        function makeToolbarTouchLabels() {
+            document.querySelectorAll(".toolbarIconBtn").forEach((btn) => {
+                let timeoutId = null;
+                btn.addEventListener("touchstart", () => {
+                    btn.classList.add("show-touch-label");
+                    window.clearTimeout(timeoutId);
+                    timeoutId = window.setTimeout(() => {
+                        btn.classList.remove("show-touch-label");
+                    }, 1000);
+                }, { passive: true });
+            });
+        }
+
+        function exportCurrentProject() {
+            syncStateFromForm();
+            const project = buildProjectFromState(state);
+            const filename = `${project.meta.id || "template_scene"}.json`;
+            downloadJson(filename, JSON.stringify(project, null, 2));
+        }
+
+        function moveToolbarForResponsiveLayout() {
+            const toolbarCard = document.getElementById("toolbarCard");
+            const topbarToolbarSlot = document.getElementById("topbarToolbarSlot");
+            const toolbarMobileAnchor = document.getElementById("toolbarMobileAnchor");
+
+            if (!toolbarCard || !topbarToolbarSlot || !toolbarMobileAnchor) return;
+
+            if (window.innerWidth >= 1170) {
+                if (toolbarCard.parentElement !== topbarToolbarSlot) {
+                    topbarToolbarSlot.appendChild(toolbarCard);
+                }
+            } else {
+                if (toolbarCard.previousElementSibling !== toolbarMobileAnchor) {
+                    toolbarMobileAnchor.insertAdjacentElement("afterend", toolbarCard);
+                }
+            }
+        }
+
+        function applyDesktopPaneWidth(percent) {
+            if (!els.mainLayout) return;
+
+            const min = 35;
+            const max = 75;
+            const safePercent = Math.max(min, Math.min(percent, max));
+            els.mainLayout.style.setProperty("--builder-col-width", `${safePercent}%`);
+        }
+
+        function initDesktopDivider() {
+            const divider = els.desktopDivider;
+            const layout = els.mainLayout;
+            if (!divider || !layout) return;
+
+            let dragging = false;
+
+            function isDesktopLayout() {
+                return window.innerWidth >= 1171;
+            }
+
+            function stopDrag() {
+                dragging = false;
+                divider.classList.remove("dragging");
+                document.body.style.cursor = "";
+                document.body.style.userSelect = "";
+            }
+
+            divider.addEventListener("pointerdown", (event) => {
+                if (!isDesktopLayout()) return;
+                dragging = true;
+                divider.classList.add("dragging");
+                document.body.style.cursor = "col-resize";
+                document.body.style.userSelect = "none";
+                divider.setPointerCapture?.(event.pointerId);
+            });
+
+            divider.addEventListener("pointermove", (event) => {
+                if (!dragging || !isDesktopLayout()) return;
+
+                const rect = layout.getBoundingClientRect();
+                const dividerWidth = divider.offsetWidth || 12;
+                const availableWidth = rect.width - dividerWidth;
+
+                if (availableWidth <= 0) return;
+
+                const nextLeftWidth = event.clientX - rect.left;
+                const nextPercent = (nextLeftWidth / availableWidth) * 100;
+
+                applyDesktopPaneWidth(nextPercent);
+            });
+
+            divider.addEventListener("pointerup", stopDrag);
+            divider.addEventListener("pointercancel", stopDrag);
+            divider.addEventListener("lostpointercapture", stopDrag);
+
+            window.addEventListener("resize", () => {
+                if (isDesktopLayout()) {
+                    const current = parseFloat(getComputedStyle(layout).getPropertyValue("--builder-col-width")) || 56;
+                    applyDesktopPaneWidth(current);
+                } else {
+                    layout.style.removeProperty("--builder-col-width");
+                    stopDrag();
+                }
+            });
+        }
+
+        function init() {
+    cacheDom();
+    moveToolbarForResponsiveLayout();
+    window.addEventListener("resize", moveToolbarForResponsiveLayout);
+    initDesktopDivider();
+    applyDesktopPaneWidth(56);
+    bindEvents();
+    renderAll();
+}
+
+init();
+    </script>
 </body>
+
 </html>
