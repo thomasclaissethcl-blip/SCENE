@@ -707,19 +707,19 @@
         }
 
         .selectHintBubble {
-    margin-top: 8px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: #1a2343;
-    color: #dfe7ff;
-    font-size: 0.84rem;
-    line-height: 1.4;
-}
+            margin-top: 8px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #1a2343;
+            color: #dfe7ff;
+            font-size: 0.84rem;
+            line-height: 1.4;
+        }
 
-.selectHintBubble strong {
-    color: var(--text);
-}
+        .selectHintBubble strong {
+            color: var(--text);
+        }
 
         @media (min-width: 1170px) {
             .topbar {
@@ -863,6 +863,179 @@
                 opacity: 0;
             }
         }
+
+        .graphPreviewModal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            z-index: 9999;
+        }
+
+        .graphPreviewModal.open {
+            display: block;
+        }
+
+        .graphPreviewModalOverlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 10, 20, 0.72);
+        }
+
+        .graphPreviewModalDialog {
+            position: relative;
+            width: min(100vw - 24px, 1200px);
+            height: min(100vh - 24px, 860px);
+            margin: 12px auto;
+            background: linear-gradient(180deg, rgba(23, 29, 54, 0.98), rgba(32, 40, 71, 0.98));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: auto 1fr;
+        }
+
+        .graphPreviewModalHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .graphPreviewModalContent {
+            padding: 14px;
+            min-height: 0;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 12px;
+        }
+
+        .graphToolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .graphControls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .graphViewport {
+            position: relative;
+            min-height: 0;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background:
+                radial-gradient(circle at top left, rgba(124, 200, 255, 0.08), transparent 32%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0.03));
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        .graphViewport.dragging {
+            cursor: grabbing;
+        }
+
+        .graphViewport.dragging,
+        .graphViewport.dragging * {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .graphSvg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .graphEmpty {
+            display: grid;
+            place-items: center;
+            min-height: 240px;
+            text-align: center;
+        }
+
+        .graphHint {
+            color: var(--muted);
+            font-size: 0.84rem;
+        }
+
+        .graphNode rect {
+            fill: rgba(26, 35, 67, 0.94);
+            stroke: rgba(255, 255, 255, 0.14);
+            stroke-width: 1.25;
+            rx: 16;
+        }
+
+        .graphNode.type-normal rect {
+            fill: rgba(26, 35, 67, 0.94);
+            stroke: rgba(124, 200, 255, 0.25);
+        }
+
+        .graphNode.type-ending rect {
+            fill: rgba(30, 74, 59, 0.94);
+            stroke: rgba(116, 213, 163, 0.45);
+        }
+
+        .graphNode.type-analysis rect {
+            fill: rgba(90, 71, 32, 0.94);
+            stroke: rgba(243, 202, 112, 0.5);
+        }
+
+        .graphNode.type-remediation rect {
+            fill: rgba(49, 64, 113, 0.94);
+            stroke: rgba(160, 190, 255, 0.45);
+        }
+
+        .graphNode text {
+            fill: var(--text);
+            font-size: 15px;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .graphNode .graphNodeSub {
+            fill: var(--muted);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .graphEdgePath {
+            fill: none;
+            stroke: rgba(184, 194, 223, 0.55);
+            stroke-width: 1.5;
+        }
+
+        .graphEdgeLabel text {
+            fill: var(--muted);
+            font-size: 11px;
+        }
+
+        .graphEdgeLabel rect {
+            fill: rgba(11, 16, 32, 0.86);
+            stroke: rgba(255, 255, 255, 0.06);
+            rx: 8;
+        }
+
+        @media (max-width: 1170px) {
+            .tabBtn[data-tab="graph"] {
+                display: none;
+            }
+
+            .graphPreviewModal {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -999,7 +1172,8 @@
                                 <input id="startSceneId" type="text" value="intro">
                             </div>
                             <div>
-                                <label for="totalSteps">Nombre d'étapes de la barre de progression affichée au joueur</label>
+                                <label for="totalSteps">Nombre d'étapes de la barre de progression affichée au
+                                    joueur</label>
                                 <input id="totalSteps" type="number" min="1" value="10">
                             </div>
                         </div>
@@ -1020,53 +1194,59 @@
                         <div class="fieldGrid two">
                             <div>
                                 <div>
-    <label for="structureType">Type de parcours</label>
-    <select id="structureType">
-        <option value="linear">Linéaire</option>
-        <option value="branched" selected>Ramifié progressif</option>
-        <option value="branches_autonomes">Branches autonomes</option>
-        <option value="fan_out">Éventail narratif</option>
-        <option value="diamond">Diamant narratif</option>
-        <option value="hub">Hub central</option>
-        <option value="tree">Arborescente</option>
-        <option value="layered">À paliers</option>
-        <option value="branched_remediation">Ramifié avec interruptions et remédiations</option>
-    </select>
-    <div id="structureTypeHint" class="selectHintBubble" aria-live="polite"></div>
-</div>
-                            <div>
-                                <label for="choicesPerScene">Nombre maximal de choix par scène</label>
-                                <input id="choicesPerScene" type="number" min="1" max="4" value="3">
+                                    <label for="structureType">Type de parcours</label>
+                                    <select id="structureType">
+                                        <option value="linear">Linéaire</option>
+                                        <option value="branched" selected>Ramifié progressif</option>
+                                        <option value="branches_autonomes">Branches autonomes</option>
+                                        <option value="fan_out">Éventail narratif</option>
+                                        <option value="diamond">Diamant narratif</option>
+                                        <option value="hub">Hub central</option>
+                                        <option value="tree">Arborescente</option>
+                                        <option value="layered">À paliers</option>
+                                        <option value="branched_remediation">Ramifié avec interruptions et remédiations
+                                        </option>
+                                        <option value="postures">Parcours de postures</option>
+                                        <option value="erreurs_typiques">Parcours d’erreurs typiques</option>
+                                        <option value="diagnostic">Parcours de diagnostic</option>
+                                        <option value="strategies">Parcours de stratégies</option>
+                                        <option value="crise">Parcours de crise</option>
+                                    </select>
+                                    <div id="structureTypeHint" class="selectHintBubble" aria-live="polite"></div>
+                                </div>
+                                <div>
+                                    <label for="choicesPerScene">Nombre maximal de choix par scène</label>
+                                    <input id="choicesPerScene" type="number" min="1" max="4" value="3">
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="fieldGrid three">
-                            <div>
-                                <label for="mainSceneCount">Scènes principales</label>
-                                <input id="mainSceneCount" type="number" min="1" value="8">
+                            <div class="fieldGrid three">
+                                <div>
+                                    <label for="mainSceneCount">Scènes principales</label>
+                                    <input id="mainSceneCount" type="number" min="1" value="8">
+                                </div>
+                                <div>
+                                    <label for="endingCount">Fins</label>
+                                    <input id="endingCount" type="number" min="1" value="3">
+                                </div>
+                                <div>
+                                    <label for="analysisSceneCount">Scènes d’analyse</label>
+                                    <input id="analysisSceneCount" type="number" min="0" value="2">
+                                </div>
                             </div>
-                            <div>
-                                <label for="endingCount">Fins</label>
-                                <input id="endingCount" type="number" min="1" value="3">
-                            </div>
-                            <div>
-                                <label for="analysisSceneCount">Scènes d’analyse</label>
-                                <input id="analysisSceneCount" type="number" min="0" value="2">
-                            </div>
-                        </div>
 
-                        <div class="fieldGrid three">
-                            <div>
-                                <label for="remediationsPerAnalysis">Remédiations par scène d’analyse</label>
-                                <input id="remediationsPerAnalysis" type="number" min="0" value="2">
+                            <div class="fieldGrid three">
+                                <div>
+                                    <label for="remediationsPerAnalysis">Remédiations par scène d’analyse</label>
+                                    <input id="remediationsPerAnalysis" type="number" min="0" value="2">
+                                </div>
                             </div>
-                        </div>
 
-                        <label class="checkboxRow">
-                            <input id="includeIntro" type="checkbox" checked>
-                            <span>Inclure une scène d’introduction</span>
-                        </label>
-                    </div>
+                            <label class="checkboxRow">
+                                <input id="includeIntro" type="checkbox" checked>
+                                <span>Inclure une scène d’introduction</span>
+                            </label>
+                        </div>
                 </details>
 
                 <details class="editorSection card">
@@ -1205,7 +1385,7 @@
                         <button class="tabBtn active" type="button" data-tab="summary">Résumé</button>
                         <button class="tabBtn" type="button" data-tab="structure">Structure</button>
                         <button class="tabBtn" type="button" data-tab="json">JSON</button>
-                        <button class="tabBtn" type="button" data-tab="graph" disabled>Vue graphique</button>
+                        <button class="tabBtn" type="button" data-tab="graph">Vue graphique</button>
                     </div>
 
                     <div class="tabViewport">
@@ -1231,6 +1411,54 @@
         </section>
     </main>
 
+    <div id="graphPreviewModal" class="graphPreviewModal" aria-hidden="true" role="dialog" aria-modal="true"
+        aria-labelledby="graphPreviewModalTitle">
+        <div class="graphPreviewModalOverlay" data-action="closeGraphPreviewModal"></div>
+
+        <div class="graphPreviewModalDialog">
+            <div class="graphPreviewModalHeader">
+                <div>
+                    <h2 id="graphPreviewModalTitle" style="margin: 0">Vue graphique</h2>
+                    <p class="muted small" style="margin: 6px 0 0">
+                        Aperçu visuel de contrôle. Déplacement et zoom uniquement.
+                    </p>
+                </div>
+
+                <div class="itemActions">
+                    <button id="closeGraphPreviewModalBtn" type="button" class="secondary">Fermer</button>
+                </div>
+            </div>
+
+            <div class="graphPreviewModalContent">
+                <div class="graphToolbar">
+                    <p class="muted small" style="margin: 0">
+                        Utilisez le glisser-déposer pour vous déplacer et la molette pour zoomer.
+                    </p>
+
+                    <div class="graphControls">
+                        <button id="graphPreviewZoomOutBtn" type="button" class="secondary">Zoom -</button>
+                        <button id="graphPreviewResetBtn" type="button" class="secondary">Vue complète</button>
+                        <button id="graphPreviewZoomInBtn" type="button" class="secondary">Zoom +</button>
+                    </div>
+                </div>
+
+                <div id="graphPreviewViewport" class="graphViewport">
+                    <div id="graphPreviewEmptyState" class="graphEmpty" style="display: none">
+                        <div>
+                            <div class="notice">Aucune liaison entre scènes à afficher pour le moment.</div>
+                            <p class="graphHint">
+                                Générez au moins un enchaînement entre scènes pour voir apparaître le graphe.
+                            </p>
+                        </div>
+                    </div>
+
+                    <svg id="graphPreviewSvg" class="graphSvg" viewBox="0 0 1200 800"
+                        preserveAspectRatio="xMidYMid meet" aria-label="Graphe des scènes"></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const BUILTIN_RUNTIME_VARS = [
             {
@@ -1253,20 +1481,40 @@
 
         const STORAGE_KEY = "scene-template-generator-draft-v1";
 
-const STRUCTURE_TYPE_DESCRIPTIONS = {
-    linear: "Progression simple, scène après scène, avec très peu de dispersion.",
-    branched: "Quelques bifurcations progressives, avec des trajectoires qui restent encore assez connectées.",
-    branches_autonomes: "Plusieurs branches relativement indépendantes, chacune pouvant mener à sa propre fin.",
-    fan_out: "Séparation rapide en voies distinctes, avec peu de passerelles entre elles.",
-    diamond: "Ouverture initiale, regroupement partiel au milieu, puis nouvelle divergence avant les fins.",
-    hub: "Des scènes carrefour reviennent régulièrement pour redistribuer vers plusieurs voies.",
-    tree: "Arborescence marquée, avec multiplication progressive des embranchements.",
-    layered: "Progression par paliers successifs, avec passages entre couches narratives.",
-    branched_remediation: "Parcours ramifié intégrant des interruptions, des analyses et des scènes de remédiation."
-};
+        const STRUCTURE_TYPE_DESCRIPTIONS = {
+            linear: "Progression simple, scène après scène, avec très peu de dispersion.",
+            branched: "Quelques bifurcations progressives, avec des trajectoires qui restent encore assez connectées.",
+            branches_autonomes: "Plusieurs branches relativement indépendantes, chacune pouvant mener à sa propre fin.",
+            fan_out: "Séparation rapide en voies distinctes, avec peu de passerelles entre elles.",
+            diamond: "Ouverture initiale, regroupement partiel au milieu, puis nouvelle divergence avant les fins.",
+            hub: "Des scènes carrefour reviennent régulièrement pour redistribuer vers plusieurs voies.",
+            tree: "Arborescence marquée, avec multiplication progressive des embranchements.",
+            layered: "Progression par paliers successifs, avec passages entre couches narratives.",
+            branched_remediation: "Parcours ramifié intégrant des interruptions, des analyses et des scènes de remédiation.",
+            postures: "Comparer plusieurs manières d’agir face à une même situation et observer leurs conséquences.",
+            erreurs_typiques: "Explorer les conséquences de différentes erreurs professionnelles et comprendre comment les corriger.",
+            diagnostic: "Explorer une situation, collecter des indices et poser un diagnostic avant d’agir.",
+            strategies: "Tester différentes stratégies pour atteindre un objectif et comparer leurs résultats.",
+            crise: "Gérer une situation sous tension et observer comment les décisions influencent son évolution."
+        };
 
-const els = {};
-let state = createDefaultState();
+        const els = {};
+        let state = createDefaultState();
+
+        const graphPreviewState = {
+            minZoom: 0.5,
+            maxZoom: 4,
+            zoom: 1,
+            homeViewBox: { x: 0, y: 0, width: 1200, height: 800 },
+            currentViewBox: { x: 0, y: 0, width: 1200, height: 800 },
+            isDragging: false,
+            dragStartClientX: 0,
+            dragStartClientY: 0,
+            dragStartViewBoxX: 0,
+            dragStartViewBoxY: 0,
+            contentWidth: 1200,
+            contentHeight: 800
+        };
 
         function createDefaultState() {
             return {
@@ -1347,14 +1595,18 @@ let state = createDefaultState();
         }
 
         function updateStructureTypeHint() {
-    if (!els.structureTypeHint || !els.structureType) return;
+            if (!els.structureTypeHint || !els.structureType) return;
 
-    const selectedValue = els.structureType.value;
-    const selectedLabel = els.structureType.options[els.structureType.selectedIndex]?.text || "Structure";
-    const description = STRUCTURE_TYPE_DESCRIPTIONS[selectedValue] || "";
+            const selectedValue = els.structureType.value;
+            const selectedLabel =
+                els.structureType.options[els.structureType.selectedIndex]?.text || "Structure";
 
-    els.structureTypeHint.innerHTML = `<strong>${escapeHtml(selectedLabel)}</strong> : ${escapeHtml(description)}`;
-}
+            const description =
+                STRUCTURE_TYPE_DESCRIPTIONS[selectedValue] ||
+                "Description non disponible pour ce type.";
+
+            els.structureTypeHint.textContent = `${selectedLabel} : ${description}`;
+        }
 
         function cacheDom() {
             [
@@ -1389,9 +1641,7 @@ let state = createDefaultState();
                 "analysisScenePrefix",
                 "defaultSceneText",
                 "defaultChoiceTitle",
-                "defaultChoiceTitle",
-"structureTypeHint",
-"summaryContent",
+                "structureTypeHint",
                 "summaryContent",
                 "structureContent",
                 "jsonPreview",
@@ -1411,6 +1661,15 @@ let state = createDefaultState();
             els.jsonPanel = document.getElementById("jsonPanel");
             els.mainLayout = document.getElementById("mainLayout");
             els.desktopDivider = document.getElementById("desktopDivider");
+
+            els.graphPreviewModal = document.getElementById("graphPreviewModal");
+            els.closeGraphPreviewModalBtn = document.getElementById("closeGraphPreviewModalBtn");
+            els.graphPreviewViewport = document.getElementById("graphPreviewViewport");
+            els.graphPreviewSvg = document.getElementById("graphPreviewSvg");
+            els.graphPreviewEmptyState = document.getElementById("graphPreviewEmptyState");
+            els.graphPreviewZoomInBtn = document.getElementById("graphPreviewZoomInBtn");
+            els.graphPreviewZoomOutBtn = document.getElementById("graphPreviewZoomOutBtn");
+            els.graphPreviewResetBtn = document.getElementById("graphPreviewResetBtn");
         }
 
         function syncStateFromForm() {
@@ -1606,6 +1865,1196 @@ let state = createDefaultState();
             return Number.isFinite(n) ? n : value;
         }
 
+        function buildGenerationContext(currentState, payload) {
+            return {
+                currentState,
+                mainIds: payload.mainIds,
+                endingIds: payload.endingIds,
+                analysisSceneIds: payload.analysisSceneIds,
+                remediationGroups: payload.remediationGroups,
+                counts: {
+                    main: payload.mainIds.length,
+                    endings: payload.endingIds.length,
+                    analyses: payload.analysisSceneIds.length,
+                    remediationsPerAnalysis: payload.remediationsPerAnalysis
+                },
+                options: {
+                    includeIntro: !!currentState.structure.includeIntro,
+                    choicesPerScene: payload.choicesPerScene,
+                    structureType: currentState.structure.type || "branched"
+                },
+                prefixes: {
+                    main: payload.mainPrefix,
+                    ending: payload.endingPrefix,
+                    remediation: payload.remediationPrefix,
+                    analysis: slugify(currentState.scenePreset.analysisScenePrefix || "analyse")
+                },
+                texts: {
+                    defaultSceneText:
+                        currentState.scenePreset.defaultSceneText ||
+                        "Rédigez ici le contenu de la scène.",
+                    defaultChoiceTitle:
+                        currentState.scenePreset.defaultChoiceTitle || "Choix"
+                }
+            };
+        }
+
+        function uniqueLinkEntries(entries) {
+            const seen = new Set();
+            return entries.filter((entry) => {
+                if (!entry || !entry.targetId || seen.has(entry.targetId)) return false;
+                seen.add(entry.targetId);
+                return true;
+            });
+        }
+
+        function buildChoicesFromLinkPlan(sceneId, linkPlan, context) {
+            const entries = (linkPlan.byScene[sceneId] || []).slice(0, context.options.choicesPerScene);
+
+            return entries.map((entry, index) => ({
+                title: `${context.texts.defaultChoiceTitle} ${index + 1}`,
+                description:
+                    entry.description ||
+                    `Poursuivre vers ${entry.targetId.replace(/_/g, " ")}`,
+                goto: entry.targetId,
+                effects: {
+                    stepDelta: 1
+                }
+            }));
+        }
+
+        function buildLegacyRolePlan(context, profile) {
+            const { mainIds, endingIds } = context;
+
+            if (!mainIds.length) {
+                return {
+                    sceneOrder: [],
+                    sceneMeta: {},
+                    trajectories: {},
+                    layers: []
+                };
+            }
+
+            if (profile.planner === "linear") {
+                const sceneMeta = {};
+                const layers = mainIds.map((sceneId, index) => {
+                    sceneMeta[sceneId] = {
+                        sceneId,
+                        index,
+                        layerIndex: index,
+                        lane: 0,
+                        isHub: false,
+                        role: index === 0 ? "context" : "development",
+                        phase: index <= 1 ? "early" : index >= mainIds.length - 2 ? "late" : "mid",
+                        preferredEnding: endingIds[index % endingIds.length] || endingIds[0],
+                        allowCrossLinks: false,
+                        mustRemainExclusive: false
+                    };
+                    return [sceneId];
+                });
+
+                return {
+                    sceneOrder: [...mainIds],
+                    sceneMeta,
+                    trajectories: {
+                        linear: [...mainIds]
+                    },
+                    layers
+                };
+            }
+
+            const laneCount = Math.max(
+                1,
+                Math.min(profile.laneCount || 1, endingIds.length || 1, mainIds.length)
+            );
+
+            const layerCount = Math.max(
+                2,
+                Math.ceil(mainIds.length / Math.max(2, Math.min(laneCount, 3)))
+            );
+
+            const layers = Array.from({ length: layerCount }, () => []);
+            const sceneMeta = {};
+            const trajectories = {};
+
+            for (let laneIndex = 0; laneIndex < laneCount; laneIndex += 1) {
+                trajectories[`lane_${laneIndex}`] = [];
+            }
+
+            mainIds.forEach((sceneId, index) => {
+                const layerIndex = Math.floor((index * layerCount) / mainIds.length);
+                const isHubLayer = profile.planner === "hub" && layerIndex % 2 === 1;
+                const lane = isHubLayer ? 0 : index % laneCount;
+                const trajectoryId = isHubLayer ? "hub" : `lane_${lane}`;
+
+                layers[layerIndex].push(sceneId);
+
+                sceneMeta[sceneId] = {
+                    sceneId,
+                    index,
+                    layerIndex,
+                    lane,
+                    isHub: isHubLayer,
+                    role:
+                        layerIndex === 0
+                            ? "context"
+                            : isHubLayer
+                                ? "synthesis"
+                                : layerIndex >= layerCount - 1
+                                    ? "pre_ending"
+                                    : "development",
+                    phase:
+                        layerIndex === 0
+                            ? "early"
+                            : layerIndex >= layerCount - 1
+                                ? "late"
+                                : "mid",
+                    trajectoryId,
+                    preferredEnding: endingIds[lane % endingIds.length] || endingIds[0],
+                    allowCrossLinks: !isHubLayer,
+                    mustRemainExclusive: profile.planner === "mesh" && laneCount > 1
+                };
+
+                if (!trajectories[trajectoryId]) {
+                    trajectories[trajectoryId] = [];
+                }
+                trajectories[trajectoryId].push(sceneId);
+            });
+
+            return {
+                sceneOrder: [...mainIds],
+                sceneMeta,
+                trajectories,
+                layers
+            };
+        }
+
+        function collectFutureRoleScenes(sceneId, rolePlan, predicate = () => true) {
+            const meta = rolePlan.sceneMeta[sceneId];
+            if (!meta) return [];
+
+            const results = [];
+
+            for (let layerIndex = meta.layerIndex + 1; layerIndex < rolePlan.layers.length; layerIndex += 1) {
+                rolePlan.layers[layerIndex].forEach((candidateId) => {
+                    const candidateMeta = rolePlan.sceneMeta[candidateId];
+                    if (candidateMeta && predicate(candidateId, candidateMeta)) {
+                        results.push(candidateId);
+                    }
+                });
+            }
+
+            return results;
+        }
+
+        function buildLegacyDescription(targetId, sceneId, rolePlan, endingIds) {
+            if (endingIds.includes(targetId)) {
+                return `Conduire vers ${targetId.replace(/_/g, " ")}`;
+            }
+
+            const currentMeta = rolePlan?.sceneMeta?.[sceneId];
+            const targetMeta = rolePlan?.sceneMeta?.[targetId];
+
+            if (currentMeta && targetMeta) {
+                if (targetMeta.isHub) {
+                    return `Rejoindre un carrefour narratif vers ${targetId.replace(/_/g, " ")}`;
+                }
+
+                if (currentMeta.isHub) {
+                    return `Quitter le carrefour vers ${targetId.replace(/_/g, " ")}`;
+                }
+
+                if (currentMeta.lane === targetMeta.lane) {
+                    return `Poursuivre cette trajectoire vers ${targetId.replace(/_/g, " ")}`;
+                }
+
+                return `Basculer vers une autre trajectoire : ${targetId.replace(/_/g, " ")}`;
+            }
+
+            return `Poursuivre vers ${targetId.replace(/_/g, " ")}`;
+        }
+
+        function buildLegacyLinkPlan(context, profile, rolePlan) {
+            const { mainIds, endingIds, options } = context;
+            const byScene = {};
+
+            mainIds.forEach((sceneId) => {
+                const meta = rolePlan.sceneMeta[sceneId];
+                const targets = [];
+
+                if (!meta) {
+                    byScene[sceneId] = endingIds.slice(0, options.choicesPerScene).map((targetId) => ({
+                        targetId,
+                        kind: "ending",
+                        description: `Conduire vers ${targetId.replace(/_/g, " ")}`
+                    }));
+                    return;
+                }
+
+                const futureSameLane = collectFutureRoleScenes(
+                    sceneId,
+                    rolePlan,
+                    (_, candidateMeta) => candidateMeta.lane === meta.lane && !candidateMeta.isHub
+                );
+
+                const futureOtherLanes = collectFutureRoleScenes(
+                    sceneId,
+                    rolePlan,
+                    (_, candidateMeta) => candidateMeta.lane !== meta.lane && !candidateMeta.isHub
+                );
+
+                const futureHubScenes = collectFutureRoleScenes(
+                    sceneId,
+                    rolePlan,
+                    (_, candidateMeta) => !!candidateMeta.isHub
+                );
+
+                const pushTarget = (targetId, kind = "primary") => {
+                    if (!targetId) return;
+                    targets.push({
+                        targetId,
+                        kind,
+                        description: buildLegacyDescription(targetId, sceneId, rolePlan, endingIds)
+                    });
+                };
+
+                if (profile.planner === "linear") {
+                    const nextSceneId = mainIds[meta.index + 1];
+                    if (nextSceneId) {
+                        pushTarget(nextSceneId, "primary");
+                    } else {
+                        endingIds.forEach((endingId) => pushTarget(endingId, "ending"));
+                    }
+                } else if (profile.planner === "hub") {
+                    if (meta.isHub) {
+                        futureOtherLanes.slice(0, options.choicesPerScene).forEach((targetId) => {
+                            pushTarget(targetId, "hub");
+                        });
+                    } else {
+                        pushTarget(futureHubScenes[0], "hub");
+                        pushTarget(futureSameLane[0], "primary");
+                    }
+
+                    if (!futureHubScenes.length && meta.preferredEnding) {
+                        pushTarget(meta.preferredEnding, "ending");
+                    }
+                } else if (profile.planner === "diamond") {
+                    const totalLayers = rolePlan.layers.length;
+                    const middleLayer = Math.floor(totalLayers / 2);
+                    const isBeforeMiddle = meta.layerIndex < middleLayer;
+                    const isAtMiddle = meta.layerIndex === middleLayer;
+                    const isAfterMiddle = meta.layerIndex > middleLayer;
+
+                    if (isBeforeMiddle) {
+                        pushTarget(futureOtherLanes[0], "branch");
+                        pushTarget(futureSameLane[0], "primary");
+                    } else if (isAtMiddle) {
+                        pushTarget(futureSameLane[0], "primary");
+                        pushTarget(futureOtherLanes[0], "branch");
+                    } else if (isAfterMiddle) {
+                        pushTarget(futureSameLane[0], "primary");
+                        if (options.choicesPerScene >= 3) {
+                            pushTarget(futureSameLane[1], "branch");
+                        }
+                        pushTarget(meta.preferredEnding, "ending");
+                    }
+
+                    const remainingLayers = rolePlan.layers.length - meta.layerIndex - 1;
+                    if (remainingLayers <= profile.directEndingThreshold) {
+                        pushTarget(meta.preferredEnding, "ending");
+                    }
+                } else {
+                    pushTarget(futureSameLane[0], "primary");
+
+                    if (profile.lateralLinks > 0) {
+                        pushTarget(futureOtherLanes[0], "branch");
+                    }
+
+                    if (options.choicesPerScene >= 3) {
+                        pushTarget(futureSameLane[1], "branch");
+                    }
+
+                    if (profile.farLinks > 0 && options.choicesPerScene >= 4) {
+                        pushTarget(futureOtherLanes[1], "cross");
+                    }
+
+                    const remainingLayers = rolePlan.layers.length - meta.layerIndex - 1;
+
+                    if (remainingLayers <= profile.directEndingThreshold || !futureSameLane.length) {
+                        pushTarget(meta.preferredEnding, "ending");
+                    }
+
+                    if (remainingLayers <= 1 && endingIds.length > 1) {
+                        pushTarget(endingIds[(meta.lane + 1) % endingIds.length] || endingIds[0], "ending");
+                    }
+                }
+
+                const fallbackCandidates = [
+                    ...futureSameLane,
+                    ...futureHubScenes,
+                    ...futureOtherLanes,
+                    ...endingIds.slice(meta.lane),
+                    ...endingIds.slice(0, meta.lane)
+                ];
+
+                fallbackCandidates.forEach((candidateId) => {
+                    if (targets.length >= options.choicesPerScene) return;
+                    pushTarget(candidateId, endingIds.includes(candidateId) ? "ending" : "fallback");
+                });
+
+                byScene[sceneId] = uniqueLinkEntries(targets).slice(0, options.choicesPerScene);
+            });
+
+            return { byScene };
+        }
+
+        function createEmptyRolePlan(mainIds) {
+            return {
+                sceneOrder: [...mainIds],
+                sceneMeta: {},
+                trajectories: {},
+                layers: []
+            };
+        }
+
+        function getPhaseFromIndex(index, total) {
+            if (index <= 1) return "early";
+            if (index >= total - 2) return "late";
+            return "mid";
+        }
+
+        function addRoleScene(rolePlan, sceneId, meta) {
+            rolePlan.sceneMeta[sceneId] = {
+                sceneId,
+                index: meta.index,
+                layerIndex: meta.layerIndex,
+                lane: meta.lane ?? 0,
+                isHub: !!meta.isHub,
+                role: meta.role || "development",
+                phase: meta.phase || "mid",
+                trajectoryId: meta.trajectoryId || "common",
+                preferredEnding: meta.preferredEnding || null,
+                allowCrossLinks: !!meta.allowCrossLinks,
+                mustRemainExclusive: !!meta.mustRemainExclusive
+            };
+
+            if (!rolePlan.trajectories[rolePlan.sceneMeta[sceneId].trajectoryId]) {
+                rolePlan.trajectories[rolePlan.sceneMeta[sceneId].trajectoryId] = [];
+            }
+
+            rolePlan.trajectories[rolePlan.sceneMeta[sceneId].trajectoryId].push(sceneId);
+
+            if (!rolePlan.layers[meta.layerIndex]) {
+                rolePlan.layers[meta.layerIndex] = [];
+            }
+
+            rolePlan.layers[meta.layerIndex].push(sceneId);
+        }
+
+        function buildTrajectoryBuckets(mainIds, trajectoryIds) {
+            const buckets = {};
+            trajectoryIds.forEach((trajectoryId) => {
+                buckets[trajectoryId] = [];
+            });
+
+            mainIds.forEach((sceneId, index) => {
+                const trajectoryId = trajectoryIds[index % trajectoryIds.length];
+                buckets[trajectoryId].push(sceneId);
+            });
+
+            return buckets;
+        }
+
+        function flattenLayers(rolePlan) {
+            rolePlan.layers = rolePlan.layers.filter((layer) => Array.isArray(layer) && layer.length > 0);
+            rolePlan.layers.forEach((layer, layerIndex) => {
+                layer.forEach((sceneId) => {
+                    if (rolePlan.sceneMeta[sceneId]) {
+                        rolePlan.sceneMeta[sceneId].layerIndex = layerIndex;
+                    }
+                });
+            });
+            return rolePlan;
+        }
+
+        function buildParallelRolePlan(context, options) {
+            const { mainIds, endingIds } = context;
+            const rolePlan = createEmptyRolePlan(mainIds);
+
+            const trajectoryCount = Math.max(2, Math.min(options.trajectoryCount || 3, endingIds.length || 1, mainIds.length));
+            const trajectoryIds = Array.from({ length: trajectoryCount }, (_, index) => `${options.trajectoryPrefix || "trajectory"}_${index + 1}`);
+
+            const introCommonCount = Math.min(options.introCommonCount || 1, Math.max(1, mainIds.length));
+            const branchingCount = Math.min(options.branchingCount || 1, Math.max(0, mainIds.length - introCommonCount));
+            const reservedHead = introCommonCount + branchingCount;
+            const remainingMainIds = mainIds.slice(reservedHead);
+
+            const buckets = buildTrajectoryBuckets(remainingMainIds, trajectoryIds);
+            let sceneIndex = 0;
+
+            for (let i = 0; i < introCommonCount && sceneIndex < mainIds.length; i += 1) {
+                const sceneId = mainIds[sceneIndex];
+                addRoleScene(rolePlan, sceneId, {
+                    index: sceneIndex,
+                    layerIndex: i,
+                    role: "context",
+                    phase: "early",
+                    trajectoryId: "common",
+                    preferredEnding: endingIds[0] || null,
+                    allowCrossLinks: false,
+                    mustRemainExclusive: false
+                });
+                sceneIndex += 1;
+            }
+
+            for (let i = 0; i < branchingCount && sceneIndex < mainIds.length; i += 1) {
+                const sceneId = mainIds[sceneIndex];
+                addRoleScene(rolePlan, sceneId, {
+                    index: sceneIndex,
+                    layerIndex: introCommonCount + i,
+                    role: "branching",
+                    phase: "early",
+                    trajectoryId: "common",
+                    preferredEnding: endingIds[0] || null,
+                    allowCrossLinks: true,
+                    mustRemainExclusive: false
+                });
+                sceneIndex += 1;
+            }
+
+            const maxBucketLength = Math.max(0, ...Object.values(buckets).map((bucket) => bucket.length));
+
+            for (let depth = 0; depth < maxBucketLength; depth += 1) {
+                trajectoryIds.forEach((trajectoryId, trajectoryIndex) => {
+                    const sceneId = buckets[trajectoryId][depth];
+                    if (!sceneId) return;
+
+                    const isLastInBucket = depth === buckets[trajectoryId].length - 1;
+                    const isBeforeLast = depth === buckets[trajectoryId].length - 2;
+                    const role =
+                        depth === 0 && options.firstExclusiveRole
+                            ? options.firstExclusiveRole
+                            : isLastInBucket
+                                ? (options.lastExclusiveRole || "pre_ending")
+                                : isBeforeLast && options.middleLateRole
+                                    ? options.middleLateRole
+                                    : (options.defaultRole || "development");
+
+                    addRoleScene(rolePlan, sceneId, {
+                        index: mainIds.indexOf(sceneId),
+                        layerIndex: introCommonCount + branchingCount + depth,
+                        lane: trajectoryIndex,
+                        role,
+                        phase: getPhaseFromIndex(depth + introCommonCount + branchingCount, mainIds.length),
+                        trajectoryId,
+                        preferredEnding: endingIds[trajectoryIndex % endingIds.length] || endingIds[0] || null,
+                        allowCrossLinks: !!options.allowCrossLinks,
+                        mustRemainExclusive: true
+                    });
+                });
+            }
+
+            return flattenLayers(rolePlan);
+        }
+
+        function buildDiagnosticRolePlan(context, profile) {
+            const { mainIds, endingIds } = context;
+            const rolePlan = createEmptyRolePlan(mainIds);
+
+            if (!mainIds.length) {
+                return rolePlan;
+            }
+
+            const explorationCount = Math.max(2, Math.min(profile.explorationCount || 3, Math.max(2, mainIds.length - 2)));
+            const diagnosisIndex = Math.min(mainIds.length - 2, explorationCount);
+            const decisionIndex = Math.min(mainIds.length - 1, diagnosisIndex + 1);
+
+            addRoleScene(rolePlan, mainIds[0], {
+                index: 0,
+                layerIndex: 0,
+                role: "context",
+                phase: "early",
+                trajectoryId: "common",
+                preferredEnding: endingIds[0] || null,
+                allowCrossLinks: false,
+                mustRemainExclusive: false
+            });
+
+            for (let i = 1; i < diagnosisIndex; i += 1) {
+                addRoleScene(rolePlan, mainIds[i], {
+                    index: i,
+                    layerIndex: 1,
+                    lane: i - 1,
+                    role: "exploration",
+                    phase: "early",
+                    trajectoryId: `exploration_${i}`,
+                    preferredEnding: endingIds[(i - 1) % endingIds.length] || endingIds[0] || null,
+                    allowCrossLinks: false,
+                    mustRemainExclusive: true
+                });
+            }
+
+            if (mainIds[diagnosisIndex]) {
+                addRoleScene(rolePlan, mainIds[diagnosisIndex], {
+                    index: diagnosisIndex,
+                    layerIndex: 2,
+                    role: "diagnosis",
+                    phase: "mid",
+                    trajectoryId: "common",
+                    preferredEnding: endingIds[0] || null,
+                    allowCrossLinks: true,
+                    mustRemainExclusive: false
+                });
+            }
+
+            if (mainIds[decisionIndex] && decisionIndex !== diagnosisIndex) {
+                addRoleScene(rolePlan, mainIds[decisionIndex], {
+                    index: decisionIndex,
+                    layerIndex: 3,
+                    role: "decision",
+                    phase: "late",
+                    trajectoryId: "common",
+                    preferredEnding: endingIds[0] || null,
+                    allowCrossLinks: true,
+                    mustRemainExclusive: false
+                });
+            }
+
+            for (let i = decisionIndex + 1; i < mainIds.length; i += 1) {
+                addRoleScene(rolePlan, mainIds[i], {
+                    index: i,
+                    layerIndex: 4 + (i - decisionIndex - 1),
+                    lane: (i - decisionIndex - 1) % Math.max(1, endingIds.length),
+                    role: "pre_ending",
+                    phase: "late",
+                    trajectoryId: `resolution_${((i - decisionIndex - 1) % Math.max(1, endingIds.length)) + 1}`,
+                    preferredEnding: endingIds[(i - decisionIndex - 1) % Math.max(1, endingIds.length)] || endingIds[0] || null,
+                    allowCrossLinks: false,
+                    mustRemainExclusive: true
+                });
+            }
+
+            return flattenLayers(rolePlan);
+        }
+
+        function buildCrisisRolePlan(context, profile) {
+            const { mainIds, endingIds } = context;
+            const rolePlan = createEmptyRolePlan(mainIds);
+
+            if (!mainIds.length) {
+                return rolePlan;
+            }
+
+            const trajectoryIds = ["degradation", "stabilisation", "intermediaire"];
+            const introCount = Math.min(2, mainIds.length);
+            let cursor = 0;
+
+            for (; cursor < introCount; cursor += 1) {
+                addRoleScene(rolePlan, mainIds[cursor], {
+                    index: cursor,
+                    layerIndex: cursor,
+                    role: cursor === 0 ? "context" : "crisis",
+                    phase: "early",
+                    trajectoryId: "common",
+                    preferredEnding: endingIds[0] || null,
+                    allowCrossLinks: false,
+                    mustRemainExclusive: false
+                });
+            }
+
+            const remaining = mainIds.slice(cursor);
+            const buckets = buildTrajectoryBuckets(remaining, trajectoryIds);
+
+            Object.entries(buckets).forEach(([trajectoryId, bucket], trajectoryIndex) => {
+                bucket.forEach((sceneId, depth) => {
+                    addRoleScene(rolePlan, sceneId, {
+                        index: mainIds.indexOf(sceneId),
+                        layerIndex: introCount + depth,
+                        lane: trajectoryIndex,
+                        role:
+                            trajectoryId === "degradation"
+                                ? (depth === bucket.length - 1 ? "pre_ending" : "crisis")
+                                : trajectoryId === "stabilisation"
+                                    ? (depth === bucket.length - 1 ? "stabilization" : "crisis")
+                                    : (depth === bucket.length - 1 ? "pre_ending" : "consequence"),
+                        phase: getPhaseFromIndex(depth + introCount, mainIds.length),
+                        trajectoryId,
+                        preferredEnding:
+                            trajectoryId === "degradation"
+                                ? endingIds[0] || null
+                                : trajectoryId === "stabilisation"
+                                    ? endingIds[Math.min(1, endingIds.length - 1)] || endingIds[0] || null
+                                    : endingIds[Math.min(2, endingIds.length - 1)] || endingIds[0] || null,
+                        allowCrossLinks: trajectoryId === "intermediaire" && depth === 0,
+                        mustRemainExclusive: true
+                    });
+                });
+            });
+
+            return flattenLayers(rolePlan);
+        }
+
+        function buildPedagogicalDescription(targetId, sceneId, rolePlan, endingIds) {
+            if (endingIds.includes(targetId)) {
+                return `Conduire vers ${targetId.replace(/_/g, " ")}`;
+            }
+
+            const currentMeta = rolePlan.sceneMeta[sceneId];
+            const targetMeta = rolePlan.sceneMeta[targetId];
+
+            if (!currentMeta || !targetMeta) {
+                return `Poursuivre vers ${targetId.replace(/_/g, " ")}`;
+            }
+
+            if (currentMeta.trajectoryId === "common" && targetMeta.trajectoryId !== "common") {
+                return `Entrer dans une trajectoire dédiée : ${targetId.replace(/_/g, " ")}`;
+            }
+
+            if (currentMeta.trajectoryId !== targetMeta.trajectoryId) {
+                return `Basculer vers une autre trajectoire : ${targetId.replace(/_/g, " ")}`;
+            }
+
+            if (targetMeta.role === "diagnosis") {
+                return `Synthétiser l’exploration dans ${targetId.replace(/_/g, " ")}`;
+            }
+
+            if (targetMeta.role === "decision") {
+                return `Passer à la décision dans ${targetId.replace(/_/g, " ")}`;
+            }
+
+            return `Poursuivre cette trajectoire vers ${targetId.replace(/_/g, " ")}`;
+        }
+
+        function buildPedagogicalLinkPlan(context, profile, rolePlan) {
+            const { endingIds, options } = context;
+            const byScene = {};
+
+            rolePlan.sceneOrder.forEach((sceneId) => {
+                const meta = rolePlan.sceneMeta[sceneId];
+                const targets = [];
+
+                if (!meta) {
+                    byScene[sceneId] = [];
+                    return;
+                }
+
+                const pushTarget = (targetId, kind = "primary") => {
+                    if (!targetId) return;
+                    targets.push({
+                        targetId,
+                        kind,
+                        description: buildPedagogicalDescription(targetId, sceneId, rolePlan, endingIds)
+                    });
+                };
+
+                const sameTrajectoryFuture = collectFutureRoleScenes(
+                    sceneId,
+                    rolePlan,
+                    (_, candidateMeta) => candidateMeta.trajectoryId === meta.trajectoryId
+                );
+
+                const commonFuture = collectFutureRoleScenes(
+                    sceneId,
+                    rolePlan,
+                    (_, candidateMeta) => candidateMeta.trajectoryId === "common"
+                );
+
+                const otherTrajectoryFuture = collectFutureRoleScenes(
+                    sceneId,
+                    rolePlan,
+                    (_, candidateMeta) =>
+                        candidateMeta.trajectoryId !== meta.trajectoryId &&
+                        candidateMeta.trajectoryId !== "common"
+                );
+
+                if (profile.planner === "diagnostic") {
+                    if (meta.role === "context") {
+                        collectFutureRoleScenes(sceneId, rolePlan, (_, candidateMeta) => candidateMeta.role === "exploration")
+                            .slice(0, options.choicesPerScene)
+                            .forEach((targetId) => pushTarget(targetId, "branch"));
+                    } else if (meta.role === "exploration") {
+                        pushTarget(commonFuture.find((targetId) => rolePlan.sceneMeta[targetId]?.role === "diagnosis"), "rejoin");
+                        if (options.choicesPerScene >= 3) {
+                            pushTarget(otherTrajectoryFuture[0], "branch");
+                        }
+                    } else if (meta.role === "diagnosis") {
+                        pushTarget(commonFuture.find((targetId) => rolePlan.sceneMeta[targetId]?.role === "decision"), "primary");
+                    } else if (meta.role === "decision") {
+                        sameTrajectoryFuture.slice(0, options.choicesPerScene - 1).forEach((targetId) => pushTarget(targetId, "primary"));
+                        pushTarget(endingIds[0], "ending");
+                        if (endingIds[1]) pushTarget(endingIds[1], "ending");
+                    } else {
+                        pushTarget(meta.preferredEnding, "ending");
+                        if (endingIds[1] && endingIds[1] !== meta.preferredEnding) {
+                            pushTarget(endingIds[1], "ending");
+                        }
+                    }
+                } else if (profile.planner === "crise") {
+                    if (meta.trajectoryId === "common") {
+                        collectFutureRoleScenes(sceneId, rolePlan, (_, candidateMeta) => candidateMeta.trajectoryId !== "common")
+                            .slice(0, options.choicesPerScene)
+                            .forEach((targetId) => pushTarget(targetId, "branch"));
+                    } else if (meta.trajectoryId === "degradation") {
+                        pushTarget(sameTrajectoryFuture[0], "primary");
+                        pushTarget(meta.preferredEnding, "ending");
+                    } else if (meta.trajectoryId === "stabilisation") {
+                        pushTarget(sameTrajectoryFuture[0], "primary");
+                        if (options.choicesPerScene >= 3) {
+                            pushTarget(sameTrajectoryFuture[1], "branch");
+                        }
+                        pushTarget(meta.preferredEnding, "ending");
+                    } else {
+                        pushTarget(sameTrajectoryFuture[0], "primary");
+                        pushTarget(otherTrajectoryFuture.find((targetId) => rolePlan.sceneMeta[targetId]?.trajectoryId === "stabilisation"), "branch");
+                        pushTarget(meta.preferredEnding, "ending");
+                    }
+                } else {
+                    if (meta.role === "context" || meta.role === "branching") {
+                        const preferredTargets = collectFutureRoleScenes(
+                            sceneId,
+                            rolePlan,
+                            (_, candidateMeta) => candidateMeta.trajectoryId !== "common"
+                        );
+
+                        preferredTargets.slice(0, options.choicesPerScene).forEach((targetId, index) => {
+                            pushTarget(targetId, index === 0 ? "primary" : "branch");
+                        });
+                    } else {
+                        pushTarget(sameTrajectoryFuture[0], "primary");
+
+                        if (profile.allowCrossLinks && meta.allowCrossLinks) {
+                            pushTarget(otherTrajectoryFuture[0], "cross");
+                        }
+
+                        if (options.choicesPerScene >= 3) {
+                            pushTarget(sameTrajectoryFuture[1], "branch");
+                        }
+
+                        if (meta.role === "pre_ending" || meta.role === "stabilization" || !sameTrajectoryFuture.length) {
+                            pushTarget(meta.preferredEnding, "ending");
+                        }
+
+                        if (profile.secondaryEndings && endingIds.length > 1) {
+                            const secondaryEnding =
+                                endingIds[(endingIds.indexOf(meta.preferredEnding) + 1 + endingIds.length) % endingIds.length] ||
+                                endingIds[0];
+                            if (secondaryEnding && secondaryEnding !== meta.preferredEnding) {
+                                pushTarget(secondaryEnding, "ending");
+                            }
+                        }
+                    }
+                }
+
+                const fallbackCandidates = [
+                    ...sameTrajectoryFuture,
+                    ...commonFuture,
+                    ...otherTrajectoryFuture,
+                    ...endingIds
+                ];
+
+                fallbackCandidates.forEach((candidateId) => {
+                    if (targets.length >= options.choicesPerScene) return;
+                    pushTarget(candidateId, endingIds.includes(candidateId) ? "ending" : "fallback");
+                });
+
+                byScene[sceneId] = uniqueLinkEntries(targets).slice(0, options.choicesPerScene);
+            });
+
+            return { byScene };
+        }
+
+        function createPedagogicalGenerator(config) {
+            return {
+                label: config.label,
+                hint: config.hint,
+                family: "pedagogical",
+
+                buildProfile(context) {
+                    return config.buildProfile(context);
+                },
+
+                buildRolePlan(context, profile) {
+                    return config.buildRolePlan(context, profile);
+                },
+
+                buildLinks(context, profile, rolePlan) {
+                    return buildPedagogicalLinkPlan(context, profile, rolePlan);
+                },
+
+                validate(context, project) {
+                    return typeof config.validate === "function" ? config.validate(context, project) : [];
+                }
+            };
+        }
+
+        function countIncomingLinks(project) {
+            const incoming = {};
+            Object.keys(project.scenes || {}).forEach((sceneId) => {
+                incoming[sceneId] = 0;
+            });
+
+            Object.values(project.scenes || {}).forEach((scene) => {
+                (scene.choices || []).forEach((choice) => {
+                    if (choice?.goto && Object.prototype.hasOwnProperty.call(incoming, choice.goto)) {
+                        incoming[choice.goto] += 1;
+                    }
+                });
+            });
+
+            return incoming;
+        }
+
+        function createLegacyGenerator(label, hint, profileFactory) {
+            return {
+                label,
+                hint,
+                family: "legacy",
+
+                buildProfile(context) {
+                    return profileFactory(context);
+                },
+
+                buildRolePlan(context, profile) {
+                    return buildLegacyRolePlan(context, profile);
+                },
+
+                buildLinks(context, profile, rolePlan) {
+                    return buildLegacyLinkPlan(context, profile, rolePlan);
+                },
+
+                validate() {
+                    return [];
+                }
+            };
+        }
+
+        const STRUCTURE_GENERATORS = {
+            linear: createLegacyGenerator(
+                "Linéaire",
+                "Progression simple, scène après scène, avec très peu de dispersion.",
+                () => ({
+                    planner: "linear",
+                    laneCount: 1,
+                    lateralLinks: 0,
+                    farLinks: 0,
+                    directEndingThreshold: 0
+                })
+            ),
+
+            branched: createLegacyGenerator(
+                "Ramifié progressif",
+                "Quelques bifurcations progressives, avec des trajectoires qui restent encore assez connectées.",
+                (context) => {
+                    const laneCount = Math.max(1, Math.min(context.endingIds.length, context.mainIds.length));
+                    return {
+                        planner: "mesh",
+                        laneCount,
+                        lateralLinks: 1,
+                        farLinks: 1,
+                        directEndingThreshold: 2
+                    };
+                }
+            ),
+
+            branches_autonomes: createLegacyGenerator(
+                "Branches autonomes",
+                "Plusieurs branches relativement indépendantes, chacune pouvant mener à sa propre fin.",
+                (context) => {
+                    const laneCount = Math.max(1, Math.min(context.endingIds.length, context.mainIds.length));
+                    return {
+                        planner: "mesh",
+                        laneCount,
+                        lateralLinks: 0,
+                        farLinks: 1,
+                        directEndingThreshold: 2
+                    };
+                }
+            ),
+
+            fan_out: createLegacyGenerator(
+                "Éventail narratif",
+                "Séparation rapide en voies distinctes, avec peu de passerelles entre elles.",
+                (context) => {
+                    const laneCount = Math.max(1, Math.min(context.endingIds.length, context.mainIds.length));
+                    return {
+                        planner: "mesh",
+                        laneCount,
+                        lateralLinks: 0,
+                        farLinks: 0,
+                        directEndingThreshold: 3
+                    };
+                }
+            ),
+
+            diamond: createLegacyGenerator(
+                "Diamant narratif",
+                "Ouverture initiale, regroupement partiel au milieu, puis nouvelle divergence avant les fins.",
+                (context) => {
+                    const laneCount = Math.max(1, Math.min(context.endingIds.length, context.mainIds.length));
+                    return {
+                        planner: "diamond",
+                        laneCount,
+                        lateralLinks: 1,
+                        farLinks: 0,
+                        directEndingThreshold: 1
+                    };
+                }
+            ),
+
+            hub: createLegacyGenerator(
+                "Hub central",
+                "Des scènes carrefour reviennent régulièrement pour redistribuer vers plusieurs voies.",
+                (context) => {
+                    const laneCount = Math.max(1, Math.min(context.endingIds.length, context.mainIds.length));
+                    return {
+                        planner: "hub",
+                        laneCount,
+                        lateralLinks: 2,
+                        farLinks: 0,
+                        directEndingThreshold: 1
+                    };
+                }
+            ),
+
+            tree: createLegacyGenerator(
+                "Arborescente",
+                "Arborescence marquée, avec multiplication progressive des embranchements.",
+                (context) => {
+                    const laneCount = Math.max(1, Math.min(context.endingIds.length, context.mainIds.length));
+                    return {
+                        planner: "mesh",
+                        laneCount,
+                        lateralLinks: 1,
+                        farLinks: 1,
+                        directEndingThreshold: 2
+                    };
+                }
+            ),
+
+            layered: createLegacyGenerator(
+                "À paliers",
+                "Progression par paliers successifs, avec passages entre couches narratives.",
+                (context) => {
+                    const laneCount = Math.max(1, Math.min(context.endingIds.length, context.mainIds.length));
+                    return {
+                        planner: "mesh",
+                        laneCount,
+                        lateralLinks: 1,
+                        farLinks: 0,
+                        directEndingThreshold: 2
+                    };
+                }
+            ),
+
+            branched_remediation: createLegacyGenerator(
+                "Ramifié avec interruptions et remédiations",
+                "Parcours ramifié intégrant des interruptions, des analyses et des scènes de remédiation.",
+                (context) => {
+                    const laneCount = Math.max(1, Math.min(context.endingIds.length, context.mainIds.length));
+                    return {
+                        planner: "mesh",
+                        laneCount,
+                        lateralLinks: 1,
+                        farLinks: 1,
+                        directEndingThreshold: 2
+                    };
+                }
+            ),
+
+            postures: createPedagogicalGenerator({
+                label: "Parcours de postures",
+                hint: "Comparer plusieurs manières d’agir face à une même situation et observer leurs conséquences.",
+
+                buildProfile(context) {
+                    return {
+                        planner: "parallel",
+                        trajectoryCount: Math.max(2, Math.min(3, context.endingIds.length, context.mainIds.length)),
+                        introCommonCount: 1,
+                        branchingCount: 1,
+                        allowCrossLinks: true,
+                        secondaryEndings: true
+                    };
+                },
+
+                buildRolePlan(context, profile) {
+                    return buildParallelRolePlan(context, {
+                        trajectoryCount: profile.trajectoryCount,
+                        trajectoryPrefix: "posture",
+                        introCommonCount: profile.introCommonCount,
+                        branchingCount: profile.branchingCount,
+                        firstExclusiveRole: "development",
+                        middleLateRole: "consequence",
+                        lastExclusiveRole: "pre_ending",
+                        defaultRole: "development",
+                        allowCrossLinks: false
+                    });
+                },
+
+                validate(context, project) {
+                    const messages = [];
+                    const incoming = countIncomingLinks(project);
+                    const endings = context.endingIds.filter((endingId) => incoming[endingId] > 0);
+
+                    if (endings.length >= Math.min(2, context.endingIds.length)) {
+                        messages.push({ type: "good", text: "Les postures alimentent plusieurs fins distinctes." });
+                    } else {
+                        messages.push({ type: "warn", text: "Les postures convergent encore trop fortement vers une seule issue." });
+                    }
+
+                    return messages;
+                }
+            }),
+
+            erreurs_typiques: createPedagogicalGenerator({
+                label: "Parcours d’erreurs typiques",
+                hint: "Explorer les conséquences de différentes erreurs professionnelles et comprendre comment les corriger.",
+
+                buildProfile(context) {
+                    return {
+                        planner: "parallel",
+                        trajectoryCount: Math.max(2, Math.min(3, context.endingIds.length, context.mainIds.length)),
+                        introCommonCount: 1,
+                        branchingCount: 1,
+                        allowCrossLinks: false,
+                        secondaryEndings: true
+                    };
+                },
+
+                buildRolePlan(context, profile) {
+                    return buildParallelRolePlan(context, {
+                        trajectoryCount: profile.trajectoryCount,
+                        trajectoryPrefix: "erreur",
+                        introCommonCount: profile.introCommonCount,
+                        branchingCount: profile.branchingCount,
+                        firstExclusiveRole: "consequence",
+                        middleLateRole: "consequence",
+                        lastExclusiveRole: "pre_ending",
+                        defaultRole: "consequence",
+                        allowCrossLinks: false
+                    });
+                },
+
+                validate(context, project) {
+                    const messages = [];
+                    const incoming = countIncomingLinks(project);
+                    const endings = context.endingIds.filter((endingId) => incoming[endingId] > 0);
+
+                    if (endings.length > 0) {
+                        messages.push({ type: "good", text: "Les erreurs typiques alimentent bien des issues distinctes." });
+                    } else {
+                        messages.push({ type: "bad", text: "Aucune fin n’est réellement alimentée par les branches d’erreur." });
+                    }
+
+                    return messages;
+                }
+            }),
+
+            diagnostic: createPedagogicalGenerator({
+                label: "Parcours de diagnostic",
+                hint: "Explorer une situation, collecter des indices et poser un diagnostic avant d’agir.",
+
+                buildProfile(context) {
+                    return {
+                        planner: "diagnostic",
+                        explorationCount: Math.max(2, Math.min(3, context.mainIds.length - 2))
+                    };
+                },
+
+                buildRolePlan(context, profile) {
+                    return buildDiagnosticRolePlan(context, profile);
+                },
+
+                validate(context, project) {
+                    const messages = [];
+                    const firstSceneId = context.mainIds[0];
+                    const firstChoices = project.scenes[firstSceneId]?.choices || [];
+                    const directEnding = firstChoices.some((choice) => context.endingIds.includes(choice.goto));
+
+                    if (!directEnding) {
+                        messages.push({ type: "good", text: "Le diagnostic impose bien une phase d’exploration avant la conclusion." });
+                    } else {
+                        messages.push({ type: "bad", text: "Une fin est accessible trop tôt dans le parcours de diagnostic." });
+                    }
+
+                    return messages;
+                }
+            }),
+
+            strategies: createPedagogicalGenerator({
+                label: "Parcours de stratégies",
+                hint: "Tester différentes stratégies pour atteindre un objectif et comparer leurs résultats.",
+
+                buildProfile(context) {
+                    return {
+                        planner: "parallel",
+                        trajectoryCount: Math.max(2, Math.min(4, context.endingIds.length, context.mainIds.length)),
+                        introCommonCount: 1,
+                        branchingCount: 1,
+                        allowCrossLinks: true,
+                        secondaryEndings: true
+                    };
+                },
+
+                buildRolePlan(context, profile) {
+                    return buildParallelRolePlan(context, {
+                        trajectoryCount: profile.trajectoryCount,
+                        trajectoryPrefix: "strategie",
+                        introCommonCount: profile.introCommonCount,
+                        branchingCount: profile.branchingCount,
+                        firstExclusiveRole: "strategy",
+                        middleLateRole: "consequence",
+                        lastExclusiveRole: "pre_ending",
+                        defaultRole: "strategy",
+                        allowCrossLinks: true
+                    });
+                },
+
+                validate(context, project) {
+                    const messages = [];
+                    const incoming = countIncomingLinks(project);
+                    const activeEndings = context.endingIds.filter((endingId) => incoming[endingId] > 0);
+
+                    if (activeEndings.length >= Math.min(2, context.endingIds.length)) {
+                        messages.push({ type: "good", text: "Les stratégies débouchent sur plusieurs issues comparables." });
+                    } else {
+                        messages.push({ type: "warn", text: "Les stratégies pourraient être davantage différenciées en fin de parcours." });
+                    }
+
+                    return messages;
+                }
+            }),
+
+            crise: createPedagogicalGenerator({
+                label: "Parcours de crise",
+                hint: "Gérer une situation sous tension et observer comment les décisions influencent son évolution.",
+
+                buildProfile(context) {
+                    return {
+                        planner: "crise",
+                        trajectoryCount: Math.max(2, Math.min(3, context.endingIds.length, context.mainIds.length))
+                    };
+                },
+
+                buildRolePlan(context, profile) {
+                    return buildCrisisRolePlan(context, profile);
+                },
+
+                validate(context, project) {
+                    const messages = [];
+                    const incoming = countIncomingLinks(project);
+                    const activeEndings = context.endingIds.filter((endingId) => incoming[endingId] > 0);
+
+                    if (activeEndings.length >= Math.min(2, context.endingIds.length)) {
+                        messages.push({ type: "good", text: "La crise propose bien plusieurs issues selon l’évolution de la situation." });
+                    } else {
+                        messages.push({ type: "warn", text: "La crise reste encore trop centrée sur une issue dominante." });
+                    }
+
+                    return messages;
+                }
+            })
+        };
+
         function buildScenes(currentState) {
             const scenes = {};
             const mainIds = [];
@@ -1639,7 +3088,15 @@ let state = createDefaultState();
                 return Array.from(new Set(values.filter(Boolean)));
             }
 
-                        function ensureChoiceLink(sourceId, targetId, description) {
+            function getAnalysisAnchorIndexes() {
+                if (!analysisSceneIds.length) return [];
+                return analysisSceneIds.map((_, index) => {
+                    const raw = Math.floor(((index + 1) * mainIds.length) / (analysisSceneIds.length + 1)) - 1;
+                    return Math.max(0, Math.min(mainIds.length - 1, raw));
+                });
+            }
+
+            function ensureChoiceLink(sourceId, targetId, description) {
                 if (!sourceId || !targetId || !scenes[sourceId] || !scenes[targetId]) return;
 
                 const sourceScene = scenes[sourceId];
@@ -1705,7 +3162,7 @@ let state = createDefaultState();
                 return mainIds[0] || (currentState.structure.includeIntro ? "intro" : null);
             }
 
-            function getFallbackChildForScene(sceneId) {
+            function getFallbackChildForScene(sceneId, analysisAnchorIndexes) {
                 if (sceneId === "intro") {
                     return mainIds[0] || endingIds[0] || null;
                 }
@@ -1728,15 +3185,15 @@ let state = createDefaultState();
 
                 const remediationMatch = remediationGroups.find((group) => group.includes(sceneId));
                 if (remediationMatch) {
-                    const analysisIndex = remediationGroups.indexOf(remediationMatch);
-                    const anchorIndex = analysisAnchorIndexes[analysisIndex] ?? 0;
+                    const linkedAnalysisIndex = remediationGroups.indexOf(remediationMatch);
+                    const anchorIndex = analysisAnchorIndexes[linkedAnalysisIndex] ?? 0;
                     return mainIds[Math.min(anchorIndex + 1, mainIds.length - 1)] || endingIds[0] || null;
                 }
 
                 return endingIds[0] || null;
             }
 
-            function enforceConnectivityRules() {
+            function enforceConnectivityRules(analysisAnchorIndexes) {
                 const ancestorExemptions = new Set([
                     ...(currentState.structure.includeIntro && scenes.intro ? ["intro"] : []),
                     ...analysisSceneIds
@@ -1770,345 +3227,52 @@ let state = createDefaultState();
 
                     if (choices.length > 0) return;
 
-                    const childId = getFallbackChildForScene(sceneId);
+                    const childId = getFallbackChildForScene(sceneId, analysisAnchorIndexes);
                     if (!childId) return;
 
                     ensureChoiceLink(
                         sceneId,
                         childId,
-                        childId.startsWith(slugify(currentState.scenePreset.endingPrefix || "fin"))
+                        childId.startsWith(endingPrefix)
                             ? "Conclure le parcours"
                             : `Continuer vers ${childId.replace(/_/g, " ")}`
                     );
                 });
             }
 
-            function getStructureProfile(type, sceneCount) {
-                const laneCount = Math.max(1, Math.min(endingIds.length, mainIds.length));
-
-                switch (type) {
-                    case "linear":
-                        return {
-                            planner: "linear",
-                            laneCount: 1,
-                            lateralLinks: 0,
-                            farLinks: 0,
-                            directEndingThreshold: 0
-                        };
-                    case "branches_autonomes":
-    return {
-        planner: "mesh",
-        laneCount,
-        lateralLinks: 0,
-        farLinks: 1,
-        directEndingThreshold: 2
-    };
-case "fan_out":
-    return {
-        planner: "mesh",
-        laneCount,
-        lateralLinks: 0,
-        farLinks: 0,
-        directEndingThreshold: 3
-    };
-case "diamond":
-    return {
-        planner: "diamond",
-        laneCount,
-        lateralLinks: 1,
-        farLinks: 0,
-        directEndingThreshold: 1
-    };
-case "hub":
-    return {
-        planner: "hub",
-        laneCount,
-        lateralLinks: 2,
-        farLinks: 0,
-        directEndingThreshold: 1
-    };
-case "tree":
-                        return {
-                            planner: "mesh",
-                            laneCount,
-                            lateralLinks: 1,
-                            farLinks: 1,
-                            directEndingThreshold: 2
-                        };
-                    case "layered":
-                        return {
-                            planner: "mesh",
-                            laneCount,
-                            lateralLinks: 1,
-                            farLinks: 0,
-                            directEndingThreshold: 2
-                        };
-                    case "branched_remediation":
-                        return {
-                            planner: "mesh",
-                            laneCount,
-                            lateralLinks: 1,
-                            farLinks: 1,
-                            directEndingThreshold: 2
-                        };
-                    case "branched":
-                    default:
-                        return {
-                            planner: "mesh",
-                            laneCount,
-                            lateralLinks: 1,
-                            farLinks: 1,
-                            directEndingThreshold: 2
-                        };
-                }
-            }
-
-            function buildScenePlan(profile) {
-                if (!mainIds.length) {
-                    return {
-                        laneCount: 1,
-                        layers: [],
-                        sceneMeta: {}
-                    };
-                }
-
-                if (profile.planner === "linear") {
-                    const sceneMeta = {};
-                    const layers = mainIds.map((sceneId, index) => {
-                        sceneMeta[sceneId] = {
-                            index,
-                            layerIndex: index,
-                            lane: 0,
-                            ownEnding: endingIds[index % endingIds.length] || endingIds[0]
-                        };
-                        return [sceneId];
-                    });
-
-                    return {
-                        laneCount: 1,
-                        layers,
-                        sceneMeta
-                    };
-                }
-
-                const laneCount = Math.max(
-                    1,
-                    Math.min(profile.laneCount || 1, endingIds.length || 1, mainIds.length)
-                );
-
-                const layerCount = Math.max(
-                    2,
-                    Math.ceil(mainIds.length / Math.max(2, Math.min(laneCount, 3)))
-                );
-
-                const layers = Array.from({ length: layerCount }, () => []);
-const sceneMeta = {};
-
-mainIds.forEach((sceneId, index) => {
-    const layerIndex = Math.floor((index * layerCount) / mainIds.length);
-    const isHubLayer = profile.planner === "hub" && layerIndex % 2 === 1;
-    const lane = isHubLayer ? 0 : index % laneCount;
-
-    layers[layerIndex].push(sceneId);
-    sceneMeta[sceneId] = {
-        index,
-        layerIndex,
-        lane,
-        isHub: isHubLayer,
-        ownEnding: endingIds[lane % endingIds.length] || endingIds[0]
-    };
-});
-
-                return {
-                    laneCount,
-                    layers,
-                    sceneMeta
-                };
-            }
-
-            function collectFutureScenes(sceneId, scenePlan, predicate = () => true) {
-                const meta = scenePlan.sceneMeta[sceneId];
-                if (!meta) return [];
-
-                const results = [];
-
-                for (let layerIndex = meta.layerIndex + 1; layerIndex < scenePlan.layers.length; layerIndex += 1) {
-                    scenePlan.layers[layerIndex].forEach((candidateId) => {
-                        const candidateMeta = scenePlan.sceneMeta[candidateId];
-                        if (candidateMeta && predicate(candidateId, candidateMeta)) {
-                            results.push(candidateId);
-                        }
-                    });
-                }
-
-                return results;
-            }
-
-            function pickTargetsForScene(sceneId, profile, scenePlan) {
-    const meta = scenePlan.sceneMeta[sceneId];
-    if (!meta) {
-        return endingIds.slice(0, choicesPerScene);
-    }
-
-    const targets = [];
-    const futureSameLane = collectFutureScenes(
-        sceneId,
-        scenePlan,
-        (_, candidateMeta) => candidateMeta.lane === meta.lane
-    );
-    const futureOtherLanes = collectFutureScenes(
-        sceneId,
-        scenePlan,
-        (_, candidateMeta) => candidateMeta.lane !== meta.lane
-    );
-    const futureHubScenes = collectFutureScenes(
-        sceneId,
-        scenePlan,
-        (_, candidateMeta) => !!candidateMeta.isHub
-    );
-
-    if (profile.planner === "linear") {
-        const nextSceneId = mainIds[meta.index + 1];
-        if (nextSceneId) {
-            targets.push(nextSceneId);
-        } else {
-            endingIds.forEach((endingId) => targets.push(endingId));
-        }
-    } else if (profile.planner === "hub") {
-        if (meta.isHub) {
-            futureOtherLanes.slice(0, choicesPerScene).forEach((targetId) => {
-                if (!targets.includes(targetId)) targets.push(targetId);
+            const generationContext = buildGenerationContext(currentState, {
+                mainIds,
+                endingIds,
+                analysisSceneIds,
+                remediationGroups,
+                choicesPerScene,
+                mainPrefix,
+                endingPrefix,
+                remediationPrefix,
+                remediationsPerAnalysis
             });
-        } else {
-            if (futureHubScenes[0]) targets.push(futureHubScenes[0]);
-            if (futureSameLane[0]) targets.push(futureSameLane[0]);
-        }
 
-        if (!futureHubScenes.length && meta.ownEnding) {
-            targets.push(meta.ownEnding);
-        }
-    } else if (profile.planner === "diamond") {
-        const totalLayers = scenePlan.layers.length;
-        const middleLayer = Math.floor(totalLayers / 2);
-        const isBeforeMiddle = meta.layerIndex < middleLayer;
-        const isAfterMiddle = meta.layerIndex > middleLayer;
+            const generator =
+                STRUCTURE_GENERATORS[generationContext.options.structureType] ||
+                STRUCTURE_GENERATORS.branched;
 
-        if (isBeforeMiddle) {
-            if (futureOtherLanes[0]) targets.push(futureOtherLanes[0]);
-            if (futureSameLane[0]) targets.push(futureSameLane[0]);
-        } else if (meta.layerIndex === middleLayer) {
-            if (futureSameLane[0]) targets.push(futureSameLane[0]);
-            if (futureOtherLanes[0]) targets.push(futureOtherLanes[0]);
-        } else if (isAfterMiddle) {
-            if (futureSameLane[0]) targets.push(futureSameLane[0]);
-            if (futureSameLane[1] && choicesPerScene >= 3) targets.push(futureSameLane[1]);
-            if (meta.ownEnding) targets.push(meta.ownEnding);
-        }
-
-        const remainingLayers = scenePlan.layers.length - meta.layerIndex - 1;
-        if (remainingLayers <= profile.directEndingThreshold && meta.ownEnding) {
-            targets.push(meta.ownEnding);
-        }
-    } else {
-        if (futureSameLane[0]) {
-            targets.push(futureSameLane[0]);
-        }
-
-        if (profile.lateralLinks > 0 && futureOtherLanes[0]) {
-            targets.push(futureOtherLanes[0]);
-        }
-
-        if (futureSameLane[1] && choicesPerScene >= 3) {
-            targets.push(futureSameLane[1]);
-        }
-
-        if (profile.farLinks > 0 && futureOtherLanes[1] && choicesPerScene >= 4) {
-            targets.push(futureOtherLanes[1]);
-        }
-
-        const remainingLayers = scenePlan.layers.length - meta.layerIndex - 1;
-
-        if (remainingLayers <= profile.directEndingThreshold || !futureSameLane.length) {
-            targets.push(meta.ownEnding);
-        }
-
-        if (remainingLayers <= 1 && endingIds.length > 1) {
-            targets.push(endingIds[(meta.lane + 1) % endingIds.length] || endingIds[0]);
-        }
-    }
-
-    const fallbackCandidates = [
-        ...futureSameLane,
-        ...futureHubScenes,
-        ...futureOtherLanes,
-        ...endingIds.slice(meta.lane),
-        ...endingIds.slice(0, meta.lane)
-    ];
-
-    fallbackCandidates.forEach((candidateId) => {
-        if (candidateId && !targets.includes(candidateId) && targets.length < choicesPerScene) {
-            targets.push(candidateId);
-        }
-    });
-
-    if (!targets.length && endingIds[0]) {
-        targets.push(endingIds[0]);
-    }
-
-    return uniqueNonEmpty(targets).slice(0, choicesPerScene);
-}
-
-            function buildChoiceDescription(targetId, sceneId, scenePlan) {
-    if (endingIds.includes(targetId)) {
-        return `Conduire vers ${targetId.replace(/_/g, " ")}`;
-    }
-
-    const currentMeta = scenePlan?.sceneMeta?.[sceneId];
-    const targetMeta = scenePlan?.sceneMeta?.[targetId];
-
-    if (currentMeta && targetMeta) {
-        if (targetMeta.isHub) {
-            return `Rejoindre un carrefour narratif vers ${targetId.replace(/_/g, " ")}`;
-        }
-
-        if (currentMeta.isHub) {
-            return `Quitter le carrefour vers ${targetId.replace(/_/g, " ")}`;
-        }
-
-        if (currentMeta.lane === targetMeta.lane) {
-            return `Poursuivre cette trajectoire vers ${targetId.replace(/_/g, " ")}`;
-        }
-
-        return `Basculer vers une autre trajectoire : ${targetId.replace(/_/g, " ")}`;
-    }
-
-    return `Poursuivre vers ${targetId.replace(/_/g, " ")}`;
-}
-
-            function getAnalysisAnchorIndexes() {
-                if (!analysisSceneIds.length) return [];
-                return analysisSceneIds.map((_, index) => {
-                    const raw = Math.floor(((index + 1) * mainIds.length) / (analysisSceneIds.length + 1)) - 1;
-                    return Math.max(0, Math.min(mainIds.length - 1, raw));
-                });
-            }
-
-            const profile = getStructureProfile(currentState.structure.type, mainIds.length);
-            const scenePlan = buildScenePlan(profile);
+            const profile = generator.buildProfile(generationContext);
+            const rolePlan = generator.buildRolePlan(generationContext, profile);
+            const linkPlan = generator.buildLinks(generationContext, profile, rolePlan);
             const analysisAnchorIndexes = getAnalysisAnchorIndexes();
 
             if (currentState.structure.includeIntro) {
                 scenes.intro = {
-                    chapter: 1,
+                    chapter: "1",
                     title: "Introduction",
-                    text: currentState.scenePreset.defaultSceneText || "Rédigez ici le contenu de la scène.",
+                    text: generationContext.texts.defaultSceneText,
                     image: "",
                     type: "normal",
                     ending: false,
                     analysis: false,
                     choices: [
                         {
-                            title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} 1`,
+                            title: `${generationContext.texts.defaultChoiceTitle} 1`,
                             description: "Commencer le parcours",
                             goto: mainIds[0],
                             effects: {
@@ -2120,24 +3284,15 @@ mainIds.forEach((sceneId, index) => {
             }
 
             mainIds.forEach((sceneId, index) => {
-                const targets = pickTargetsForScene(sceneId, profile, scenePlan);
-
                 scenes[sceneId] = {
-                    chapter: currentState.structure.includeIntro ? 2 : 1,
+                    chapter: String(currentState.structure.includeIntro ? 2 : 1),
                     title: `Scène ${index + 1}`,
-                    text: currentState.scenePreset.defaultSceneText || "Rédigez ici le contenu de la scène.",
+                    text: generationContext.texts.defaultSceneText,
                     image: "",
                     type: "normal",
                     ending: false,
                     analysis: false,
-                    choices: targets.map((targetId, choiceIndex) => ({
-                        title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} ${choiceIndex + 1}`,
-                        description: buildChoiceDescription(targetId, sceneId, scenePlan),
-                        goto: targetId,
-                        effects: {
-                            stepDelta: 1
-                        }
-                    }))
+                    choices: buildChoicesFromLinkPlan(sceneId, linkPlan, generationContext)
                 };
             });
 
@@ -2145,7 +3300,7 @@ mainIds.forEach((sceneId, index) => {
                 const linkedRemediations = remediationGroups[analysisIndex] || [];
 
                 scenes[analysisId] = {
-                    chapter: currentState.structure.includeIntro ? 3 : 2,
+                    chapter: String(currentState.structure.includeIntro ? 3 : 2),
                     title: `Analyse ${analysisIndex + 1}`,
                     text: `Cette scène d’analyse correspond à l’interruption ${analysisIndex + 1}. Elle présente le diagnostic associé, puis propose une ou plusieurs voies de remédiation.`,
                     image: "",
@@ -2185,7 +3340,7 @@ mainIds.forEach((sceneId, index) => {
                     });
 
                     scenes[remediationId] = {
-                        chapter: currentState.structure.includeIntro ? 4 : 3,
+                        chapter: String(currentState.structure.includeIntro ? 4 : 3),
                         title: `Remédiation ${analysisIndex + 1}.${remediationIndex + 1}`,
                         text: `Cette scène de remédiation prolonge l’analyse ${analysisIndex + 1} et réinjecte ensuite le joueur plus loin dans le parcours.`,
                         image: "",
@@ -2193,7 +3348,7 @@ mainIds.forEach((sceneId, index) => {
                         ending: false,
                         analysis: false,
                         choices: targets.slice(0, choicesPerScene).map((targetId, choiceIndex) => ({
-                            title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} ${choiceIndex + 1}`,
+                            title: `${generationContext.texts.defaultChoiceTitle} ${choiceIndex + 1}`,
                             description: targetId.startsWith(endingPrefix)
                                 ? "Conclure après remédiation"
                                 : `Réintégrer le parcours vers ${targetId.replace(/_/g, " ")}`,
@@ -2208,7 +3363,7 @@ mainIds.forEach((sceneId, index) => {
 
             endingIds.forEach((sceneId, index) => {
                 scenes[sceneId] = {
-                    chapter: currentState.structure.includeIntro ? 5 : 4,
+                    chapter: String(currentState.structure.includeIntro ? 5 : 4),
                     title: `Fin ${index + 1}`,
                     text: "Rédigez ici la conclusion de cette branche.",
                     image: "",
@@ -2219,12 +3374,45 @@ mainIds.forEach((sceneId, index) => {
                 };
             });
 
-                        enforceConnectivityRules();
+            enforceConnectivityRules(analysisAnchorIndexes);
 
             return {
                 scenes,
                 analysisSceneIds
             };
+        }
+
+        function buildValidationContextFromState(currentState) {
+            const mainPrefix = slugify(currentState.scenePreset.mainScenePrefix || "scene");
+            const endingPrefix = slugify(currentState.scenePreset.endingPrefix || "fin");
+            const remediationPrefix = slugify(currentState.scenePreset.remediationPrefix || "remediation");
+
+            const mainCount = Math.max(1, Number(currentState.structure.mainSceneCount) || 1);
+            const endingCount = Math.max(1, Number(currentState.structure.endingCount) || 1);
+            const remediationsPerAnalysis = Math.max(0, Number(currentState.structure.remediationsPerAnalysis) || 0);
+            const choicesPerScene = Math.max(1, Math.min(4, Number(currentState.structure.choicesPerScene) || 2));
+
+            const mainIds = Array.from({ length: mainCount }, (_, index) => `${mainPrefix}_${index + 1}`);
+            const endingIds = Array.from({ length: endingCount }, (_, index) => `${endingPrefix}_${index + 1}`);
+            const analysisSceneIds = buildAnalysisSceneIds(currentState);
+
+            const remediationGroups = analysisSceneIds.map((analysisId, analysisIndex) =>
+                Array.from({ length: remediationsPerAnalysis }, (_, remediationIndex) =>
+                    `${remediationPrefix}_${analysisIndex + 1}_${remediationIndex + 1}`
+                )
+            );
+
+            return buildGenerationContext(currentState, {
+                mainIds,
+                endingIds,
+                analysisSceneIds,
+                remediationGroups,
+                choicesPerScene,
+                mainPrefix,
+                endingPrefix,
+                remediationPrefix,
+                remediationsPerAnalysis
+            });
         }
 
         function validateProject(project) {
@@ -2277,7 +3465,7 @@ mainIds.forEach((sceneId, index) => {
                 messages.push({ type: "bad", text: "Aucune scène n’a été générée." });
             }
 
-                        const incomingMap = {};
+            const incomingMap = {};
             sceneIds.forEach((sceneId) => {
                 incomingMap[sceneId] = 0;
             });
@@ -2326,6 +3514,19 @@ mainIds.forEach((sceneId, index) => {
                 messages.push({ type: "good", text: `${project.analyses.length} analyse(s) préparée(s).` });
             } else {
                 messages.push({ type: "warn", text: "Aucune analyse textuelle n’a été ajoutée." });
+            }
+
+            const validationContext = buildValidationContextFromState(state);
+            const generator =
+                STRUCTURE_GENERATORS[validationContext.options.structureType] ||
+                STRUCTURE_GENERATORS.branched;
+
+            if (generator && typeof generator.validate === "function") {
+                const specificMessages = generator.validate(validationContext, project);
+
+                if (Array.isArray(specificMessages) && specificMessages.length > 0) {
+                    messages.push(...specificMessages);
+                }
             }
 
             return messages;
@@ -2416,17 +3617,388 @@ mainIds.forEach((sceneId, index) => {
             els.jsonPanel.classList.toggle("hidden", state.activeTab !== "json");
         }
 
-        function renderAll() {
-    syncStateFromForm();
+        function escapeForSvg(value) {
+            return escapeHtml(value).replace(/'/g, "&apos;");
+        }
 
-    const project = buildProjectFromState(state);
-    renderSummary(project);
-    renderStructure(project);
-    renderJson(project);
-    renderValidation(project);
-    renderTabs();
-    updateStructureTypeHint();
-}
+        function getSceneGraphData(project) {
+            const scenes = project?.scenes || {};
+            const sceneIds = Object.keys(scenes);
+            const edges = [];
+
+            sceneIds.forEach((sceneId) => {
+                const scene = scenes[sceneId];
+                (scene.choices || []).forEach((choice) => {
+                    if (choice.goto && scenes[choice.goto]) {
+                        edges.push({
+                            from: sceneId,
+                            to: choice.goto,
+                            label: choice.title || ""
+                        });
+                    }
+                });
+            });
+
+            const connectedIds = sceneIds.filter((sceneId) => {
+                return edges.some((edge) => edge.from === sceneId || edge.to === sceneId);
+            });
+
+            return {
+                sceneIds: connectedIds,
+                edges: edges.filter((edge) => connectedIds.includes(edge.from) && connectedIds.includes(edge.to))
+            };
+        }
+
+        function computeGraphLayout(project) {
+            const scenes = project?.scenes || {};
+            const { sceneIds, edges } = getSceneGraphData(project);
+
+            if (!sceneIds.length) {
+                return {
+                    nodes: [],
+                    edges: [],
+                    width: 1200,
+                    height: 800
+                };
+            }
+
+            const startId =
+                scenes[project?.meta?.startScene] && sceneIds.includes(project.meta.startScene)
+                    ? project.meta.startScene
+                    : sceneIds[0];
+
+            const levels = {};
+            const queue = [startId];
+            levels[startId] = 0;
+
+            while (queue.length) {
+                const current = queue.shift();
+                const nextEdges = edges.filter((edge) => edge.from === current);
+
+                nextEdges.forEach((edge) => {
+                    if (levels[edge.to] == null) {
+                        levels[edge.to] = levels[current] + 1;
+                        queue.push(edge.to);
+                    }
+                });
+            }
+
+            let fallbackLevel = Math.max(0, ...Object.values(levels));
+            sceneIds.forEach((sceneId) => {
+                if (levels[sceneId] == null) {
+                    fallbackLevel += 1;
+                    levels[sceneId] = fallbackLevel;
+                }
+            });
+
+            const layers = {};
+            sceneIds.forEach((sceneId) => {
+                const level = levels[sceneId] || 0;
+                if (!layers[level]) layers[level] = [];
+                layers[level].push(sceneId);
+            });
+
+            Object.values(layers).forEach((layer) => layer.sort());
+
+            const nodeWidth = 220;
+            const nodeHeight = 84;
+            const gapX = 120;
+            const gapY = 48;
+            const paddingX = 80;
+            const paddingY = 80;
+
+            const nodes = [];
+            const layerIndexes = Object.keys(layers).map(Number).sort((a, b) => a - b);
+
+            layerIndexes.forEach((layerIndex) => {
+                const layer = layers[layerIndex];
+                layer.forEach((sceneId, index) => {
+                    const x = paddingX + layerIndex * (nodeWidth + gapX);
+                    const y = paddingY + index * (nodeHeight + gapY);
+
+                    nodes.push({
+                        id: sceneId,
+                        x,
+                        y,
+                        width: nodeWidth,
+                        height: nodeHeight,
+                        title: scenes[sceneId]?.title || sceneId,
+                        subtitle: sceneId,
+                        type: `type-${scenes[sceneId]?.type || "normal"}`
+                    });
+                });
+            });
+
+            const nodeMap = Object.fromEntries(nodes.map((node) => [node.id, node]));
+            const graphEdges = edges
+                .filter((edge) => nodeMap[edge.from] && nodeMap[edge.to])
+                .map((edge, index) => {
+                    const fromNode = nodeMap[edge.from];
+                    const toNode = nodeMap[edge.to];
+
+                    const startX = fromNode.x + fromNode.width;
+                    const startY = fromNode.y + fromNode.height / 2;
+                    const endX = toNode.x;
+                    const endY = toNode.y + toNode.height / 2;
+                    const curve = Math.max(50, (endX - startX) / 2);
+
+                    return {
+                        id: `edge_${index}`,
+                        label: edge.label || "",
+                        path: `M ${startX} ${startY} C ${startX + curve} ${startY}, ${endX - curve} ${endY}, ${endX} ${endY}`,
+                        labelX: (startX + endX) / 2,
+                        labelY: (startY + endY) / 2
+                    };
+                });
+
+            const maxLayerSize = Math.max(...Object.values(layers).map((layer) => layer.length));
+            const width = paddingX * 2 + layerIndexes.length * nodeWidth + Math.max(0, layerIndexes.length - 1) * gapX;
+            const height = paddingY * 2 + maxLayerSize * nodeHeight + Math.max(0, maxLayerSize - 1) * gapY;
+
+            return {
+                nodes,
+                edges: graphEdges,
+                width: Math.max(1200, width),
+                height: Math.max(800, height)
+            };
+        }
+
+        function renderGraphPreview(project) {
+            if (!els.graphPreviewSvg || !els.graphPreviewEmptyState) return;
+
+            const layout = computeGraphLayout(project);
+
+            if (!layout.nodes.length) {
+                els.graphPreviewSvg.innerHTML = "";
+                els.graphPreviewEmptyState.style.display = "grid";
+                graphPreviewState.homeViewBox = { x: 0, y: 0, width: 1200, height: 800 };
+                graphPreviewState.currentViewBox = { x: 0, y: 0, width: 1200, height: 800 };
+                applyGraphPreviewViewBox();
+                return;
+            }
+
+            els.graphPreviewEmptyState.style.display = "none";
+
+            const edgesMarkup = layout.edges.map((edge) => `
+                <g class="graphEdge">
+                    <path class="graphEdgePath" d="${edge.path}"></path>
+                </g>
+                ${edge.label ? `
+                    <g class="graphEdgeLabel" transform="translate(${edge.labelX}, ${edge.labelY})">
+                        <rect x="-42" y="-12" width="84" height="24"></rect>
+                        <text text-anchor="middle" dominant-baseline="middle">${escapeForSvg(edge.label)}</text>
+                    </g>
+                ` : ""}
+            `).join("");
+
+            const nodesMarkup = layout.nodes.map((node) => `
+                <g class="graphNode ${node.type}" transform="translate(${node.x}, ${node.y})">
+                    <rect width="${node.width}" height="${node.height}"></rect>
+                    <text x="16" y="32">${escapeForSvg(node.title)}</text>
+                    <text x="16" y="56" class="graphNodeSub">${escapeForSvg(node.subtitle)}</text>
+                </g>
+            `).join("");
+
+            els.graphPreviewSvg.innerHTML = `
+                <g id="graphPreviewContentLayer">
+                    ${edgesMarkup}
+                    ${nodesMarkup}
+                </g>
+            `;
+
+            setGraphPreviewHomeView(layout.width, layout.height);
+        }
+
+        function applyGraphPreviewViewBox() {
+            if (!els.graphPreviewSvg) return;
+
+            const vb = graphPreviewState.currentViewBox;
+            els.graphPreviewSvg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.width} ${vb.height}`);
+        }
+
+        function resetGraphPreviewInteractionState() {
+            graphPreviewState.zoom = 1;
+            graphPreviewState.isDragging = false;
+            graphPreviewState.dragStartClientX = 0;
+            graphPreviewState.dragStartClientY = 0;
+            graphPreviewState.dragStartViewBoxX = 0;
+            graphPreviewState.dragStartViewBoxY = 0;
+
+            graphPreviewState.currentViewBox = {
+                ...graphPreviewState.homeViewBox
+            };
+
+            if (els.graphPreviewViewport) {
+                els.graphPreviewViewport.classList.remove("dragging");
+            }
+        }
+
+        function resetGraphPreviewView() {
+            graphPreviewState.zoom = 1;
+            graphPreviewState.currentViewBox = {
+                ...graphPreviewState.homeViewBox
+            };
+            applyGraphPreviewViewBox();
+        }
+
+        function zoomGraphPreview(factor) {
+            if (!els.graphPreviewSvg) return;
+
+            const previousZoom = graphPreviewState.zoom;
+            const nextZoom = Math.max(
+                graphPreviewState.minZoom,
+                Math.min(graphPreviewState.maxZoom, previousZoom * factor)
+            );
+
+            if (nextZoom === previousZoom) return;
+
+            const current = graphPreviewState.currentViewBox;
+            const centerX = current.x + current.width / 2;
+            const centerY = current.y + current.height / 2;
+
+            const base = graphPreviewState.homeViewBox;
+            const nextWidth = base.width / nextZoom;
+            const nextHeight = base.height / nextZoom;
+
+            graphPreviewState.zoom = nextZoom;
+            graphPreviewState.currentViewBox = {
+                x: centerX - nextWidth / 2,
+                y: centerY - nextHeight / 2,
+                width: nextWidth,
+                height: nextHeight
+            };
+
+            applyGraphPreviewViewBox();
+        }
+
+        function setGraphPreviewHomeView(layoutWidth, layoutHeight) {
+            const padding = 80;
+
+            graphPreviewState.contentWidth = layoutWidth;
+            graphPreviewState.contentHeight = layoutHeight;
+
+            graphPreviewState.homeViewBox = {
+                x: -padding,
+                y: -padding,
+                width: layoutWidth + padding * 2,
+                height: layoutHeight + padding * 2
+            };
+
+            graphPreviewState.currentViewBox = {
+                ...graphPreviewState.homeViewBox
+            };
+
+            graphPreviewState.zoom = 1;
+            applyGraphPreviewViewBox();
+        }
+
+        function openGraphPreviewModal() {
+            if (window.innerWidth <= 1170) return;
+
+            syncStateFromForm();
+            const project = buildProjectFromState(state);
+
+            els.graphPreviewModal.classList.add("open");
+            els.graphPreviewModal.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+
+            requestAnimationFrame(() => {
+                renderGraphPreview(project);
+                resetGraphPreviewView();
+            });
+        }
+
+        function closeGraphPreviewModal() {
+            if (!els.graphPreviewModal) return;
+
+            resetGraphPreviewInteractionState();
+            els.graphPreviewModal.classList.remove("open");
+            els.graphPreviewModal.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+        }
+
+        function initGraphPreviewInteractions() {
+            if (!els.graphPreviewViewport) return;
+
+            els.graphPreviewViewport.addEventListener("pointerdown", (event) => {
+                if (window.innerWidth <= 1170) return;
+                if (!els.graphPreviewModal.classList.contains("open")) return;
+
+                graphPreviewState.isDragging = true;
+                graphPreviewState.dragStartClientX = event.clientX;
+                graphPreviewState.dragStartClientY = event.clientY;
+                graphPreviewState.dragStartViewBoxX = graphPreviewState.currentViewBox.x;
+                graphPreviewState.dragStartViewBoxY = graphPreviewState.currentViewBox.y;
+                els.graphPreviewViewport.classList.add("dragging");
+            });
+
+            window.addEventListener("pointermove", (event) => {
+                if (!graphPreviewState.isDragging || !els.graphPreviewViewport) return;
+
+                const rect = els.graphPreviewViewport.getBoundingClientRect();
+                const dx = event.clientX - graphPreviewState.dragStartClientX;
+                const dy = event.clientY - graphPreviewState.dragStartClientY;
+
+                const unitsPerPixelX = graphPreviewState.currentViewBox.width / Math.max(1, rect.width);
+                const unitsPerPixelY = graphPreviewState.currentViewBox.height / Math.max(1, rect.height);
+
+                graphPreviewState.currentViewBox.x = graphPreviewState.dragStartViewBoxX - dx * unitsPerPixelX;
+                graphPreviewState.currentViewBox.y = graphPreviewState.dragStartViewBoxY - dy * unitsPerPixelY;
+
+                applyGraphPreviewViewBox();
+            });
+
+            window.addEventListener("pointerup", () => {
+                graphPreviewState.isDragging = false;
+                els.graphPreviewViewport.classList.remove("dragging");
+            });
+
+            els.graphPreviewViewport.addEventListener("wheel", (event) => {
+                if (!els.graphPreviewModal.classList.contains("open")) return;
+
+                event.preventDefault();
+                zoomGraphPreview(event.deltaY < 0 ? 1.1 : 0.9);
+            }, { passive: false });
+
+            els.graphPreviewZoomInBtn.addEventListener("click", () => zoomGraphPreview(1.15));
+            els.graphPreviewZoomOutBtn.addEventListener("click", () => zoomGraphPreview(0.87));
+            els.graphPreviewResetBtn.addEventListener("click", resetGraphPreviewView);
+
+            els.closeGraphPreviewModalBtn.addEventListener("click", closeGraphPreviewModal);
+
+            els.graphPreviewModal.addEventListener("click", (event) => {
+                const action = event.target?.dataset?.action;
+                if (action === "closeGraphPreviewModal") {
+                    closeGraphPreviewModal();
+                }
+            });
+
+            window.addEventListener("keydown", (event) => {
+                if (event.key === "Escape" && els.graphPreviewModal.classList.contains("open")) {
+                    closeGraphPreviewModal();
+                }
+            });
+
+            window.addEventListener("resize", () => {
+                if (els.graphPreviewModal.classList.contains("open")) {
+                    const project = buildProjectFromState(state);
+                    renderGraphPreview(project);
+                    resetGraphPreviewView();
+                }
+            });
+        }
+
+        function renderAll() {
+            syncStateFromForm();
+
+            const project = buildProjectFromState(state);
+            renderSummary(project);
+            renderStructure(project);
+            renderJson(project);
+            renderValidation(project);
+            renderTabs();
+            updateStructureTypeHint();
+        }
 
         function setFormFromState(currentState) {
             els.projectTitle.value = currentState.project.title;
@@ -2465,6 +4037,7 @@ mainIds.forEach((sceneId, index) => {
             els.defaultSceneText.value = currentState.scenePreset.defaultSceneText;
             els.defaultChoiceTitle.value = currentState.scenePreset.defaultChoiceTitle;
 
+            updateStructureTypeHint();
             renderAll();
         }
 
@@ -2537,8 +4110,18 @@ mainIds.forEach((sceneId, index) => {
                 field.addEventListener("change", renderAll);
             });
 
+            if (els.structureType) {
+                els.structureType.addEventListener("change", updateStructureTypeHint);
+                els.structureType.addEventListener("input", updateStructureTypeHint);
+            }
+
             els.tabButtons.forEach((btn) => {
                 btn.addEventListener("click", () => {
+                    if (btn.dataset.tab === "graph") {
+                        openGraphPreviewModal();
+                        return;
+                    }
+
                     state.activeTab = btn.dataset.tab;
                     renderTabs();
                 });
@@ -2680,6 +4263,7 @@ mainIds.forEach((sceneId, index) => {
             initDesktopDivider();
             applyDesktopPaneWidth(56);
             bindEvents();
+            initGraphPreviewInteractions();
             renderAll();
         }
 
