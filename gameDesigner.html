@@ -5947,11 +5947,12 @@
                 `;
 
             return `
-              <button
+                            <button
                 type="button"
                 class="itemCard graphPreviewLinkCard"
                 data-action="openPreviewSceneLink"
                 data-scene-id="${escapeAttr(sceneId)}"
+                data-target-scene-id="${escapeAttr(targetId)}"
                 data-choice-index="${index}"
               >
                 <div><strong>Choix ${index + 1}</strong></div>
@@ -8550,8 +8551,8 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         highlightedNodeIds = collectReachableSceneIdsWithDepth(sceneId, forwardMap);
         highlightedNodeIds.add(sceneId);
       } else if (mode === "nearby") {
-        const ancestors = collectReachableSceneIdsWithDepth(sceneId, reverseMap, 2);
-        const descendants = collectReachableSceneIdsWithDepth(sceneId, forwardMap, 2);
+        const ancestors = collectReachableSceneIdsWithDepth(sceneId, reverseMap, 1);
+        const descendants = collectReachableSceneIdsWithDepth(sceneId, forwardMap, 1);
         highlightedNodeIds = new Set([...ancestors, ...descendants, sceneId]);
       }
 
@@ -11928,14 +11929,22 @@ if (document.readyState === "loading") {
       }
 
       if (action === "openPreviewSceneLink") {
-        const targetSceneId = btn.dataset.sceneId;
-        const targetChoiceIndex = Number(btn.dataset.choiceIndex);
+        const sourceSceneId = (btn.dataset.sceneId || "").trim();
+        const targetSceneId = (btn.dataset.targetSceneId || "").trim();
+        const previewSceneId = targetSceneId || sourceSceneId;
 
-        closeGraphScenePreviewModal();
-        openSceneInEditor(
-          targetSceneId,
-          Number.isNaN(targetChoiceIndex) ? null : targetChoiceIndex,
-        );
+        if (!previewSceneId) return;
+
+        if (!project.scenes?.[previewSceneId]) {
+          showActionFeedback("Impossible d’ouvrir l’aperçu de cette scène.");
+          return;
+        }
+
+        els.graphScenePreviewModal.dataset.sceneId = previewSceneId;
+        renderGraphScenePreview(previewSceneId);
+
+        const previewScrollContainer = els.graphScenePreviewModal?.querySelector(".sceneEditorModalContent");
+        previewScrollContainer?.scrollTo({ top: 0, behavior: "auto" });
       }
 
       if (action === "moveChoiceUp") {
