@@ -895,13 +895,60 @@
             grid-template-rows: auto 1fr;
         }
 
-        .graphPreviewModalHeader {
+               .graphPreviewModalHeader {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             gap: 12px;
             padding: 14px 16px;
             border-bottom: 1px solid var(--border);
+        }
+
+        .graphPreviewHeaderMain {
+            display: grid;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .graphPreviewStructureMeta {
+            display: grid;
+            gap: 8px;
+            max-width: 880px;
+        }
+
+        .graphPreviewStructureTypeLine {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .graphPreviewStructureTypeBadge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #222c50;
+            color: #dfe7ff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .graphPreviewStructureHint {
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #1a2343;
+            color: #dfe7ff;
+            font-size: 0.84rem;
+            line-height: 1.4;
+        }
+
+        .graphPreviewStructureHint strong {
+            color: var(--text);
         }
 
         .graphPreviewModalContent {
@@ -929,7 +976,7 @@
 
         .graphViewport {
             position: relative;
-            min-height: 0;
+            min-height: 720px;
             overflow: hidden;
             border: 1px solid var(--border);
             border-radius: 16px;
@@ -952,9 +999,17 @@
             -webkit-user-select: none;
         }
 
+        .graphSvg,
+        .graphNode,
+        .graphNode text,
+        .graphNode rect {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
         .graphSvg {
             width: 100%;
-            height: 100%;
+            height: 720px;
             display: block;
         }
 
@@ -968,6 +1023,10 @@
         .graphHint {
             color: var(--muted);
             font-size: 0.84rem;
+        }
+
+        .graphNode {
+            cursor: pointer;
         }
 
         .graphNode rect {
@@ -995,6 +1054,12 @@
         .graphNode.type-remediation rect {
             fill: rgba(49, 64, 113, 0.94);
             stroke: rgba(160, 190, 255, 0.45);
+        }
+
+        .graphNode.active rect {
+            stroke: rgba(124, 200, 255, 0.9);
+            stroke-width: 2;
+            filter: drop-shadow(0 10px 18px rgba(124, 200, 255, 0.18));
         }
 
         .graphNode text {
@@ -1025,6 +1090,63 @@
             fill: rgba(11, 16, 32, 0.86);
             stroke: rgba(255, 255, 255, 0.06);
             rx: 8;
+        }
+
+        .graphContextMenu {
+            position: absolute;
+            z-index: 20;
+            display: grid;
+            gap: 8px;
+            min-width: 200px;
+            padding: 10px;
+            border-radius: 12px;
+            background: rgba(11, 16, 32, 0.96);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .graphContextMenu button {
+            width: 100%;
+            text-align: left;
+        }
+
+        .graphNode.is-dimmed,
+        .graphEdge.is-dimmed,
+        .graphEdgeLabel.is-dimmed {
+            opacity: 0.18;
+            transition: opacity 0.18s ease;
+        }
+
+        .graphNode.is-highlighted rect {
+            stroke: rgba(124, 200, 255, 0.95);
+            stroke-width: 2.2;
+            filter: drop-shadow(0 10px 18px rgba(124, 200, 255, 0.22));
+        }
+
+        .graphNode.is-focus rect {
+            fill: rgba(124, 200, 255, 0.3);
+            stroke: #ffd166;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)) drop-shadow(0 12px 22px rgba(255, 209, 102, 0.28));
+        }
+
+        .graphNode.is-focus text,
+        .graphNode.is-focus .graphNodeSub {
+            fill: #fff7db;
+        }
+
+        .graphEdge.is-highlighted .graphEdgePath {
+            stroke: rgba(124, 200, 255, 0.92);
+            stroke-width: 2.6;
+        }
+
+        .graphEdgeLabel.is-highlighted rect {
+            stroke: rgba(124, 200, 255, 0.55);
+            fill: rgba(18, 27, 52, 0.96);
+        }
+
+        .graphEdgeLabel.is-highlighted text {
+            fill: #eef2ff;
         }
 
         @media (max-width: 1170px) {
@@ -1416,12 +1538,23 @@
         <div class="graphPreviewModalOverlay" data-action="closeGraphPreviewModal"></div>
 
         <div class="graphPreviewModalDialog">
-            <div class="graphPreviewModalHeader">
-                <div>
-                    <h2 id="graphPreviewModalTitle" style="margin: 0">Vue graphique</h2>
-                    <p class="muted small" style="margin: 6px 0 0">
-                        Aperçu visuel de contrôle. Déplacement et zoom uniquement.
-                    </p>
+                       <div class="graphPreviewModalHeader">
+                <div class="graphPreviewHeaderMain">
+                    <div>
+                        <h2 id="graphPreviewModalTitle" style="margin: 0">Vue graphique</h2>
+                        <p class="muted small" style="margin: 6px 0 0">
+                            Aperçu visuel de contrôle. Déplacement et zoom uniquement.
+                        </p>
+                    </div>
+
+                    <div class="graphPreviewStructureMeta">
+                        <div class="graphPreviewStructureTypeLine">
+                            <span class="muted small">Type de parcours</span>
+                            <span id="graphPreviewStructureTypeBadge" class="graphPreviewStructureTypeBadge"></span>
+                        </div>
+
+                        <div id="graphPreviewStructureHint" class="graphPreviewStructureHint" aria-live="polite"></div>
+                    </div>
                 </div>
 
                 <div class="itemActions">
@@ -1450,6 +1583,20 @@
                                 Générez au moins un enchaînement entre scènes pour voir apparaître le graphe.
                             </p>
                         </div>
+                    </div>
+
+                    <div id="graphPreviewContextMenu" class="graphContextMenu" style="display: none">
+                        <button id="graphPreviewContextHighlightFullBtn" type="button" class="secondary">
+                            <span>Afficher le chemin complet</span>
+                        </button>
+
+                        <button id="graphPreviewContextHighlightAncestorsBtn" type="button" class="secondary">
+                            <span>Afficher les ancêtres</span>
+                        </button>
+
+                        <button id="graphPreviewContextHighlightDescendantsBtn" type="button" class="secondary">
+                            <span>Afficher les descendants</span>
+                        </button>
                     </div>
 
                     <svg id="graphPreviewSvg" class="graphSvg" viewBox="0 0 1200 800"
@@ -1502,19 +1649,20 @@
         let state = createDefaultState();
 
         const graphPreviewState = {
-            minZoom: 0.5,
-            maxZoom: 4,
-            zoom: 1,
-            homeViewBox: { x: 0, y: 0, width: 1200, height: 800 },
-            currentViewBox: { x: 0, y: 0, width: 1200, height: 800 },
+            scale: 1,
+            minScale: 0.45,
+            maxScale: 2.4,
+            x: 80,
+            y: 70,
             isDragging: false,
-            dragStartClientX: 0,
-            dragStartClientY: 0,
-            dragStartViewBoxX: 0,
-            dragStartViewBoxY: 0,
-            contentWidth: 1200,
-            contentHeight: 800
+            dragStartX: 0,
+            dragStartY: 0,
+            startPanX: 0,
+            startPanY: 0
         };
+
+        let graphPreviewContextMenuState = null;
+        let graphPreviewHighlightState = null;
 
         function createDefaultState() {
             return {
@@ -1608,6 +1756,21 @@
             els.structureTypeHint.textContent = `${selectedLabel} : ${description}`;
         }
 
+                function updateGraphPreviewStructureMeta() {
+            if (!els.graphPreviewStructureTypeBadge || !els.graphPreviewStructureHint || !els.structureType) return;
+
+            const selectedValue = els.structureType.value;
+            const selectedLabel =
+                els.structureType.options[els.structureType.selectedIndex]?.text || "Structure";
+
+            const description =
+                STRUCTURE_TYPE_DESCRIPTIONS[selectedValue] ||
+                "Description non disponible pour ce type.";
+
+            els.graphPreviewStructureTypeBadge.textContent = selectedLabel;
+            els.graphPreviewStructureHint.innerHTML = `<strong>${escapeHtml(selectedLabel)}</strong> : ${escapeHtml(description)}`;
+        }
+
         function cacheDom() {
             [
                 "projectTitle",
@@ -1662,7 +1825,7 @@
             els.mainLayout = document.getElementById("mainLayout");
             els.desktopDivider = document.getElementById("desktopDivider");
 
-            els.graphPreviewModal = document.getElementById("graphPreviewModal");
+                        els.graphPreviewModal = document.getElementById("graphPreviewModal");
             els.closeGraphPreviewModalBtn = document.getElementById("closeGraphPreviewModalBtn");
             els.graphPreviewViewport = document.getElementById("graphPreviewViewport");
             els.graphPreviewSvg = document.getElementById("graphPreviewSvg");
@@ -1670,6 +1833,12 @@
             els.graphPreviewZoomInBtn = document.getElementById("graphPreviewZoomInBtn");
             els.graphPreviewZoomOutBtn = document.getElementById("graphPreviewZoomOutBtn");
             els.graphPreviewResetBtn = document.getElementById("graphPreviewResetBtn");
+            els.graphPreviewContextMenu = document.getElementById("graphPreviewContextMenu");
+            els.graphPreviewContextHighlightFullBtn = document.getElementById("graphPreviewContextHighlightFullBtn");
+            els.graphPreviewContextHighlightAncestorsBtn = document.getElementById("graphPreviewContextHighlightAncestorsBtn");
+            els.graphPreviewContextHighlightDescendantsBtn = document.getElementById("graphPreviewContextHighlightDescendantsBtn");
+            els.graphPreviewStructureTypeBadge = document.getElementById("graphPreviewStructureTypeBadge");
+            els.graphPreviewStructureHint = document.getElementById("graphPreviewStructureHint");
         }
 
         function syncStateFromForm() {
@@ -3621,212 +3790,353 @@
             return escapeHtml(value).replace(/'/g, "&apos;");
         }
 
-        function getSceneGraphData(project) {
-            const scenes = project?.scenes || {};
-            const sceneIds = Object.keys(scenes);
-            const edges = [];
+        function truncateGraphText(text, maxLength) {
+            const normalized = String(text || "")
+                .replace(/\s+/g, " ")
+                .trim();
 
-            sceneIds.forEach((sceneId) => {
-                const scene = scenes[sceneId];
-                (scene.choices || []).forEach((choice) => {
-                    if (choice.goto && scenes[choice.goto]) {
-                        edges.push({
-                            from: sceneId,
-                            to: choice.goto,
-                            label: choice.title || ""
-                        });
-                    }
-                });
-            });
-
-            const connectedIds = sceneIds.filter((sceneId) => {
-                return edges.some((edge) => edge.from === sceneId || edge.to === sceneId);
-            });
-
-            return {
-                sceneIds: connectedIds,
-                edges: edges.filter((edge) => connectedIds.includes(edge.from) && connectedIds.includes(edge.to))
-            };
+            if (!normalized) return "";
+            if (normalized.length <= maxLength) return normalized;
+            return `${normalized.slice(0, Math.max(1, maxLength - 1)).trim()}…`;
         }
 
-        function computeGraphLayout(project) {
-            const scenes = project?.scenes || {};
-            const { sceneIds, edges } = getSceneGraphData(project);
+        function getGraphSceneTitle(text) {
+            return truncateGraphText(text, 24) || "Scène";
+        }
 
-            if (!sceneIds.length) {
-                return {
-                    nodes: [],
-                    edges: [],
-                    width: 1200,
-                    height: 800
-                };
-            }
+        function getGraphLabelPreview(text) {
+            return truncateGraphText(text, 9) || "Choix";
+        }
 
-            const startId =
-                scenes[project?.meta?.startScene] && sceneIds.includes(project.meta.startScene)
-                    ? project.meta.startScene
-                    : sceneIds[0];
+        function getConnectedSceneGraphData(project) {
+            const nodesById = new Map();
+            const edges = [];
 
-            const levels = {};
-            const queue = [startId];
-            levels[startId] = 0;
+            Object.entries(project?.scenes || {}).forEach(([sourceId, scene]) => {
+                (scene.choices || []).forEach((choice, choiceIndex) => {
+                    const targetId = choice.goto;
+                    if (!targetId || !project.scenes[targetId]) return;
 
-            while (queue.length) {
-                const current = queue.shift();
-                const nextEdges = edges.filter((edge) => edge.from === current);
-
-                nextEdges.forEach((edge) => {
-                    if (levels[edge.to] == null) {
-                        levels[edge.to] = levels[current] + 1;
-                        queue.push(edge.to);
+                    if (!nodesById.has(sourceId)) {
+                        nodesById.set(sourceId, {
+                            id: sourceId,
+                            title: project.scenes[sourceId]?.title || sourceId,
+                            chapter: project.scenes[sourceId]?.chapter || "",
+                            type: project.scenes[sourceId]?.type || "normal",
+                            incoming: 0,
+                            outgoing: 0
+                        });
                     }
-                });
-            }
 
-            let fallbackLevel = Math.max(0, ...Object.values(levels));
-            sceneIds.forEach((sceneId) => {
-                if (levels[sceneId] == null) {
-                    fallbackLevel += 1;
-                    levels[sceneId] = fallbackLevel;
-                }
-            });
+                    if (!nodesById.has(targetId)) {
+                        nodesById.set(targetId, {
+                            id: targetId,
+                            title: project.scenes[targetId]?.title || targetId,
+                            chapter: project.scenes[targetId]?.chapter || "",
+                            type: project.scenes[targetId]?.type || "normal",
+                            incoming: 0,
+                            outgoing: 0
+                        });
+                    }
 
-            const layers = {};
-            sceneIds.forEach((sceneId) => {
-                const level = levels[sceneId] || 0;
-                if (!layers[level]) layers[level] = [];
-                layers[level].push(sceneId);
-            });
+                    nodesById.get(sourceId).outgoing += 1;
+                    nodesById.get(targetId).incoming += 1;
 
-            Object.values(layers).forEach((layer) => layer.sort());
-
-            const nodeWidth = 220;
-            const nodeHeight = 84;
-            const gapX = 120;
-            const gapY = 48;
-            const paddingX = 80;
-            const paddingY = 80;
-
-            const nodes = [];
-            const layerIndexes = Object.keys(layers).map(Number).sort((a, b) => a - b);
-
-            layerIndexes.forEach((layerIndex) => {
-                const layer = layers[layerIndex];
-                layer.forEach((sceneId, index) => {
-                    const x = paddingX + layerIndex * (nodeWidth + gapX);
-                    const y = paddingY + index * (nodeHeight + gapY);
-
-                    nodes.push({
-                        id: sceneId,
-                        x,
-                        y,
-                        width: nodeWidth,
-                        height: nodeHeight,
-                        title: scenes[sceneId]?.title || sceneId,
-                        subtitle: sceneId,
-                        type: `type-${scenes[sceneId]?.type || "normal"}`
+                    edges.push({
+                        id: `${sourceId}__${choiceIndex}__${targetId}`,
+                        source: sourceId,
+                        target: targetId,
+                        label: getGraphLabelPreview(
+                            choice.title || choice.desc || choice.decisionLog || `Choix ${choiceIndex + 1}`
+                        )
                     });
                 });
             });
 
-            const nodeMap = Object.fromEntries(nodes.map((node) => [node.id, node]));
-            const graphEdges = edges
-                .filter((edge) => nodeMap[edge.from] && nodeMap[edge.to])
-                .map((edge, index) => {
-                    const fromNode = nodeMap[edge.from];
-                    const toNode = nodeMap[edge.to];
-
-                    const startX = fromNode.x + fromNode.width;
-                    const startY = fromNode.y + fromNode.height / 2;
-                    const endX = toNode.x;
-                    const endY = toNode.y + toNode.height / 2;
-                    const curve = Math.max(50, (endX - startX) / 2);
-
-                    return {
-                        id: `edge_${index}`,
-                        label: edge.label || "",
-                        path: `M ${startX} ${startY} C ${startX + curve} ${startY}, ${endX - curve} ${endY}, ${endX} ${endY}`,
-                        labelX: (startX + endX) / 2,
-                        labelY: (startY + endY) / 2
-                    };
-                });
-
-            const maxLayerSize = Math.max(...Object.values(layers).map((layer) => layer.length));
-            const width = paddingX * 2 + layerIndexes.length * nodeWidth + Math.max(0, layerIndexes.length - 1) * gapX;
-            const height = paddingY * 2 + maxLayerSize * nodeHeight + Math.max(0, maxLayerSize - 1) * gapY;
-
             return {
-                nodes,
-                edges: graphEdges,
-                width: Math.max(1200, width),
-                height: Math.max(800, height)
+                nodes: [...nodesById.values()],
+                edges
             };
         }
 
-        function renderGraphPreview(project) {
-            if (!els.graphPreviewSvg || !els.graphPreviewEmptyState) return;
+        function buildStructureGraphLayout(project, data) {
+            const columnGap = 300;
+            const rowGap = 120;
+            const nodeWidth = 220;
+            const nodeHeight = 64;
+            const columns = [];
+            const levelById = new Map();
+            const adjacency = new Map();
+            const indegree = new Map();
 
-            const layout = computeGraphLayout(project);
+            data.nodes.forEach((node) => {
+                adjacency.set(node.id, []);
+                indegree.set(node.id, 0);
+            });
 
-            if (!layout.nodes.length) {
-                els.graphPreviewSvg.innerHTML = "";
-                els.graphPreviewEmptyState.style.display = "grid";
-                graphPreviewState.homeViewBox = { x: 0, y: 0, width: 1200, height: 800 };
-                graphPreviewState.currentViewBox = { x: 0, y: 0, width: 1200, height: 800 };
-                applyGraphPreviewViewBox();
-                return;
+            data.edges.forEach((edge) => {
+                adjacency.get(edge.source)?.push(edge.target);
+                indegree.set(edge.target, (indegree.get(edge.target) || 0) + 1);
+            });
+
+            const roots = data.nodes
+                .filter((node) => indegree.get(node.id) === 0)
+                .map((node) => node.id)
+                .sort((a, b) => a.localeCompare(b, "fr"));
+
+            if (project.meta?.startScene && data.nodes.some((node) => node.id === project.meta.startScene)) {
+                roots.unshift(project.meta.startScene);
             }
 
-            els.graphPreviewEmptyState.style.display = "none";
+            const queue = [];
+            const queuedIds = new Set();
 
-            const edgesMarkup = layout.edges.map((edge) => `
-                <g class="graphEdge">
-                    <path class="graphEdgePath" d="${edge.path}"></path>
-                </g>
-                ${edge.label ? `
-                    <g class="graphEdgeLabel" transform="translate(${edge.labelX}, ${edge.labelY})">
-                        <rect x="-42" y="-12" width="84" height="24"></rect>
-                        <text text-anchor="middle" dominant-baseline="middle">${escapeForSvg(edge.label)}</text>
-                    </g>
-                ` : ""}
-            `).join("");
+            [...new Set(roots.length ? roots : data.nodes.map((node) => node.id))].forEach((id) => {
+                queue.push(id);
+                queuedIds.add(id);
+                levelById.set(id, 0);
+            });
 
-            const nodesMarkup = layout.nodes.map((node) => `
-                <g class="graphNode ${node.type}" transform="translate(${node.x}, ${node.y})">
-                    <rect width="${node.width}" height="${node.height}"></rect>
-                    <text x="16" y="32">${escapeForSvg(node.title)}</text>
-                    <text x="16" y="56" class="graphNodeSub">${escapeForSvg(node.subtitle)}</text>
-                </g>
-            `).join("");
+            for (let index = 0; index < queue.length; index += 1) {
+                const currentId = queue[index];
+                const nextLevel = (levelById.get(currentId) || 0) + 1;
 
-            els.graphPreviewSvg.innerHTML = `
-                <g id="graphPreviewContentLayer">
-                    ${edgesMarkup}
-                    ${nodesMarkup}
-                </g>
-            `;
+                (adjacency.get(currentId) || []).forEach((targetId) => {
+                    if (!levelById.has(targetId) || nextLevel > levelById.get(targetId)) {
+                        levelById.set(targetId, nextLevel);
+                    }
 
-            setGraphPreviewHomeView(layout.width, layout.height);
+                    if (!queuedIds.has(targetId)) {
+                        queue.push(targetId);
+                        queuedIds.add(targetId);
+                    }
+                });
+            }
+
+            data.nodes.forEach((node) => {
+                if (!levelById.has(node.id)) {
+                    levelById.set(node.id, columns.length);
+                }
+
+                const level = levelById.get(node.id) || 0;
+                if (!columns[level]) columns[level] = [];
+                columns[level].push(node);
+            });
+
+            const positionedNodes = [];
+
+            columns.forEach((nodes, level) => {
+                nodes.sort((a, b) => a.id.localeCompare(b.id, "fr"));
+                const totalHeight = Math.max(0, (nodes.length - 1) * rowGap);
+                const startY = 80 + Math.max(0, 260 - totalHeight / 2);
+
+                nodes.forEach((node, rowIndex) => {
+                    positionedNodes.push({
+                        ...node,
+                        x: 80 + level * columnGap,
+                        y: startY + rowIndex * rowGap,
+                        width: nodeWidth,
+                        height: nodeHeight
+                    });
+                });
+            });
+
+            return {
+                nodes: positionedNodes,
+                edges: data.edges,
+                width: Math.max(1200, 240 + columns.length * columnGap),
+                height: Math.max(900, 220 + Math.max(...columns.map((col) => (col?.length || 0) * rowGap), 0))
+            };
         }
 
-        function applyGraphPreviewViewBox() {
-            if (!els.graphPreviewSvg) return;
+        function applyGraphPreviewTransform() {
+            const graphInner = document.getElementById("graphInner");
+            if (!graphInner) return;
 
-            const vb = graphPreviewState.currentViewBox;
-            els.graphPreviewSvg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.width} ${vb.height}`);
+            graphInner.setAttribute(
+                "transform",
+                `translate(${graphPreviewState.x} ${graphPreviewState.y}) scale(${graphPreviewState.scale})`
+            );
+        }
+
+        function closeGraphPreviewContextMenu() {
+            graphPreviewContextMenuState = null;
+            if (!els.graphPreviewContextMenu) return;
+            els.graphPreviewContextMenu.style.display = "none";
+        }
+
+        function openGraphPreviewContextMenu(sceneId, clickX, clickY) {
+            if (!els.graphPreviewContextMenu || !els.graphPreviewViewport) return;
+
+            const rect = els.graphPreviewViewport.getBoundingClientRect();
+            const menuWidth = 220;
+            const menuHeight = 156;
+            const margin = 12;
+            const offset = 10;
+
+            const relativeX = clickX - rect.left;
+            const relativeY = clickY - rect.top;
+
+            const left = Math.min(
+                Math.max(margin, relativeX),
+                Math.max(margin, rect.width - menuWidth - margin)
+            );
+
+            const spaceBelow = rect.height - relativeY;
+            const spaceAbove = relativeY;
+
+            let top;
+            if (spaceBelow >= menuHeight + offset) {
+                top = relativeY + offset;
+            } else if (spaceAbove >= menuHeight + offset) {
+                top = relativeY - menuHeight - offset;
+            } else {
+                top = Math.min(
+                    Math.max(margin, relativeY + offset),
+                    Math.max(margin, rect.height - menuHeight - margin)
+                );
+            }
+
+            graphPreviewContextMenuState = {
+                sceneId,
+                left,
+                top
+            };
+
+            els.graphPreviewContextMenu.style.left = `${left}px`;
+            els.graphPreviewContextMenu.style.top = `${top}px`;
+            els.graphPreviewContextMenu.style.display = "grid";
+        }
+
+        function buildGraphPreviewAdjacencyMaps(data) {
+            const forwardMap = new Map();
+            const reverseMap = new Map();
+
+            data.nodes.forEach((node) => {
+                forwardMap.set(node.id, []);
+                reverseMap.set(node.id, []);
+            });
+
+            data.edges.forEach((edge) => {
+                if (!forwardMap.has(edge.source)) forwardMap.set(edge.source, []);
+                if (!reverseMap.has(edge.target)) reverseMap.set(edge.target, []);
+                forwardMap.get(edge.source).push(edge.target);
+                reverseMap.get(edge.target).push(edge.source);
+            });
+
+            return { forwardMap, reverseMap };
+        }
+
+        function collectGraphPreviewReachableSceneIdsWithDepth(startId, adjacencyMap, maxDepth = Infinity) {
+            const visited = new Set();
+            const queue = [{ id: startId, depth: 0 }];
+
+            while (queue.length) {
+                const { id, depth } = queue.shift();
+                if (!id || visited.has(id)) continue;
+                visited.add(id);
+
+                if (depth >= maxDepth) continue;
+
+                const nextIds = adjacencyMap.get(id) || [];
+                nextIds.forEach((nextId) => {
+                    if (!visited.has(nextId)) {
+                        queue.push({ id: nextId, depth: depth + 1 });
+                    }
+                });
+            }
+
+            return visited;
+        }
+
+        function buildGraphPreviewHighlightState(data, highlightConfig) {
+            if (!highlightConfig?.sceneId || !highlightConfig?.mode) {
+                return {
+                    highlightedNodeIds: null,
+                    highlightedEdgeKeys: null,
+                    highlightType: null
+                };
+            }
+
+            const { sceneId, mode } = highlightConfig;
+            const { forwardMap, reverseMap } = buildGraphPreviewAdjacencyMaps(data);
+
+            let highlightedNodeIds = new Set();
+
+            if (mode === "full") {
+                const ancestors = collectGraphPreviewReachableSceneIdsWithDepth(sceneId, reverseMap);
+                const descendants = collectGraphPreviewReachableSceneIdsWithDepth(sceneId, forwardMap);
+                highlightedNodeIds = new Set([...ancestors, ...descendants, sceneId]);
+            } else if (mode === "ancestors") {
+                highlightedNodeIds = collectGraphPreviewReachableSceneIdsWithDepth(sceneId, reverseMap);
+                highlightedNodeIds.add(sceneId);
+            } else if (mode === "descendants") {
+                highlightedNodeIds = collectGraphPreviewReachableSceneIdsWithDepth(sceneId, forwardMap);
+                highlightedNodeIds.add(sceneId);
+            }
+
+            const highlightedEdgeKeys = new Set(
+                data.edges
+                    .filter((edge) => highlightedNodeIds.has(edge.source) && highlightedNodeIds.has(edge.target))
+                    .map((edge) => `${edge.source}=>${edge.target}`)
+            );
+
+            return {
+                highlightedNodeIds,
+                highlightedEdgeKeys,
+                highlightType: "default"
+            };
+        }
+
+        function applyGraphPreviewHighlight(mode) {
+            if (!graphPreviewContextMenuState?.sceneId) return;
+
+            graphPreviewHighlightState = {
+                sceneId: graphPreviewContextMenuState.sceneId,
+                mode
+            };
+
+            closeGraphPreviewContextMenu();
+
+            syncStateFromForm();
+            const project = buildProjectFromState(state);
+            renderGraphPreview(project);
+        }
+
+        function clearGraphPreviewHighlight() {
+            graphPreviewHighlightState = null;
+            closeGraphPreviewContextMenu();
+
+            syncStateFromForm();
+            const project = buildProjectFromState(state);
+            renderGraphPreview(project);
+        }
+
+                function clearGraphPreviewHighlightIfAny() {
+            const hadHighlight = !!graphPreviewHighlightState;
+            closeGraphPreviewContextMenu();
+
+            if (!hadHighlight) return;
+
+            graphPreviewHighlightState = null;
+            syncStateFromForm();
+            const project = buildProjectFromState(state);
+            renderGraphPreview(project);
+        }
+
+        function clampGraphPreviewScale(scale) {
+            return Math.max(graphPreviewState.minScale, Math.min(graphPreviewState.maxScale, scale));
         }
 
         function resetGraphPreviewInteractionState() {
-            graphPreviewState.zoom = 1;
+            graphPreviewState.scale = 1;
+            graphPreviewState.x = 80;
+            graphPreviewState.y = 70;
             graphPreviewState.isDragging = false;
-            graphPreviewState.dragStartClientX = 0;
-            graphPreviewState.dragStartClientY = 0;
-            graphPreviewState.dragStartViewBoxX = 0;
-            graphPreviewState.dragStartViewBoxY = 0;
-
-            graphPreviewState.currentViewBox = {
-                ...graphPreviewState.homeViewBox
-            };
+            graphPreviewState.dragStartX = 0;
+            graphPreviewState.dragStartY = 0;
+            graphPreviewState.startPanX = 0;
+            graphPreviewState.startPanY = 0;
 
             if (els.graphPreviewViewport) {
                 els.graphPreviewViewport.classList.remove("dragging");
@@ -3834,69 +4144,135 @@
         }
 
         function resetGraphPreviewView() {
-            graphPreviewState.zoom = 1;
-            graphPreviewState.currentViewBox = {
-                ...graphPreviewState.homeViewBox
-            };
-            applyGraphPreviewViewBox();
+            graphPreviewState.scale = 1;
+            graphPreviewState.x = 80;
+            graphPreviewState.y = 70;
+            applyGraphPreviewTransform();
         }
 
         function zoomGraphPreview(factor) {
-            if (!els.graphPreviewSvg) return;
+            const nextScale = clampGraphPreviewScale(graphPreviewState.scale * factor);
+            if (nextScale === graphPreviewState.scale) return;
 
-            const previousZoom = graphPreviewState.zoom;
-            const nextZoom = Math.max(
-                graphPreviewState.minZoom,
-                Math.min(graphPreviewState.maxZoom, previousZoom * factor)
-            );
-
-            if (nextZoom === previousZoom) return;
-
-            const current = graphPreviewState.currentViewBox;
-            const centerX = current.x + current.width / 2;
-            const centerY = current.y + current.height / 2;
-
-            const base = graphPreviewState.homeViewBox;
-            const nextWidth = base.width / nextZoom;
-            const nextHeight = base.height / nextZoom;
-
-            graphPreviewState.zoom = nextZoom;
-            graphPreviewState.currentViewBox = {
-                x: centerX - nextWidth / 2,
-                y: centerY - nextHeight / 2,
-                width: nextWidth,
-                height: nextHeight
-            };
-
-            applyGraphPreviewViewBox();
+            graphPreviewState.scale = nextScale;
+            applyGraphPreviewTransform();
         }
 
-        function setGraphPreviewHomeView(layoutWidth, layoutHeight) {
-            const padding = 80;
+        function renderGraphPreview(project) {
+            if (!els.graphPreviewSvg || !els.graphPreviewEmptyState) return;
 
-            graphPreviewState.contentWidth = layoutWidth;
-            graphPreviewState.contentHeight = layoutHeight;
+            const data = getConnectedSceneGraphData(project);
+            const layout = buildStructureGraphLayout(project, data);
 
-            graphPreviewState.homeViewBox = {
-                x: -padding,
-                y: -padding,
-                width: layoutWidth + padding * 2,
-                height: layoutHeight + padding * 2
-            };
+            if (!data.nodes.length) {
+                els.graphPreviewSvg.innerHTML = "";
+                els.graphPreviewSvg.setAttribute("viewBox", "0 0 1200 900");
+                els.graphPreviewEmptyState.style.display = "grid";
+                closeGraphPreviewContextMenu();
+                return;
+            }
 
-            graphPreviewState.currentViewBox = {
-                ...graphPreviewState.homeViewBox
-            };
+            els.graphPreviewEmptyState.style.display = "none";
 
-            graphPreviewState.zoom = 1;
-            applyGraphPreviewViewBox();
+            const nodeMap = new Map(layout.nodes.map((node) => [node.id, node]));
+            const highlightState = buildGraphPreviewHighlightState(data, graphPreviewHighlightState);
+            const defs = `
+      <defs>
+        <marker id="graphPreviewArrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+          <path d="M 1 1 L 11 6 L 1 11 z" fill="rgba(184, 194, 223, 0.72)"></path>
+        </marker>
+      </defs>
+    `;
+
+            const edgesMarkup = layout.edges.map((edge) => {
+                const sourceNode = nodeMap.get(edge.source);
+                const targetNode = nodeMap.get(edge.target);
+                if (!sourceNode || !targetNode) return "";
+
+                const edgeKey = `${edge.source}=>${edge.target}`;
+                const hasActiveHighlight = !!highlightState.highlightedEdgeKeys;
+                const isHighlighted = hasActiveHighlight && highlightState.highlightedEdgeKeys.has(edgeKey);
+                const edgeClass = hasActiveHighlight
+                    ? (isHighlighted ? "graphEdge is-highlighted" : "graphEdge is-dimmed")
+                    : "graphEdge";
+                const labelClass = hasActiveHighlight
+                    ? (isHighlighted ? "graphEdgeLabel is-highlighted" : "graphEdgeLabel is-dimmed")
+                    : "graphEdgeLabel";
+
+                const startX = sourceNode.x + sourceNode.width;
+                const startY = sourceNode.y + sourceNode.height / 2;
+                const endX = targetNode.x;
+                const endY = targetNode.y + targetNode.height / 2;
+                const curve = Math.max(60, (endX - startX) / 2);
+                const path = `M ${startX} ${startY} C ${startX + curve} ${startY}, ${endX - curve} ${endY}, ${endX} ${endY}`;
+
+                const labelX = (startX + endX) / 2;
+                const labelY = (startY + endY) / 2;
+
+                return `
+      <g class="${edgeClass}">
+        <path class="graphEdgePath" d="${path}" marker-end="url(#graphPreviewArrow)"></path>
+      </g>
+      <g class="${labelClass}" transform="translate(${labelX} ${labelY})">
+        <rect x="-32" y="-11" width="64" height="22"></rect>
+        <text text-anchor="middle" dominant-baseline="middle">${escapeForSvg(edge.label || "")}</text>
+      </g>
+    `;
+            }).join("");
+
+            const nodesMarkup = layout.nodes.map((node) => {
+                const scene = project.scenes?.[node.id];
+                const fullTitle = escapeForSvg(scene?.title || node.id);
+                const title = escapeForSvg(getGraphSceneTitle(scene?.title || node.id));
+                const sub = escapeForSvg(node.id);
+
+                const typeClass =
+                    scene?.type === "ending"
+                        ? "type-ending"
+                        : scene?.type === "analysis"
+                            ? "type-analysis"
+                            : scene?.type === "remediation"
+                                ? "type-remediation"
+                                : "type-normal";
+
+                const hasActiveHighlight = !!highlightState.highlightedNodeIds;
+                const isFocused = graphPreviewHighlightState?.sceneId === node.id;
+                const isHighlighted = hasActiveHighlight && highlightState.highlightedNodeIds.has(node.id);
+
+                let extraClass = "";
+                if (hasActiveHighlight) {
+                    extraClass = isFocused
+                        ? " is-focus"
+                        : isHighlighted
+                            ? " is-highlighted"
+                            : " is-dimmed";
+                }
+
+                return `
+      <g class="graphNode ${typeClass}${extraClass}" data-scene-id="${escapeForSvg(node.id)}" transform="translate(${node.x} ${node.y})">
+        <title>${fullTitle}</title>
+        <rect width="${node.width}" height="${node.height}"></rect>
+        <text x="16" y="28">${title}</text>
+        <text class="graphNodeSub" x="16" y="46">${sub}</text>
+      </g>
+    `;
+            }).join("");
+
+            els.graphPreviewSvg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
+            els.graphPreviewSvg.innerHTML = `${defs}<g id="graphInner">${edgesMarkup}${nodesMarkup}</g>`;
+
+            applyGraphPreviewTransform();
         }
 
-        function openGraphPreviewModal() {
+               function openGraphPreviewModal() {
             if (window.innerWidth <= 1170) return;
 
             syncStateFromForm();
             const project = buildProjectFromState(state);
+
+            graphPreviewHighlightState = null;
+            closeGraphPreviewContextMenu();
+            updateGraphPreviewStructureMeta();
 
             els.graphPreviewModal.classList.add("open");
             els.graphPreviewModal.setAttribute("aria-hidden", "false");
@@ -3904,7 +4280,6 @@
 
             requestAnimationFrame(() => {
                 renderGraphPreview(project);
-                resetGraphPreviewView();
             });
         }
 
@@ -3912,6 +4287,8 @@
             if (!els.graphPreviewModal) return;
 
             resetGraphPreviewInteractionState();
+            graphPreviewHighlightState = null;
+            closeGraphPreviewContextMenu();
             els.graphPreviewModal.classList.remove("open");
             els.graphPreviewModal.setAttribute("aria-hidden", "true");
             document.body.style.overflow = "";
@@ -3920,32 +4297,38 @@
         function initGraphPreviewInteractions() {
             if (!els.graphPreviewViewport) return;
 
-            els.graphPreviewViewport.addEventListener("pointerdown", (event) => {
+                                   els.graphPreviewViewport.addEventListener("pointerdown", (event) => {
                 if (window.innerWidth <= 1170) return;
                 if (!els.graphPreviewModal.classList.contains("open")) return;
 
+                const clickedMenu = event.target.closest("#graphPreviewContextMenu");
+                const clickedNode = event.target.closest(".graphNode");
+
+                if (clickedMenu) {
+                    return;
+                }
+
+                if (!clickedNode) {
+                    clearGraphPreviewHighlightIfAny();
+                }
+
                 graphPreviewState.isDragging = true;
-                graphPreviewState.dragStartClientX = event.clientX;
-                graphPreviewState.dragStartClientY = event.clientY;
-                graphPreviewState.dragStartViewBoxX = graphPreviewState.currentViewBox.x;
-                graphPreviewState.dragStartViewBoxY = graphPreviewState.currentViewBox.y;
+                graphPreviewState.dragStartX = event.clientX;
+                graphPreviewState.dragStartY = event.clientY;
+                graphPreviewState.startPanX = graphPreviewState.x;
+                graphPreviewState.startPanY = graphPreviewState.y;
                 els.graphPreviewViewport.classList.add("dragging");
             });
 
             window.addEventListener("pointermove", (event) => {
-                if (!graphPreviewState.isDragging || !els.graphPreviewViewport) return;
+                if (!graphPreviewState.isDragging) return;
 
-                const rect = els.graphPreviewViewport.getBoundingClientRect();
-                const dx = event.clientX - graphPreviewState.dragStartClientX;
-                const dy = event.clientY - graphPreviewState.dragStartClientY;
+                const dx = event.clientX - graphPreviewState.dragStartX;
+                const dy = event.clientY - graphPreviewState.dragStartY;
 
-                const unitsPerPixelX = graphPreviewState.currentViewBox.width / Math.max(1, rect.width);
-                const unitsPerPixelY = graphPreviewState.currentViewBox.height / Math.max(1, rect.height);
-
-                graphPreviewState.currentViewBox.x = graphPreviewState.dragStartViewBoxX - dx * unitsPerPixelX;
-                graphPreviewState.currentViewBox.y = graphPreviewState.dragStartViewBoxY - dy * unitsPerPixelY;
-
-                applyGraphPreviewViewBox();
+                graphPreviewState.x = graphPreviewState.startPanX + dx;
+                graphPreviewState.y = graphPreviewState.startPanY + dy;
+                applyGraphPreviewTransform();
             });
 
             window.addEventListener("pointerup", () => {
@@ -3956,20 +4339,74 @@
             els.graphPreviewViewport.addEventListener("wheel", (event) => {
                 if (!els.graphPreviewModal.classList.contains("open")) return;
 
+                closeGraphPreviewContextMenu();
                 event.preventDefault();
                 zoomGraphPreview(event.deltaY < 0 ? 1.1 : 0.9);
             }, { passive: false });
 
             els.graphPreviewZoomInBtn.addEventListener("click", () => zoomGraphPreview(1.15));
             els.graphPreviewZoomOutBtn.addEventListener("click", () => zoomGraphPreview(0.87));
-            els.graphPreviewResetBtn.addEventListener("click", resetGraphPreviewView);
+            els.graphPreviewResetBtn.addEventListener("click", () => {
+                clearGraphPreviewHighlight();
+                resetGraphPreviewView();
+            });
 
             els.closeGraphPreviewModalBtn.addEventListener("click", closeGraphPreviewModal);
 
-            els.graphPreviewModal.addEventListener("click", (event) => {
+            els.graphPreviewSvg.addEventListener("click", (event) => {
+                const node = event.target.closest(".graphNode");
+                if (!node) {
+                    closeGraphPreviewContextMenu();
+                    return;
+                }
+
+                const sceneId = node.dataset.sceneId;
+                if (!sceneId) return;
+
+                openGraphPreviewContextMenu(sceneId, event.clientX, event.clientY);
+            });
+
+                        els.graphPreviewContextMenu.addEventListener("pointerdown", (event) => {
+                event.stopPropagation();
+            });
+
+            els.graphPreviewContextMenu.addEventListener("click", (event) => {
+                event.stopPropagation();
+            });
+
+                        els.graphPreviewContextHighlightFullBtn.addEventListener("click", (event) => {
+                event.stopPropagation();
+                applyGraphPreviewHighlight("full");
+            });
+
+            els.graphPreviewContextHighlightAncestorsBtn.addEventListener("click", (event) => {
+                event.stopPropagation();
+                applyGraphPreviewHighlight("ancestors");
+            });
+
+            els.graphPreviewContextHighlightDescendantsBtn.addEventListener("click", (event) => {
+                event.stopPropagation();
+                applyGraphPreviewHighlight("descendants");
+            });
+
+                       els.graphPreviewModal.addEventListener("click", (event) => {
                 const action = event.target?.dataset?.action;
                 if (action === "closeGraphPreviewModal") {
                     closeGraphPreviewModal();
+                    return;
+                }
+
+                const clickedInsideMenu = event.target.closest("#graphPreviewContextMenu");
+                const clickedNode = event.target.closest(".graphNode");
+                const clickedInsideDialog = event.target.closest(".graphPreviewModalDialog");
+
+                if (!clickedInsideDialog) {
+                    closeGraphPreviewModal();
+                    return;
+                }
+
+                if (!clickedInsideMenu && !clickedNode) {
+                    clearGraphPreviewHighlightIfAny();
                 }
             });
 
@@ -3981,6 +4418,7 @@
 
             window.addEventListener("resize", () => {
                 if (els.graphPreviewModal.classList.contains("open")) {
+                    closeGraphPreviewContextMenu();
                     const project = buildProjectFromState(state);
                     renderGraphPreview(project);
                     resetGraphPreviewView();
