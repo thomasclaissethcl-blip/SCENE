@@ -2085,19 +2085,272 @@
             });
         }
 
+        function getReadableSceneRoleLabel(sceneMeta, sceneType = "normal") {
+            if (sceneType === "analysis") return "analyse";
+            if (sceneType === "remediation") return "remédiation";
+            if (sceneType === "ending") return "conclusion";
+
+            const role = sceneMeta?.role || "development";
+
+            if (role === "context") return "cadrage";
+            if (role === "development") return "développement";
+            if (role === "synthesis") return "regroupement";
+            if (role === "pre_ending") return "préparation de la conclusion";
+            if (role === "diagnosis") return "diagnostic";
+            if (role === "decision") return "décision";
+            if (role === "comparison") return "comparaison";
+            if (role === "stabilisation" || role === "stabilization") return "stabilisation";
+            if (role === "crisis") return "gestion de crise";
+            if (role === "consequence") return "conséquence";
+            if (role === "exploration") return "exploration";
+
+            return "progression";
+        }
+
+        function getSceneTypeFromId(sceneId, context) {
+            if ((context?.analysisSceneIds || []).includes(sceneId)) return "analysis";
+
+            const remediationGroups = context?.remediationGroups || [];
+            if (remediationGroups.some((group) => group.includes(sceneId))) return "remediation";
+
+            if ((context?.endingIds || []).includes(sceneId)) return "ending";
+
+            return "normal";
+        }
+
+        function buildMethodologicalChoiceTitle({
+            sceneId,
+            targetId,
+            sceneMeta,
+            targetMeta,
+            sceneType,
+            targetSceneType,
+            context,
+            index,
+            fallbackPrefix
+        }) {
+            const methodologyEnabled = context?.options?.methodologyGuidanceEnabled !== false;
+
+            if (!methodologyEnabled) {
+                return `${fallbackPrefix} ${index + 1}`;
+            }
+
+            if (targetSceneType === "ending") {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-title", [
+                    "Conclure cette trajectoire",
+                    "Aboutir à une issue",
+                    "Mener vers une conclusion"
+                ]);
+            }
+
+            if (targetSceneType === "analysis") {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-title", [
+                    "Passer à l’analyse",
+                    "Prendre un temps d’analyse",
+                    "Basculer vers le diagnostic"
+                ]);
+            }
+
+            if (targetSceneType === "remediation") {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-title", [
+                    "Engager une remédiation",
+                    "Tester une correction",
+                    "Mettre en œuvre une réponse"
+                ]);
+            }
+
+            if (!sceneMeta || !targetMeta) {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-title", [
+                    "Poursuivre la progression",
+                    "Faire avancer le parcours",
+                    "Continuer vers la suite"
+                ]);
+            }
+
+            if (sceneMeta.trajectoryId != null && targetMeta.trajectoryId != null && sceneMeta.trajectoryId !== targetMeta.trajectoryId) {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-title", [
+                    "Changer de trajectoire",
+                    "Ouvrir une autre voie",
+                    "Basculer vers une autre piste"
+                ]);
+            }
+
+            if (targetMeta.role === "decision") {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-title", [
+                    "Passer à la décision",
+                    "Préparer l’arbitrage",
+                    "Entrer dans le choix décisif"
+                ]);
+            }
+
+            if (targetMeta.role === "diagnosis") {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-title", [
+                    "Synthétiser les éléments",
+                    "Structurer le diagnostic",
+                    "Faire converger l’exploration"
+                ]);
+            }
+
+            if (targetMeta.role === "synthesis") {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-title", [
+                    "Rejoindre le regroupement",
+                    "Faire converger les voies",
+                    "Recentrer le parcours"
+                ]);
+            }
+
+            if (targetMeta.role === "pre_ending") {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-title", [
+                    "Préparer la conclusion",
+                    "Avancer vers l’issue",
+                    "Entrer dans la résolution"
+                ]);
+            }
+
+            if (targetMeta.role === "context") {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-title", [
+                    "Installer le cadre suivant",
+                    "Poser de nouveaux repères",
+                    "Reformuler la situation"
+                ]);
+            }
+
+            return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-title", [
+                `Aller vers une scène de ${getReadableSceneRoleLabel(targetMeta, targetSceneType)}`,
+                "Faire progresser la situation",
+                "Développer cette voie"
+            ]);
+        }
+
+        function buildMethodologicalChoiceDescription({
+            sceneId,
+            targetId,
+            sceneMeta,
+            targetMeta,
+            sceneType,
+            targetSceneType,
+            context,
+            fallbackDescription
+        }) {
+            const methodologyEnabled = context?.options?.methodologyGuidanceEnabled !== false;
+
+            if (!methodologyEnabled) {
+                return fallbackDescription || `Poursuivre vers ${targetId.replace(/_/g, " ")}`;
+            }
+
+            const currentRoleLabel = getReadableSceneRoleLabel(sceneMeta, sceneType);
+            const targetRoleLabel = getReadableSceneRoleLabel(targetMeta, targetSceneType);
+
+            if (targetSceneType === "ending") {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-description", [
+                    "Ce choix peut servir à fermer la trajectoire en assumant clairement ses conséquences.",
+                    "Ce choix oriente le récit vers une conclusion et doit donc rendre l’issue lisible.",
+                    "Ce choix permet de transformer la progression en résultat final identifiable."
+                ]);
+            }
+
+            if (targetSceneType === "analysis") {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-description", [
+                    "Ce choix introduit une interruption utile pour expliciter la situation avant de poursuivre.",
+                    "Ce choix permet de suspendre l’action pour passer à une lecture plus analytique du problème.",
+                    "Ce choix sert à transformer la progression en diagnostic avant toute relance."
+                ]);
+            }
+
+            if (targetSceneType === "remediation") {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-description", [
+                    "Ce choix peut servir à tester une réponse concrète au problème identifié dans le parcours.",
+                    "Ce choix engage une logique de correction qui doit ensuite relancer la progression.",
+                    "Ce choix permet de passer d’un constat à une action correctrice identifiable."
+                ]);
+            }
+
+            if (!sceneMeta || !targetMeta) {
+                return fallbackDescription || "Ce choix permet de poursuivre le parcours vers une scène suivante.";
+            }
+
+            if (sceneMeta.trajectoryId != null && targetMeta.trajectoryId != null && sceneMeta.trajectoryId !== targetMeta.trajectoryId) {
+                return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-description", [
+                    `Ce choix fait passer le récit d’une scène de ${currentRoleLabel} vers une autre trajectoire organisée autour d’une scène de ${targetRoleLabel}.`,
+                    `Ce choix permet de quitter la logique actuelle pour explorer une autre voie du parcours, centrée ici sur une scène de ${targetRoleLabel}.`,
+                    `Ce choix ouvre une bifurcation vers une autre trajectoire, où la scène cible joue un rôle de ${targetRoleLabel}.`
+                ]);
+            }
+
+            return pickSceneMethodVariant(`${sceneId}=>${targetId}`, "choice-description", [
+                `Ce choix fait progresser le récit d’une scène de ${currentRoleLabel} vers une scène de ${targetRoleLabel}.`,
+                `Ce choix permet d’enchaîner la scène actuelle avec une étape dont la fonction principale est ${targetRoleLabel}.`,
+                `Ce choix sert à prolonger la logique de la scène actuelle vers une scène de ${targetRoleLabel}, dans la même dynamique de parcours.`
+            ]);
+        }
+
+        function buildMethodologicalChoice({
+            sceneId,
+            targetId,
+            context,
+            sceneMeta,
+            targetMeta,
+            sceneType,
+            targetSceneType,
+            index,
+            fallbackPrefix,
+            fallbackDescription,
+            effects
+        }) {
+            return {
+                title: buildMethodologicalChoiceTitle({
+                    sceneId,
+                    targetId,
+                    sceneMeta,
+                    targetMeta,
+                    sceneType,
+                    targetSceneType,
+                    context,
+                    index,
+                    fallbackPrefix
+                }),
+                description: buildMethodologicalChoiceDescription({
+                    sceneId,
+                    targetId,
+                    sceneMeta,
+                    targetMeta,
+                    sceneType,
+                    targetSceneType,
+                    context,
+                    fallbackDescription
+                }),
+                goto: targetId,
+                effects: effects || {}
+            };
+        }
+
         function buildChoicesFromLinkPlan(sceneId, linkPlan, context) {
             const entries = (linkPlan.byScene[sceneId] || []).slice(0, context.options.choicesPerScene);
+            const sceneMeta = context?.rolePlan?.sceneMeta?.[sceneId] || null;
+            const sceneType = getSceneTypeFromId(sceneId, context);
 
-            return entries.map((entry, index) => ({
-                title: `${context.texts.defaultChoiceTitle} ${index + 1}`,
-                description:
-                    entry.description ||
-                    `Poursuivre vers ${entry.targetId.replace(/_/g, " ")}`,
-                goto: entry.targetId,
-                effects: {
-                    stepDelta: 1
-                }
-            }));
+            return entries.map((entry, index) => {
+                const targetMeta = context?.rolePlan?.sceneMeta?.[entry.targetId] || null;
+                const targetSceneType = getSceneTypeFromId(entry.targetId, context);
+
+                return buildMethodologicalChoice({
+                    sceneId,
+                    targetId: entry.targetId,
+                    context,
+                    sceneMeta,
+                    targetMeta,
+                    sceneType,
+                    targetSceneType,
+                    index,
+                    fallbackPrefix: context.texts.defaultChoiceTitle,
+                    fallbackDescription:
+                        entry.description ||
+                        `Poursuivre vers ${entry.targetId.replace(/_/g, " ")}`,
+                    effects: {
+                        stepDelta: 1
+                    }
+                });
+            });
         }
 
         function getStructureTypeMethodLabel(structureType) {
@@ -3729,14 +3982,26 @@
                 const alreadyExists = sourceScene.choices.some((choice) => choice && choice.goto === targetId);
                 if (alreadyExists) return;
 
-                sourceScene.choices.push({
-                    title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} ${sourceScene.choices.length + 1}`,
-                    description,
-                    goto: targetId,
-                    effects: {
-                        stepDelta: 1
-                    }
-                });
+                const sourceSceneType = sourceScene.type || getSceneTypeFromId(sourceId, generationContext);
+                const targetSceneType = scenes[targetId]?.type || getSceneTypeFromId(targetId, generationContext);
+
+                sourceScene.choices.push(
+                    buildMethodologicalChoice({
+                        sceneId: sourceId,
+                        targetId,
+                        context: generationContext,
+                        sceneMeta: rolePlan.sceneMeta[sourceId] || null,
+                        targetMeta: rolePlan.sceneMeta[targetId] || null,
+                        sceneType: sourceSceneType,
+                        targetSceneType,
+                        index: sourceScene.choices.length,
+                        fallbackPrefix: currentState.scenePreset.defaultChoiceTitle || "Choix",
+                        fallbackDescription: description,
+                        effects: {
+                            stepDelta: 1
+                        }
+                    })
+                );
             }
 
             function buildIncomingMap() {
@@ -3908,14 +4173,25 @@
                     ending: false,
                     analysis: false,
                     choices: [
-                        {
-                            title: `${generationContext.texts.defaultChoiceTitle} 1`,
-                            description: "Commencer le parcours",
-                            goto: mainIds[0],
+                        buildMethodologicalChoice({
+                            sceneId: "intro",
+                            targetId: mainIds[0],
+                            context: generationContext,
+                            sceneMeta: {
+                                role: "context",
+                                phase: "early",
+                                isHub: false
+                            },
+                            targetMeta: rolePlan.sceneMeta[mainIds[0]] || null,
+                            sceneType: "normal",
+                            targetSceneType: getSceneTypeFromId(mainIds[0], generationContext),
+                            index: 0,
+                            fallbackPrefix: generationContext.texts.defaultChoiceTitle,
+                            fallbackDescription: "Commencer le parcours",
                             effects: {
                                 stepDelta: 1
                             }
-                        }
+                        })
                     ]
                 };
             }
@@ -3961,12 +4237,29 @@
                     type: "analysis",
                     ending: false,
                     analysis: true,
-                    choices: linkedRemediations.map((remediationId, choiceIndex) => ({
-                        title: `Remédiation ${choiceIndex + 1}`,
-                        description: `Basculer vers ${remediationId.replace(/_/g, " ")}`,
-                        goto: remediationId,
-                        effects: {}
-                    }))
+                    choices: linkedRemediations.map((remediationId, choiceIndex) =>
+                        buildMethodologicalChoice({
+                            sceneId: analysisId,
+                            targetId: remediationId,
+                            context: generationContext,
+                            sceneMeta: {
+                                role: "analysis",
+                                phase: "mid",
+                                isHub: false
+                            },
+                            targetMeta: {
+                                role: "remediation",
+                                phase: "mid",
+                                isHub: false
+                            },
+                            sceneType: "analysis",
+                            targetSceneType: "remediation",
+                            index: choiceIndex,
+                            fallbackPrefix: "Remédiation",
+                            fallbackDescription: `Basculer vers ${remediationId.replace(/_/g, " ")}`,
+                            effects: {}
+                        })
+                    )
                 };
             });
 
@@ -4012,16 +4305,33 @@
                         type: "remediation",
                         ending: false,
                         analysis: false,
-                        choices: targets.slice(0, choicesPerScene).map((targetId, choiceIndex) => ({
-                            title: `${generationContext.texts.defaultChoiceTitle} ${choiceIndex + 1}`,
-                            description: targetId.startsWith(endingPrefix)
-                                ? "Conclure après remédiation"
-                                : `Réintégrer le parcours vers ${targetId.replace(/_/g, " ")}`,
-                            goto: targetId,
-                            effects: {
-                                stepDelta: 1
-                            }
-                        }))
+                        choices: targets.slice(0, choicesPerScene).map((targetId, choiceIndex) =>
+                            buildMethodologicalChoice({
+                                sceneId: remediationId,
+                                targetId,
+                                context: generationContext,
+                                sceneMeta: {
+                                    role: "remediation",
+                                    phase: "mid",
+                                    isHub: false
+                                },
+                                targetMeta: rolePlan.sceneMeta[targetId] || (
+                                    endingIds.includes(targetId)
+                                        ? { role: "ending", phase: "late", isHub: false }
+                                        : null
+                                ),
+                                sceneType: "remediation",
+                                targetSceneType: getSceneTypeFromId(targetId, generationContext),
+                                index: choiceIndex,
+                                fallbackPrefix: generationContext.texts.defaultChoiceTitle,
+                                fallbackDescription: targetId.startsWith(endingPrefix)
+                                    ? "Conclure le parcours"
+                                    : `Continuer vers ${targetId.replace(/_/g, " ")}`,
+                                effects: {
+                                    stepDelta: 1
+                                }
+                            })
+                        )
                     };
                 });
             });
