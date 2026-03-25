@@ -1179,7 +1179,7 @@
                 </div>
 
                 <div class="titleText">
-                    <h1>SCENE — Générateur de templates</h1>
+                    <h1>SCENE</h1>
                     <p style="font-size: 0.9em">Système de Création d'Expériences Narratives à Embranchements</p>
                     <p>Un template pour les gouverner tous.</p>
                 </div>
@@ -2150,7 +2150,7 @@
             return variants[seed % variants.length];
         }
 
-                function getReadableTrajectoryLabel(sceneMeta) {
+        function getReadableTrajectoryLabel(sceneMeta) {
             const trajectoryId = sceneMeta?.trajectoryId;
 
             if (trajectoryId == null || trajectoryId === "") {
@@ -3945,7 +3945,7 @@
                 scenes[analysisId] = {
                     chapter: String(currentState.structure.includeIntro ? 3 : 2),
                     title: `Analyse ${analysisIndex + 1}`,
-                                       text: buildSceneMethodologyText({
+                    text: buildSceneMethodologyText({
                         sceneId: analysisId,
                         sceneType: "analysis",
                         sceneMeta: {
@@ -3996,7 +3996,7 @@
                     scenes[remediationId] = {
                         chapter: String(currentState.structure.includeIntro ? 4 : 3),
                         title: `Remédiation ${analysisIndex + 1}.${remediationIndex + 1}`,
-                                               text: buildSceneMethodologyText({
+                        text: buildSceneMethodologyText({
                             sceneId: remediationId,
                             sceneType: "remediation",
                             sceneMeta: {
@@ -4030,7 +4030,7 @@
                 scenes[sceneId] = {
                     chapter: String(currentState.structure.includeIntro ? 5 : 4),
                     title: `Fin ${index + 1}`,
-                                       text: buildSceneMethodologyText({
+                    text: buildSceneMethodologyText({
                         sceneId,
                         sceneType: "ending",
                         sceneMeta: {
