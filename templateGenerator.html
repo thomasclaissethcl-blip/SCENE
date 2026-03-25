@@ -895,7 +895,7 @@
             grid-template-rows: auto 1fr;
         }
 
-               .graphPreviewModalHeader {
+        .graphPreviewModalHeader {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -1495,6 +1495,10 @@
                             <label for="defaultChoiceTitle">Préfixe de titre des choix</label>
                             <input id="defaultChoiceTitle" type="text" value="Choix">
                         </div>
+                        <label class="checkboxRow">
+                            <input id="methodologyGuidanceEnabled" type="checkbox" checked>
+                            <span>Ajouter des conseils méthodologiques dans les scènes générées</span>
+                        </label>
                     </div>
                 </details>
             </div>
@@ -1538,7 +1542,7 @@
         <div class="graphPreviewModalOverlay" data-action="closeGraphPreviewModal"></div>
 
         <div class="graphPreviewModalDialog">
-                       <div class="graphPreviewModalHeader">
+            <div class="graphPreviewModalHeader">
                 <div class="graphPreviewHeaderMain">
                     <div>
                         <h2 id="graphPreviewModalTitle" style="margin: 0">Vue graphique</h2>
@@ -1705,7 +1709,8 @@
                     remediationPrefix: "remediation",
                     analysisScenePrefix: "analyse",
                     defaultSceneText: "Rédigez ici le contenu de la scène.",
-                    defaultChoiceTitle: "Choix"
+                    defaultChoiceTitle: "Choix",
+                    methodologyGuidanceEnabled: true
                 },
                 activeTab: "summary"
             };
@@ -1756,7 +1761,7 @@
             els.structureTypeHint.textContent = `${selectedLabel} : ${description}`;
         }
 
-                function updateGraphPreviewStructureMeta() {
+        function updateGraphPreviewStructureMeta() {
             if (!els.graphPreviewStructureTypeBadge || !els.graphPreviewStructureHint || !els.structureType) return;
 
             const selectedValue = els.structureType.value;
@@ -1804,6 +1809,7 @@
                 "analysisScenePrefix",
                 "defaultSceneText",
                 "defaultChoiceTitle",
+                "methodologyGuidanceEnabled",
                 "structureTypeHint",
                 "summaryContent",
                 "structureContent",
@@ -1825,7 +1831,7 @@
             els.mainLayout = document.getElementById("mainLayout");
             els.desktopDivider = document.getElementById("desktopDivider");
 
-                        els.graphPreviewModal = document.getElementById("graphPreviewModal");
+            els.graphPreviewModal = document.getElementById("graphPreviewModal");
             els.closeGraphPreviewModalBtn = document.getElementById("closeGraphPreviewModalBtn");
             els.graphPreviewViewport = document.getElementById("graphPreviewViewport");
             els.graphPreviewSvg = document.getElementById("graphPreviewSvg");
@@ -1877,6 +1883,7 @@
             state.scenePreset.analysisScenePrefix = els.analysisScenePrefix.value.trim() || "analyse";
             state.scenePreset.defaultSceneText = els.defaultSceneText.value.trim();
             state.scenePreset.defaultChoiceTitle = els.defaultChoiceTitle.value.trim() || "Choix";
+            state.scenePreset.methodologyGuidanceEnabled = !!els.methodologyGuidanceEnabled.checked;
 
             if (!state.project.id && state.project.title) {
                 state.project.id = slugify(state.project.title);
@@ -2050,7 +2057,8 @@
                 options: {
                     includeIntro: !!currentState.structure.includeIntro,
                     choicesPerScene: payload.choicesPerScene,
-                    structureType: currentState.structure.type || "branched"
+                    structureType: currentState.structure.type || "branched",
+                    methodologyGuidanceEnabled: currentState.scenePreset.methodologyGuidanceEnabled !== false
                 },
                 prefixes: {
                     main: payload.mainPrefix,
@@ -2090,6 +2098,453 @@
                     stepDelta: 1
                 }
             }));
+        }
+
+        function getStructureTypeMethodLabel(structureType) {
+            const labels = {
+                linear: "linéaire",
+                branched: "ramifié",
+                branches_autonomes: "à branches autonomes",
+                fan_out: "en éventail",
+                diamond: "en diamant narratif",
+                hub: "à hub central",
+                tree: "arborescent",
+                layered: "à paliers",
+                branched_remediation: "ramifié avec analyses et remédiations",
+                postures: "de comparaison de postures",
+                erreurs_typiques: "d’exploration d’erreurs typiques",
+                diagnostic: "de diagnostic",
+                strategies: "de comparaison de stratégies",
+                crise: "de gestion de crise"
+            };
+
+            return labels[structureType] || "ramifié";
+        }
+
+        function getSceneRoleMethodLabel(sceneMeta, sceneType) {
+            if (sceneType === "analysis") return "d’analyse";
+            if (sceneType === "remediation") return "de remédiation";
+            if (sceneType === "ending") return "de conclusion";
+
+            const role = sceneMeta?.role || "development";
+
+            if (role === "context") return "de cadrage";
+            if (role === "synthesis") return "de regroupement";
+            if (role === "pre_ending") return "de préparation de la conclusion";
+            if (role === "diagnosis") return "de diagnostic";
+            if (role === "decision") return "de décision";
+            if (role === "comparison") return "de comparaison";
+            if (role === "stabilisation") return "de stabilisation";
+
+            return "de développement";
+        }
+
+        function hashSceneMethodSeed(value) {
+            return Array.from(String(value || "scene")).reduce((acc, char, index) => {
+                return acc + char.charCodeAt(0) * (index + 1);
+            }, 0);
+        }
+
+        function pickSceneMethodVariant(sceneId, slotName, variants) {
+            const seed = hashSceneMethodSeed(`${sceneId}::${slotName}`);
+            return variants[seed % variants.length];
+        }
+
+                function getReadableTrajectoryLabel(sceneMeta) {
+            const trajectoryId = sceneMeta?.trajectoryId;
+
+            if (trajectoryId == null || trajectoryId === "") {
+                if (sceneMeta?.lane != null) {
+                    return `dans la voie ${sceneMeta.lane + 1}`;
+                }
+                return "dans sa trajectoire";
+            }
+
+            if (trajectoryId === "common") {
+                return "dans le tronc commun du parcours";
+            }
+
+            if (trajectoryId === "hub") {
+                return "dans le carrefour central du parcours";
+            }
+
+            if (trajectoryId === "linear") {
+                return "dans la progression linéaire du parcours";
+            }
+
+            if (typeof trajectoryId === "string") {
+                const laneMatch = trajectoryId.match(/^lane_(\d+)$/);
+                if (laneMatch) {
+                    return `dans la voie ${Number(laneMatch[1]) + 1}`;
+                }
+
+                const explorationMatch = trajectoryId.match(/^exploration_(\d+)$/);
+                if (explorationMatch) {
+                    return `dans la piste d’exploration ${Number(explorationMatch[1])}`;
+                }
+
+                const numericSuffixMatch = trajectoryId.match(/_(\d+)$/);
+                if (numericSuffixMatch) {
+                    return `dans la trajectoire ${Number(numericSuffixMatch[1]) + 1}`;
+                }
+            }
+
+            if (typeof trajectoryId === "number" && Number.isFinite(trajectoryId)) {
+                return `dans la trajectoire ${trajectoryId + 1}`;
+            }
+
+            if (sceneMeta?.lane != null) {
+                return `dans la voie ${sceneMeta.lane + 1}`;
+            }
+
+            return "dans sa trajectoire";
+        }
+
+        function getSceneTrajectoryStats(sceneMeta, context) {
+            const allMeta = context?.rolePlan?.sceneMeta || {};
+            const entries = Object.entries(allMeta);
+
+            if (!sceneMeta || sceneMeta.layerIndex == null) {
+                return {
+                    positionLabel: "au début du parcours",
+                    branchLabel: "dans la progression générale"
+                };
+            }
+
+            const sameTrajectory = entries
+                .filter(([, meta]) => {
+                    if (!meta) return false;
+
+                    if (sceneMeta.trajectoryId != null && meta.trajectoryId != null) {
+                        return meta.trajectoryId === sceneMeta.trajectoryId;
+                    }
+
+                    if (sceneMeta.lane != null && meta.lane != null) {
+                        return meta.lane === sceneMeta.lane;
+                    }
+
+                    return false;
+                })
+                .map(([, meta]) => meta);
+
+            const comparedSet = sameTrajectory.length ? sameTrajectory : entries.map(([, meta]) => meta).filter(Boolean);
+            const layerIndexes = comparedSet
+                .map((meta) => meta.layerIndex)
+                .filter((value) => Number.isFinite(value))
+                .sort((a, b) => a - b);
+
+            if (!layerIndexes.length) {
+                return {
+                    positionLabel: "dans une position intermédiaire",
+                    branchLabel: getReadableTrajectoryLabel(sceneMeta)
+                };
+            }
+
+            const minLayer = layerIndexes[0];
+            const maxLayer = layerIndexes[layerIndexes.length - 1];
+            const currentLayer = sceneMeta.layerIndex;
+
+            let positionLabel = "dans une position intermédiaire";
+            if (currentLayer === minLayer && currentLayer === maxLayer) {
+                positionLabel = "comme unique scène structurante de cette trajectoire";
+            } else if (currentLayer === minLayer) {
+                positionLabel = "comme première scène de cette trajectoire";
+            } else if (currentLayer === maxLayer) {
+                positionLabel = "comme dernière scène de cette trajectoire avant convergence ou conclusion";
+            } else {
+                positionLabel = "comme scène intermédiaire de cette trajectoire";
+            }
+
+            const branchLabel = getReadableTrajectoryLabel(sceneMeta);
+
+            return { positionLabel, branchLabel };
+        }
+
+        function inferSceneChoiceCount(sceneId, sceneType, context, explicitChoiceCount) {
+            if (Number.isFinite(explicitChoiceCount)) {
+                return explicitChoiceCount;
+            }
+
+            if (sceneType === "ending") return 0;
+            if (sceneType === "analysis" || sceneType === "remediation") {
+                return context?.options?.choicesPerScene || 2;
+            }
+
+            const linkEntries = context?.linkPlan?.byScene?.[sceneId] || [];
+            return Math.min(linkEntries.length, context?.options?.choicesPerScene || 2);
+        }
+
+        function getScenePlacementSentence(sceneId, sceneMeta, structureLabel, sceneType, context) {
+            const { positionLabel, branchLabel } = getSceneTrajectoryStats(sceneMeta, context);
+
+            if (sceneType === "analysis") {
+                return pickSceneMethodVariant(sceneId, "placement", [
+                    `Elle intervient comme interruption structurée dans un parcours ${structureLabel}, afin de suspendre momentanément l’action et d’expliciter ce qui doit être compris avant la reprise.`,
+                    `Elle prend place comme temps d’arrêt dans un parcours ${structureLabel}, pour rendre l’analyse lisible avant toute relance de l’action.`,
+                    `Elle s’insère comme scène de recul dans un parcours ${structureLabel}, de façon à clarifier la situation avant d’ouvrir les remédiations.`
+                ]);
+            }
+
+            if (sceneType === "remediation") {
+                return pickSceneMethodVariant(sceneId, "placement", [
+                    `Elle se situe juste après une analyse et sert à transformer un constat en reprise d’action organisée.`,
+                    `Elle arrive après un diagnostic et doit convertir l’explication en tentative de correction réinjectée dans le parcours.`,
+                    `Elle s’inscrit à la suite d’une analyse pour faire passer le récit d’une logique de compréhension à une logique d’ajustement.`
+                ]);
+            }
+
+            if (sceneType === "ending") {
+                return pickSceneMethodVariant(sceneId, "placement", [
+                    `Elle se situe à l’issue d’une branche du parcours et doit donner une forme lisible à l’aboutissement de la trajectoire suivie.`,
+                    `Elle apparaît au terme d’un chemin possible et doit assumer une fonction claire de clôture pour cette trajectoire.`,
+                    `Elle occupe la position finale d’une branche et doit rendre immédiatement compréhensible le résultat obtenu.`
+                ]);
+            }
+
+            if (!sceneMeta) {
+                return pickSceneMethodVariant(sceneId, "placement", [
+                    `Elle se situe au seuil du parcours et doit rendre immédiatement lisibles la situation de départ, les enjeux et la logique d’exploration proposée.`,
+                    `Elle intervient à l’entrée du parcours et doit installer sans ambiguïté le cadre, le problème initial et la dynamique attendue.`,
+                    `Elle occupe la position d’ouverture et doit préparer le lecteur à comprendre rapidement le fonctionnement global du parcours.`
+                ]);
+            }
+
+            if (sceneMeta.role === "context") {
+                return pickSceneMethodVariant(sceneId, "placement", [
+                    `Elle se situe au début d’un parcours ${structureLabel} et sert à installer les repères nécessaires avant que les effets de structure ne deviennent sensibles.`,
+                    `Elle apparaît dans la phase d’ouverture du parcours ${structureLabel} et doit consolider les repères avant toute bifurcation significative.`,
+                    `Elle intervient très tôt dans un parcours ${structureLabel} et prépare les conditions de lecture des scènes suivantes.`
+                ]);
+            }
+
+            if (sceneMeta.role === "synthesis") {
+                return pickSceneMethodVariant(sceneId, "placement", [
+                    `Elle se situe à un point de regroupement du parcours ${structureLabel} et sert à redonner de la cohérence après plusieurs trajectoires possibles.`,
+                    `Elle intervient dans une zone de convergence du parcours ${structureLabel} et doit reconnecter des éléments issus de voies différentes.`,
+                    `Elle prend place à un moment de recentrage du parcours ${structureLabel} afin de réunifier la lecture après plusieurs écarts possibles.`
+                ]);
+            }
+
+            if (sceneMeta.role === "pre_ending") {
+                return pickSceneMethodVariant(sceneId, "placement", [
+                    `Elle apparaît dans la zone tardive du parcours ${structureLabel} et prépare directement la bascule vers une ou plusieurs conclusions.`,
+                    `Elle se situe juste avant la résolution dans un parcours ${structureLabel} et doit concentrer l’attention sur les conséquences finales.`,
+                    `Elle intervient à l’approche des conclusions et sert à resserrer la progression avant la fermeture du parcours.`
+                ]);
+            }
+
+            return pickSceneMethodVariant(sceneId, "placement", [
+                `Elle se situe ${positionLabel}, ${branchLabel}, dans un parcours ${structureLabel}.`,
+                `Elle prend place ${positionLabel}, ${branchLabel}, au sein d’un parcours ${structureLabel}.`,
+                `Elle apparaît ${positionLabel}, ${branchLabel}, et doit donc être pensée en lien direct avec la logique d’un parcours ${structureLabel}.`
+            ]);
+        }
+
+        function getSceneUsageSentence(sceneId, sceneMeta, structureType, sceneType) {
+            if (sceneType === "analysis") {
+                return pickSceneMethodVariant(sceneId, "usage", [
+                    "Vous pouvez vous en servir pour formuler clairement le problème rencontré, mettre en évidence les critères de lecture de la situation et préparer des réponses distinctes.",
+                    "Vous pouvez l’utiliser pour expliciter ce qui pose problème, organiser les éléments d’interprétation et préparer une reprise mieux orientée.",
+                    "Vous pouvez l’utiliser pour transformer un blocage diffus en diagnostic lisible, puis préparer les voies de remédiation."
+                ]);
+            }
+
+            if (sceneType === "remediation") {
+                return pickSceneMethodVariant(sceneId, "usage", [
+                    "Vous pouvez l’utiliser pour montrer comment une correction, un ajustement ou un changement de méthode permet de rouvrir des possibilités dans le récit.",
+                    "Vous pouvez vous en servir pour rendre visible un levier d’action concret et préparer une réintégration cohérente dans le parcours.",
+                    "Vous pouvez l’utiliser pour faire apparaître une réponse praticable au problème identifié et relancer ensuite la progression."
+                ]);
+            }
+
+            if (sceneType === "ending") {
+                return pickSceneMethodVariant(sceneId, "usage", [
+                    "Vous pouvez l’utiliser pour rendre visibles les effets accumulés des décisions précédentes, sans rouvrir inutilement de nouvelles bifurcations.",
+                    "Vous pouvez vous en servir pour montrer le résultat d’un chemin parcouru et donner une lecture nette des conséquences produites.",
+                    "Vous pouvez l’utiliser pour matérialiser l’issue atteinte et faire sentir le poids des choix antérieurs."
+                ]);
+            }
+
+            if (sceneMeta?.isHub) {
+                return pickSceneMethodVariant(sceneId, "usage", [
+                    "Vous pouvez vous en servir pour recentrer le récit, comparer implicitement des voies différentes et redistribuer ensuite vers plusieurs directions possibles.",
+                    "Vous pouvez l’utiliser pour jouer un rôle de carrefour, reformuler les enjeux puis réorienter vers plusieurs pistes.",
+                    "Vous pouvez l’utiliser comme scène de redistribution, afin de reconnecter plusieurs voies avant de les relancer."
+                ]);
+            }
+
+            if (structureType === "parallel" || structureType === "postures" || structureType === "strategies") {
+                return pickSceneMethodVariant(sceneId, "usage", [
+                    "Vous pouvez l’utiliser pour développer une ligne d’action identifiable, suffisamment nette pour rester comparable aux autres trajectoires.",
+                    "Vous pouvez vous en servir pour faire exister une posture ou une stratégie distincte, sans la diluer dans des éléments trop génériques.",
+                    "Vous pouvez l’utiliser pour affirmer la logique propre de cette voie, afin que la comparaison avec les autres reste lisible."
+                ]);
+            }
+
+            if (structureType === "diagnostic") {
+                return pickSceneMethodVariant(sceneId, "usage", [
+                    "Vous pouvez l’utiliser pour faire émerger des indices, organiser leur interprétation et préparer une décision fondée plutôt qu’une réaction immédiate.",
+                    "Vous pouvez vous en servir pour ordonner les signes utiles au diagnostic et faire progresser l’interprétation de la situation.",
+                    "Vous pouvez l’utiliser pour construire une lecture plus précise de la situation avant toute décision plus engageante."
+                ]);
+            }
+
+            if (structureType === "crise") {
+                return pickSceneMethodVariant(sceneId, "usage", [
+                    "Vous pouvez l’utiliser pour faire monter la tension, hiérarchiser les priorités et montrer comment les décisions modifient rapidement l’état de la situation.",
+                    "Vous pouvez vous en servir pour rendre plus sensibles les urgences, les arbitrages et les effets immédiats des choix.",
+                    "Vous pouvez l’utiliser pour accentuer la pression de la situation et structurer les priorités à traiter."
+                ]);
+            }
+
+            return pickSceneMethodVariant(sceneId, "usage", [
+                "Vous pouvez l’utiliser pour faire avancer la situation, introduire un nouvel élément utile au choix suivant et renforcer la logique de progression propre à cette branche.",
+                "Vous pouvez vous en servir pour déplacer nettement la situation, préparer la scène suivante et donner du relief à la progression.",
+                "Vous pouvez l’utiliser pour produire un effet de progression clair et préparer le lecteur à la décision ou à la conséquence suivante."
+            ]);
+        }
+
+        function getSceneChoiceSentence(sceneId, sceneType, choiceCount) {
+            if (sceneType === "ending" || choiceCount === 0) {
+                return pickSceneMethodVariant(sceneId, "choices", [
+                    "Cette scène n’ouvre pas de nouveau choix et doit donc concentrer l’attention sur l’effet produit, la conclusion ou l’état atteint.",
+                    "Aucun nouveau choix n’y est proposé ; la scène doit donc porter pleinement le sens de l’issue atteinte.",
+                    "Comme elle ne propose pas de nouvelle bifurcation, elle doit surtout assumer sa fonction de stabilisation ou de clôture."
+                ]);
+            }
+
+            if (choiceCount === 1) {
+                return pickSceneMethodVariant(sceneId, "choices", [
+                    "Le choix proposé ici doit fonctionner comme une bascule nette vers l’étape suivante, sans entretenir d’ambiguïté inutile.",
+                    "L’unique choix proposé ici doit être formulé comme un passage clair vers la suite du parcours.",
+                    "Comme cette scène n’ouvre qu’une seule option, celle-ci doit surtout clarifier la continuité du parcours."
+                ]);
+            }
+
+            if (choiceCount === 2) {
+                return pickSceneMethodVariant(sceneId, "choices", [
+                    "Les deux choix proposés ici doivent se distinguer par leur logique, leurs conséquences ou leur intention, et pas seulement par leur formulation.",
+                    "Les deux options de cette scène gagnent à opposer deux directions lisibles plutôt qu’à multiplier de petites nuances secondaires.",
+                    "Avec deux choix, la scène doit rendre la différence entre les voies immédiatement perceptible."
+                ]);
+            }
+
+            return pickSceneMethodVariant(sceneId, "choices", [
+                `Les ${choiceCount} choix proposés ici doivent être hiérarchisés et différenciés avec netteté, afin que chaque option corresponde à une orientation identifiable du parcours.`,
+                `Avec ${choiceCount} choix, la scène doit organiser clairement les options pour éviter une dispersion artificielle de l’attention.`,
+                `Les ${choiceCount} options de cette scène doivent chacune renvoyer à une intention distincte, lisible dès la formulation du choix.`
+            ]);
+        }
+
+        function getSceneCoherenceSentence(sceneId, structureType, structureLabel) {
+            const specific = {
+                diamond: "Cette scène doit rester cohérente avec une structure en diamant narratif, c’est-à-dire ménager à la fois les divergences et les futurs points de regroupement.",
+                hub: "Cette scène doit rester cohérente avec une structure à hub, dans laquelle certains carrefours redistribuent régulièrement les trajectoires.",
+                tree: "Cette scène doit rester cohérente avec une structure arborescente, où chaque bifurcation doit produire une différence suffisamment lisible pour justifier la ramification.",
+                layered: "Cette scène doit rester cohérente avec une structure à paliers, où l’on passe d’un niveau de progression à un autre sans perdre la lisibilité d’ensemble.",
+                branched_remediation: "Cette scène doit rester cohérente avec une structure ramifiée à interruptions, dans laquelle les analyses et les remédiations doivent éclairer la progression plutôt que la casser.",
+                postures: "Cette scène doit rester cohérente avec un parcours de postures, en rendant visible une manière d’agir distincte et comparable.",
+                erreurs_typiques: "Cette scène doit rester cohérente avec un parcours d’erreurs typiques, en montrant clairement une logique d’écart, ses effets et la possibilité de correction.",
+                diagnostic: "Cette scène doit rester cohérente avec un parcours de diagnostic, en privilégiant l’observation, l’interprétation et la décision fondée.",
+                strategies: "Cette scène doit rester cohérente avec un parcours de stratégies, en donnant à voir une logique d’action identifiable et comparable aux autres.",
+                crise: "Cette scène doit rester cohérente avec un parcours de crise, où la pression, les priorités et les conséquences rapides structurent la lecture."
+            };
+
+            if (specific[structureType]) {
+                return specific[structureType];
+            }
+
+            return pickSceneMethodVariant(sceneId, "coherence", [
+                `Cette scène doit rester cohérente avec l’économie générale d’un parcours ${structureLabel}, en renforçant la logique d’ensemble plutôt qu’en l’affaiblissant.`,
+                `Elle doit conserver une cohérence forte avec la structure ${structureLabel}, afin que la progression reste lisible d’une scène à l’autre.`,
+                `Elle doit être pensée en cohérence avec un parcours ${structureLabel}, de façon à soutenir la logique globale du récit.`
+            ]);
+        }
+
+        function getSceneCautionSentence(sceneId, sceneMeta, structureType, sceneType) {
+            if (sceneType === "analysis") {
+                return pickSceneMethodVariant(sceneId, "caution", [
+                    "Évitez de la transformer en simple pause abstraite ; elle doit réellement aider à comprendre ce qui bloque ou ce qui doit être évalué.",
+                    "Évitez qu’elle devienne un commentaire détaché de l’action ; elle doit éclairer la suite du parcours.",
+                    "Évitez une analyse trop générale ; elle doit rester directement utile à la progression."
+                ]);
+            }
+
+            if (sceneType === "remediation") {
+                return pickSceneMethodVariant(sceneId, "caution", [
+                    "Évitez de la traiter comme une parenthèse décorative ; elle doit modifier la suite du parcours ou la manière de réintégrer la progression.",
+                    "Évitez une remédiation purement illustrative ; elle doit produire un effet lisible sur la relance du récit.",
+                    "Évitez qu’elle reste sans effet concret ; elle doit réorienter la suite du parcours."
+                ]);
+            }
+
+            if (sceneType === "ending") {
+                return pickSceneMethodVariant(sceneId, "caution", [
+                    "Évitez d’y introduire de nouveaux enjeux majeurs ; la scène doit d’abord assumer sa fonction de fermeture.",
+                    "Évitez de relancer artificiellement l’exploration ; la scène doit surtout conclure.",
+                    "Évitez d’ouvrir de nouvelles pistes importantes ; la priorité est ici la lisibilité de la conclusion."
+                ]);
+            }
+
+            if (sceneMeta?.isHub) {
+                return pickSceneMethodVariant(sceneId, "caution", [
+                    "Évitez d’y accumuler trop d’éléments nouveaux sans recentrage, car cette scène doit d’abord clarifier la redistribution entre les voies possibles.",
+                    "Évitez d’y disperser l’attention ; un hub doit d’abord recentrer avant de redistribuer.",
+                    "Évitez qu’elle devienne un simple empilement d’informations ; elle doit organiser la circulation entre les voies."
+                ]);
+            }
+
+            if (structureType === "parallel" || structureType === "postures" || structureType === "strategies") {
+                return pickSceneMethodVariant(sceneId, "caution", [
+                    "Évitez d’effacer la singularité de cette trajectoire, sinon la comparaison entre voies perdra de son intérêt.",
+                    "Évitez de rendre cette voie interchangeable avec les autres, sinon la structure comparative s’affaiblira.",
+                    "Évitez une écriture trop neutre qui gommerait la spécificité de cette trajectoire."
+                ]);
+            }
+
+            return pickSceneMethodVariant(sceneId, "caution", [
+                "Évitez d’en faire une simple transition neutre ; elle doit avoir une utilité identifiable dans la mécanique du parcours.",
+                "Évitez qu’elle fonctionne comme un simple passage vide ; elle doit apporter un effet structurant.",
+                "Évitez une scène purement transitoire ; elle doit produire une avancée lisible dans le parcours."
+            ]);
+        }
+
+        function buildSceneMethodologyText({
+            sceneId,
+            sceneType,
+            sceneMeta,
+            context,
+            defaultFallbackText,
+            explicitChoiceCount
+        }) {
+            const fallbackText = (defaultFallbackText || context?.texts?.defaultSceneText || "Rédigez ici le contenu de la scène.").trim();
+            const methodologyEnabled = context?.options?.methodologyGuidanceEnabled !== false;
+
+            if (!methodologyEnabled) {
+                return fallbackText;
+            }
+
+            const structureType = context?.options?.structureType || "branched";
+            const structureLabel = getStructureTypeMethodLabel(structureType);
+            const roleLabel = getSceneRoleMethodLabel(sceneMeta, sceneType);
+            const choiceCount = inferSceneChoiceCount(sceneId, sceneType, context, explicitChoiceCount);
+
+            const openingSentence = pickSceneMethodVariant(sceneId, "opening", [
+                `Cette scène joue un rôle ${roleLabel} dans un parcours ${structureLabel}.`,
+                `Dans ce parcours ${structureLabel}, cette scène remplit une fonction ${roleLabel}.`,
+                `Cette scène occupe une fonction ${roleLabel} dans la structure ${structureLabel} du parcours.`
+            ]);
+
+            const sentences = [
+                openingSentence,
+                getScenePlacementSentence(sceneId, sceneMeta, structureLabel, sceneType, context),
+                getSceneUsageSentence(sceneId, sceneMeta, structureType, sceneType),
+                getSceneChoiceSentence(sceneId, sceneType, choiceCount),
+                getSceneCoherenceSentence(sceneId, structureType, structureLabel),
+                getSceneCautionSentence(sceneId, sceneMeta, structureType, sceneType)
+            ];
+
+            return `${sentences.join(" ")}\n\n${fallbackText}`;
         }
 
         function buildLegacyRolePlan(context, profile) {
@@ -3428,13 +3883,26 @@
             const profile = generator.buildProfile(generationContext);
             const rolePlan = generator.buildRolePlan(generationContext, profile);
             const linkPlan = generator.buildLinks(generationContext, profile, rolePlan);
+            generationContext.rolePlan = rolePlan;
+            generationContext.linkPlan = linkPlan;
             const analysisAnchorIndexes = getAnalysisAnchorIndexes();
 
             if (currentState.structure.includeIntro) {
                 scenes.intro = {
                     chapter: "1",
                     title: "Introduction",
-                    text: generationContext.texts.defaultSceneText,
+                    text: buildSceneMethodologyText({
+                        sceneId: "intro",
+                        sceneType: "normal",
+                        sceneMeta: {
+                            role: "context",
+                            phase: "early",
+                            isHub: false
+                        },
+                        context: generationContext,
+                        defaultFallbackText: generationContext.texts.defaultSceneText,
+                        explicitChoiceCount: 1
+                    }),
                     image: "",
                     type: "normal",
                     ending: false,
@@ -3456,7 +3924,13 @@
                 scenes[sceneId] = {
                     chapter: String(currentState.structure.includeIntro ? 2 : 1),
                     title: `Scène ${index + 1}`,
-                    text: generationContext.texts.defaultSceneText,
+                    text: buildSceneMethodologyText({
+                        sceneId,
+                        sceneType: "normal",
+                        sceneMeta: rolePlan.sceneMeta[sceneId] || null,
+                        context: generationContext,
+                        defaultFallbackText: generationContext.texts.defaultSceneText
+                    }),
                     image: "",
                     type: "normal",
                     ending: false,
@@ -3471,7 +3945,18 @@
                 scenes[analysisId] = {
                     chapter: String(currentState.structure.includeIntro ? 3 : 2),
                     title: `Analyse ${analysisIndex + 1}`,
-                    text: `Cette scène d’analyse correspond à l’interruption ${analysisIndex + 1}. Elle présente le diagnostic associé, puis propose une ou plusieurs voies de remédiation.`,
+                                       text: buildSceneMethodologyText({
+                        sceneId: analysisId,
+                        sceneType: "analysis",
+                        sceneMeta: {
+                            role: "analysis",
+                            phase: "mid",
+                            isHub: false
+                        },
+                        context: generationContext,
+                        defaultFallbackText: `Rédigez ici le diagnostic, les éléments d’explication et la logique des remédiations liées à l’analyse ${analysisIndex + 1}.`,
+                        explicitChoiceCount: linkedRemediations.length
+                    }),
                     image: "",
                     type: "analysis",
                     ending: false,
@@ -3511,7 +3996,18 @@
                     scenes[remediationId] = {
                         chapter: String(currentState.structure.includeIntro ? 4 : 3),
                         title: `Remédiation ${analysisIndex + 1}.${remediationIndex + 1}`,
-                        text: `Cette scène de remédiation prolonge l’analyse ${analysisIndex + 1} et réinjecte ensuite le joueur plus loin dans le parcours.`,
+                                               text: buildSceneMethodologyText({
+                            sceneId: remediationId,
+                            sceneType: "remediation",
+                            sceneMeta: {
+                                role: "remediation",
+                                phase: "mid",
+                                isHub: false
+                            },
+                            context: generationContext,
+                            defaultFallbackText: `Rédigez ici la correction proposée, ses effets attendus et la manière dont elle relance le parcours après l’analyse ${analysisIndex + 1}.`,
+                            explicitChoiceCount: targets.slice(0, choicesPerScene).length
+                        }),
                         image: "",
                         type: "remediation",
                         ending: false,
@@ -3534,7 +4030,18 @@
                 scenes[sceneId] = {
                     chapter: String(currentState.structure.includeIntro ? 5 : 4),
                     title: `Fin ${index + 1}`,
-                    text: "Rédigez ici la conclusion de cette branche.",
+                                       text: buildSceneMethodologyText({
+                        sceneId,
+                        sceneType: "ending",
+                        sceneMeta: {
+                            role: "ending",
+                            phase: "late",
+                            isHub: false
+                        },
+                        context: generationContext,
+                        defaultFallbackText: "Rédigez ici la conclusion de cette branche.",
+                        explicitChoiceCount: 0
+                    }),
                     image: "",
                     type: "ending",
                     ending: true,
@@ -4112,7 +4619,7 @@
             renderGraphPreview(project);
         }
 
-                function clearGraphPreviewHighlightIfAny() {
+        function clearGraphPreviewHighlightIfAny() {
             const hadHighlight = !!graphPreviewHighlightState;
             closeGraphPreviewContextMenu();
 
@@ -4264,7 +4771,7 @@
             applyGraphPreviewTransform();
         }
 
-               function openGraphPreviewModal() {
+        function openGraphPreviewModal() {
             if (window.innerWidth <= 1170) return;
 
             syncStateFromForm();
@@ -4297,7 +4804,7 @@
         function initGraphPreviewInteractions() {
             if (!els.graphPreviewViewport) return;
 
-                                   els.graphPreviewViewport.addEventListener("pointerdown", (event) => {
+            els.graphPreviewViewport.addEventListener("pointerdown", (event) => {
                 if (window.innerWidth <= 1170) return;
                 if (!els.graphPreviewModal.classList.contains("open")) return;
 
@@ -4366,7 +4873,7 @@
                 openGraphPreviewContextMenu(sceneId, event.clientX, event.clientY);
             });
 
-                        els.graphPreviewContextMenu.addEventListener("pointerdown", (event) => {
+            els.graphPreviewContextMenu.addEventListener("pointerdown", (event) => {
                 event.stopPropagation();
             });
 
@@ -4374,7 +4881,7 @@
                 event.stopPropagation();
             });
 
-                        els.graphPreviewContextHighlightFullBtn.addEventListener("click", (event) => {
+            els.graphPreviewContextHighlightFullBtn.addEventListener("click", (event) => {
                 event.stopPropagation();
                 applyGraphPreviewHighlight("full");
             });
@@ -4389,7 +4896,7 @@
                 applyGraphPreviewHighlight("descendants");
             });
 
-                       els.graphPreviewModal.addEventListener("click", (event) => {
+            els.graphPreviewModal.addEventListener("click", (event) => {
                 const action = event.target?.dataset?.action;
                 if (action === "closeGraphPreviewModal") {
                     closeGraphPreviewModal();
@@ -4474,6 +4981,7 @@
             els.analysisScenePrefix.value = currentState.scenePreset.analysisScenePrefix;
             els.defaultSceneText.value = currentState.scenePreset.defaultSceneText;
             els.defaultChoiceTitle.value = currentState.scenePreset.defaultChoiceTitle;
+            els.methodologyGuidanceEnabled.checked = currentState.scenePreset.methodologyGuidanceEnabled !== false;
 
             updateStructureTypeHint();
             renderAll();
@@ -4500,6 +5008,7 @@
             example.scenePreset.remediationPrefix = "remediation";
             example.scenePreset.defaultSceneText = "Rédigez ici le contenu de la scène.";
             example.scenePreset.defaultChoiceTitle = "Option";
+            example.scenePreset.methodologyGuidanceEnabled = true;
 
             return example;
         }
