@@ -706,6 +706,21 @@
             display: none !important;
         }
 
+        .selectHintBubble {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #1a2343;
+    color: #dfe7ff;
+    font-size: 0.84rem;
+    line-height: 1.4;
+}
+
+.selectHintBubble strong {
+    color: var(--text);
+}
+
         @media (min-width: 1170px) {
             .topbar {
                 align-items: center;
@@ -984,7 +999,7 @@
                                 <input id="startSceneId" type="text" value="intro">
                             </div>
                             <div>
-                                <label for="totalSteps">Nombre total d’étapes</label>
+                                <label for="totalSteps">Nombre d'étapes de la barre de progression affichée au joueur</label>
                                 <input id="totalSteps" type="number" min="1" value="10">
                             </div>
                         </div>
@@ -1004,16 +1019,21 @@
 
                         <div class="fieldGrid two">
                             <div>
-                                <label for="structureType">Type de structure</label>
-                                <select id="structureType">
-                                    <option value="linear">Linéaire</option>
-                                    <option value="branched" selected>Ramifiée progressive</option>
-                                    <option value="tree">Arborescente</option>
-                                    <option value="layered">À paliers</option>
-                                    <option value="branched_remediation">Ramifiée avec interruptions et remédiations
-                                    </option>
-                                </select>
-                            </div>
+                                <div>
+    <label for="structureType">Type de parcours</label>
+    <select id="structureType">
+        <option value="linear">Linéaire</option>
+        <option value="branched" selected>Ramifié progressif</option>
+        <option value="branches_autonomes">Branches autonomes</option>
+        <option value="fan_out">Éventail narratif</option>
+        <option value="diamond">Diamant narratif</option>
+        <option value="hub">Hub central</option>
+        <option value="tree">Arborescente</option>
+        <option value="layered">À paliers</option>
+        <option value="branched_remediation">Ramifié avec interruptions et remédiations</option>
+    </select>
+    <div id="structureTypeHint" class="selectHintBubble" aria-live="polite"></div>
+</div>
                             <div>
                                 <label for="choicesPerScene">Nombre maximal de choix par scène</label>
                                 <input id="choicesPerScene" type="number" min="1" max="4" value="3">
@@ -1143,26 +1163,26 @@
                             squelette.</p>
 
                         <div class="fieldGrid two">
-    <div>
-        <label for="mainScenePrefix">Préfixe scènes principales</label>
-        <input id="mainScenePrefix" type="text" value="scene">
-    </div>
-    <div>
-        <label for="endingPrefix">Préfixe fins</label>
-        <input id="endingPrefix" type="text" value="fin">
-    </div>
-</div>
+                            <div>
+                                <label for="mainScenePrefix">Préfixe scènes principales</label>
+                                <input id="mainScenePrefix" type="text" value="scene">
+                            </div>
+                            <div>
+                                <label for="endingPrefix">Préfixe fins</label>
+                                <input id="endingPrefix" type="text" value="fin">
+                            </div>
+                        </div>
 
-<div class="fieldGrid two">
-    <div>
-        <label for="remediationPrefix">Préfixe remédiations</label>
-        <input id="remediationPrefix" type="text" value="remediation">
-    </div>
-    <div>
-        <label for="analysisScenePrefix">Préfixe scènes d’analyse</label>
-        <input id="analysisScenePrefix" type="text" value="analyse">
-    </div>
-</div>
+                        <div class="fieldGrid two">
+                            <div>
+                                <label for="remediationPrefix">Préfixe remédiations</label>
+                                <input id="remediationPrefix" type="text" value="remediation">
+                            </div>
+                            <div>
+                                <label for="analysisScenePrefix">Préfixe scènes d’analyse</label>
+                                <input id="analysisScenePrefix" type="text" value="analyse">
+                            </div>
+                        </div>
 
                         <div>
                             <label for="defaultSceneText">Texte provisoire des scènes</label>
@@ -1233,8 +1253,20 @@
 
         const STORAGE_KEY = "scene-template-generator-draft-v1";
 
-        const els = {};
-        let state = createDefaultState();
+const STRUCTURE_TYPE_DESCRIPTIONS = {
+    linear: "Progression simple, scène après scène, avec très peu de dispersion.",
+    branched: "Quelques bifurcations progressives, avec des trajectoires qui restent encore assez connectées.",
+    branches_autonomes: "Plusieurs branches relativement indépendantes, chacune pouvant mener à sa propre fin.",
+    fan_out: "Séparation rapide en voies distinctes, avec peu de passerelles entre elles.",
+    diamond: "Ouverture initiale, regroupement partiel au milieu, puis nouvelle divergence avant les fins.",
+    hub: "Des scènes carrefour reviennent régulièrement pour redistribuer vers plusieurs voies.",
+    tree: "Arborescence marquée, avec multiplication progressive des embranchements.",
+    layered: "Progression par paliers successifs, avec passages entre couches narratives.",
+    branched_remediation: "Parcours ramifié intégrant des interruptions, des analyses et des scènes de remédiation."
+};
+
+const els = {};
+let state = createDefaultState();
 
         function createDefaultState() {
             return {
@@ -1314,59 +1346,72 @@
             return Number.isFinite(n) ? n : fallback;
         }
 
-        function cacheDom() {
-    [
-        "projectTitle",
-        "projectId",
-        "projectSubtitle",
-        "projectAuthor",
-        "projectVersion",
-        "projectDescription",
-        "startSceneId",
-        "totalSteps",
-        "structureType",
-        "choicesPerScene",
-        "mainSceneCount",
-        "endingCount",
-        "analysisSceneCount",
-        "remediationsPerAnalysis",
-        "includeIntro",
-        "openHelpOnStart",
-        "helpTitle",
-        "helpContent",
-        "progressLabel",
-        "scoreLabel",
-        "riskLabel",
-        "inventoryLabel",
-        "themePreset",
-        "typographyPreset",
-        "transitionPreset",
-        "mainScenePrefix",
-        "endingPrefix",
-        "remediationPrefix",
-        "analysisScenePrefix",
-        "defaultSceneText",
-        "defaultChoiceTitle",
-        "summaryContent",
-        "structureContent",
-        "jsonPreview",
-        "validationContent",
-        "newConfigBtn",
-        "loadExampleBtn",
-        "copyStructureBtn",
-        "copyJsonBtn",
-        "exportJsonBtn"
-    ].forEach((id) => {
-        els[id] = document.getElementById(id);
-    });
+        function updateStructureTypeHint() {
+    if (!els.structureTypeHint || !els.structureType) return;
 
-    els.tabButtons = Array.from(document.querySelectorAll(".tabBtn"));
-    els.summaryPanel = document.getElementById("summaryPanel");
-    els.structurePanel = document.getElementById("structurePanel");
-    els.jsonPanel = document.getElementById("jsonPanel");
-    els.mainLayout = document.getElementById("mainLayout");
-    els.desktopDivider = document.getElementById("desktopDivider");
+    const selectedValue = els.structureType.value;
+    const selectedLabel = els.structureType.options[els.structureType.selectedIndex]?.text || "Structure";
+    const description = STRUCTURE_TYPE_DESCRIPTIONS[selectedValue] || "";
+
+    els.structureTypeHint.innerHTML = `<strong>${escapeHtml(selectedLabel)}</strong> : ${escapeHtml(description)}`;
 }
+
+        function cacheDom() {
+            [
+                "projectTitle",
+                "projectId",
+                "projectSubtitle",
+                "projectAuthor",
+                "projectVersion",
+                "projectDescription",
+                "startSceneId",
+                "totalSteps",
+                "structureType",
+                "choicesPerScene",
+                "mainSceneCount",
+                "endingCount",
+                "analysisSceneCount",
+                "remediationsPerAnalysis",
+                "includeIntro",
+                "openHelpOnStart",
+                "helpTitle",
+                "helpContent",
+                "progressLabel",
+                "scoreLabel",
+                "riskLabel",
+                "inventoryLabel",
+                "themePreset",
+                "typographyPreset",
+                "transitionPreset",
+                "mainScenePrefix",
+                "endingPrefix",
+                "remediationPrefix",
+                "analysisScenePrefix",
+                "defaultSceneText",
+                "defaultChoiceTitle",
+                "defaultChoiceTitle",
+"structureTypeHint",
+"summaryContent",
+                "summaryContent",
+                "structureContent",
+                "jsonPreview",
+                "validationContent",
+                "newConfigBtn",
+                "loadExampleBtn",
+                "copyStructureBtn",
+                "copyJsonBtn",
+                "exportJsonBtn"
+            ].forEach((id) => {
+                els[id] = document.getElementById(id);
+            });
+
+            els.tabButtons = Array.from(document.querySelectorAll(".tabBtn"));
+            els.summaryPanel = document.getElementById("summaryPanel");
+            els.structurePanel = document.getElementById("structurePanel");
+            els.jsonPanel = document.getElementById("jsonPanel");
+            els.mainLayout = document.getElementById("mainLayout");
+            els.desktopDivider = document.getElementById("desktopDivider");
+        }
 
         function syncStateFromForm() {
             state.project.title = els.projectTitle.value.trim();
@@ -1594,91 +1639,451 @@
                 return Array.from(new Set(values.filter(Boolean)));
             }
 
+                        function ensureChoiceLink(sourceId, targetId, description) {
+                if (!sourceId || !targetId || !scenes[sourceId] || !scenes[targetId]) return;
+
+                const sourceScene = scenes[sourceId];
+                sourceScene.choices = Array.isArray(sourceScene.choices) ? sourceScene.choices : [];
+
+                const alreadyExists = sourceScene.choices.some((choice) => choice && choice.goto === targetId);
+                if (alreadyExists) return;
+
+                sourceScene.choices.push({
+                    title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} ${sourceScene.choices.length + 1}`,
+                    description,
+                    goto: targetId,
+                    effects: {
+                        stepDelta: 1
+                    }
+                });
+            }
+
+            function buildIncomingMap() {
+                const incoming = {};
+                Object.keys(scenes).forEach((sceneId) => {
+                    incoming[sceneId] = [];
+                });
+
+                Object.entries(scenes).forEach(([sourceId, scene]) => {
+                    (scene.choices || []).forEach((choice) => {
+                        if (choice?.goto && scenes[choice.goto]) {
+                            incoming[choice.goto].push(sourceId);
+                        }
+                    });
+                });
+
+                return incoming;
+            }
+
+            function getFallbackParentForScene(sceneId) {
+                if (mainIds.includes(sceneId)) {
+                    const index = mainIds.indexOf(sceneId);
+
+                    if (index > 0) {
+                        return mainIds[index - 1];
+                    }
+
+                    if (currentState.structure.includeIntro && scenes.intro) {
+                        return "intro";
+                    }
+
+                    return null;
+                }
+
+                const remediationMatch = remediationGroups.find((group) => group.includes(sceneId));
+                if (remediationMatch) {
+                    const analysisIndex = remediationGroups.indexOf(remediationMatch);
+                    return analysisSceneIds[analysisIndex] || null;
+                }
+
+                if (endingIds.includes(sceneId)) {
+                    const endingIndex = endingIds.indexOf(sceneId);
+                    const preferredMain = mainIds[Math.min(endingIndex, mainIds.length - 1)];
+                    return preferredMain || mainIds[mainIds.length - 1] || (currentState.structure.includeIntro ? "intro" : null);
+                }
+
+                return mainIds[0] || (currentState.structure.includeIntro ? "intro" : null);
+            }
+
+            function getFallbackChildForScene(sceneId) {
+                if (sceneId === "intro") {
+                    return mainIds[0] || endingIds[0] || null;
+                }
+
+                if (mainIds.includes(sceneId)) {
+                    const index = mainIds.indexOf(sceneId);
+                    const nextMain = mainIds[index + 1];
+                    if (nextMain) return nextMain;
+                    return endingIds[index % endingIds.length] || endingIds[0] || null;
+                }
+
+                const analysisIndex = analysisSceneIds.indexOf(sceneId);
+                if (analysisIndex !== -1) {
+                    const remediationTarget = remediationGroups[analysisIndex]?.[0];
+                    if (remediationTarget) return remediationTarget;
+
+                    const anchorIndex = analysisAnchorIndexes[analysisIndex] ?? 0;
+                    return mainIds[Math.min(anchorIndex + 1, mainIds.length - 1)] || endingIds[0] || null;
+                }
+
+                const remediationMatch = remediationGroups.find((group) => group.includes(sceneId));
+                if (remediationMatch) {
+                    const analysisIndex = remediationGroups.indexOf(remediationMatch);
+                    const anchorIndex = analysisAnchorIndexes[analysisIndex] ?? 0;
+                    return mainIds[Math.min(anchorIndex + 1, mainIds.length - 1)] || endingIds[0] || null;
+                }
+
+                return endingIds[0] || null;
+            }
+
+            function enforceConnectivityRules() {
+                const ancestorExemptions = new Set([
+                    ...(currentState.structure.includeIntro && scenes.intro ? ["intro"] : []),
+                    ...analysisSceneIds
+                ]);
+
+                const descendantExemptions = new Set(endingIds);
+
+                let incoming = buildIncomingMap();
+
+                Object.keys(scenes).forEach((sceneId) => {
+                    if (ancestorExemptions.has(sceneId)) return;
+                    if ((incoming[sceneId] || []).length > 0) return;
+
+                    const parentId = getFallbackParentForScene(sceneId);
+                    if (!parentId) return;
+
+                    ensureChoiceLink(
+                        parentId,
+                        sceneId,
+                        `Connexion de sécurité vers ${sceneId.replace(/_/g, " ")}`
+                    );
+                });
+
+                incoming = buildIncomingMap();
+
+                Object.keys(scenes).forEach((sceneId) => {
+                    if (descendantExemptions.has(sceneId)) return;
+
+                    const scene = scenes[sceneId];
+                    const choices = Array.isArray(scene.choices) ? scene.choices : [];
+
+                    if (choices.length > 0) return;
+
+                    const childId = getFallbackChildForScene(sceneId);
+                    if (!childId) return;
+
+                    ensureChoiceLink(
+                        sceneId,
+                        childId,
+                        childId.startsWith(slugify(currentState.scenePreset.endingPrefix || "fin"))
+                            ? "Conclure le parcours"
+                            : `Continuer vers ${childId.replace(/_/g, " ")}`
+                    );
+                });
+            }
+
             function getStructureProfile(type, sceneCount) {
+                const laneCount = Math.max(1, Math.min(endingIds.length, mainIds.length));
+
                 switch (type) {
                     case "linear":
-                        return { branchFactor: 1, maxJump: 1, endingShortcut: false, spread: false };
-                    case "tree":
                         return {
-                            branchFactor: sceneCount >= 10 ? 4 : 3,
-                            maxJump: Math.max(2, Math.ceil(sceneCount / 3)),
-                            endingShortcut: true,
-                            spread: true
+                            planner: "linear",
+                            laneCount: 1,
+                            lateralLinks: 0,
+                            farLinks: 0,
+                            directEndingThreshold: 0
+                        };
+                    case "branches_autonomes":
+    return {
+        planner: "mesh",
+        laneCount,
+        lateralLinks: 0,
+        farLinks: 1,
+        directEndingThreshold: 2
+    };
+case "fan_out":
+    return {
+        planner: "mesh",
+        laneCount,
+        lateralLinks: 0,
+        farLinks: 0,
+        directEndingThreshold: 3
+    };
+case "diamond":
+    return {
+        planner: "diamond",
+        laneCount,
+        lateralLinks: 1,
+        farLinks: 0,
+        directEndingThreshold: 1
+    };
+case "hub":
+    return {
+        planner: "hub",
+        laneCount,
+        lateralLinks: 2,
+        farLinks: 0,
+        directEndingThreshold: 1
+    };
+case "tree":
+                        return {
+                            planner: "mesh",
+                            laneCount,
+                            lateralLinks: 1,
+                            farLinks: 1,
+                            directEndingThreshold: 2
                         };
                     case "layered":
                         return {
-                            branchFactor: sceneCount >= 8 ? 3 : 2,
-                            maxJump: Math.max(2, Math.ceil(sceneCount / 2)),
-                            endingShortcut: true,
-                            spread: true
+                            planner: "mesh",
+                            laneCount,
+                            lateralLinks: 1,
+                            farLinks: 0,
+                            directEndingThreshold: 2
                         };
                     case "branched_remediation":
                         return {
-                            branchFactor: sceneCount >= 8 ? 3 : 2,
-                            maxJump: Math.max(2, Math.ceil(sceneCount / 4)),
-                            endingShortcut: true,
-                            spread: false
+                            planner: "mesh",
+                            laneCount,
+                            lateralLinks: 1,
+                            farLinks: 1,
+                            directEndingThreshold: 2
                         };
                     case "branched":
                     default:
                         return {
-                            branchFactor: sceneCount >= 8 ? 3 : 2,
-                            maxJump: Math.max(2, Math.ceil(sceneCount / 4)),
-                            endingShortcut: true,
-                            spread: false
+                            planner: "mesh",
+                            laneCount,
+                            lateralLinks: 1,
+                            farLinks: 1,
+                            directEndingThreshold: 2
                         };
                 }
             }
 
-            function pickForwardTargets(index, profile) {
-                const targets = [];
-                const lastIndex = mainIds.length - 1;
-
-                if (index >= lastIndex) {
-                    return endingIds.slice(0, choicesPerScene);
+            function buildScenePlan(profile) {
+                if (!mainIds.length) {
+                    return {
+                        laneCount: 1,
+                        layers: [],
+                        sceneMeta: {}
+                    };
                 }
 
-                const candidateOffsets = profile.spread
-                    ? [1, Math.ceil(profile.maxJump / 2), profile.maxJump]
-                    : [1, 2, profile.maxJump];
+                if (profile.planner === "linear") {
+                    const sceneMeta = {};
+                    const layers = mainIds.map((sceneId, index) => {
+                        sceneMeta[sceneId] = {
+                            index,
+                            layerIndex: index,
+                            lane: 0,
+                            ownEnding: endingIds[index % endingIds.length] || endingIds[0]
+                        };
+                        return [sceneId];
+                    });
 
-                candidateOffsets.forEach((offset) => {
-                    const target = mainIds[index + offset];
-                    if (target) targets.push(target);
-                });
-
-                for (let lookAhead = 1; lookAhead < mainIds.length && targets.length < profile.branchFactor; lookAhead += 1) {
-                    const target = mainIds[index + lookAhead];
-                    if (target) targets.push(target);
+                    return {
+                        laneCount: 1,
+                        layers,
+                        sceneMeta
+                    };
                 }
 
-                const remainingMainScenes = mainIds.length - index - 1;
-                if (profile.endingShortcut && remainingMainScenes <= profile.branchFactor + 1) {
-                    endingIds.forEach((endingId) => targets.push(endingId));
-                }
+                const laneCount = Math.max(
+                    1,
+                    Math.min(profile.laneCount || 1, endingIds.length || 1, mainIds.length)
+                );
 
-                const uniqueTargets = uniqueNonEmpty(targets);
+                const layerCount = Math.max(
+                    2,
+                    Math.ceil(mainIds.length / Math.max(2, Math.min(laneCount, 3)))
+                );
 
-                while (uniqueTargets.length < choicesPerScene) {
-                    const fallbackTarget =
-                        mainIds[index + uniqueTargets.length + 1] ||
-                        endingIds[(uniqueTargets.length - profile.branchFactor) % endingIds.length] ||
-                        endingIds[0];
-                    if (!fallbackTarget) break;
-                    uniqueTargets.push(fallbackTarget);
-                }
+                const layers = Array.from({ length: layerCount }, () => []);
+const sceneMeta = {};
 
-                return uniqueNonEmpty(uniqueTargets).slice(0, choicesPerScene);
+mainIds.forEach((sceneId, index) => {
+    const layerIndex = Math.floor((index * layerCount) / mainIds.length);
+    const isHubLayer = profile.planner === "hub" && layerIndex % 2 === 1;
+    const lane = isHubLayer ? 0 : index % laneCount;
+
+    layers[layerIndex].push(sceneId);
+    sceneMeta[sceneId] = {
+        index,
+        layerIndex,
+        lane,
+        isHub: isHubLayer,
+        ownEnding: endingIds[lane % endingIds.length] || endingIds[0]
+    };
+});
+
+                return {
+                    laneCount,
+                    layers,
+                    sceneMeta
+                };
             }
 
-            function buildChoiceDescription(targetId, index, choiceIndex) {
-                if (endingIds.includes(targetId)) {
-                    return `Conduire vers ${targetId.replace(/_/g, " ")}`;
+            function collectFutureScenes(sceneId, scenePlan, predicate = () => true) {
+                const meta = scenePlan.sceneMeta[sceneId];
+                if (!meta) return [];
+
+                const results = [];
+
+                for (let layerIndex = meta.layerIndex + 1; layerIndex < scenePlan.layers.length; layerIndex += 1) {
+                    scenePlan.layers[layerIndex].forEach((candidateId) => {
+                        const candidateMeta = scenePlan.sceneMeta[candidateId];
+                        if (candidateMeta && predicate(candidateId, candidateMeta)) {
+                            results.push(candidateId);
+                        }
+                    });
                 }
-                return index === 0 && choiceIndex === 0
-                    ? "Lancer une première bifurcation"
-                    : `Poursuivre vers ${targetId.replace(/_/g, " ")}`;
+
+                return results;
             }
+
+            function pickTargetsForScene(sceneId, profile, scenePlan) {
+    const meta = scenePlan.sceneMeta[sceneId];
+    if (!meta) {
+        return endingIds.slice(0, choicesPerScene);
+    }
+
+    const targets = [];
+    const futureSameLane = collectFutureScenes(
+        sceneId,
+        scenePlan,
+        (_, candidateMeta) => candidateMeta.lane === meta.lane
+    );
+    const futureOtherLanes = collectFutureScenes(
+        sceneId,
+        scenePlan,
+        (_, candidateMeta) => candidateMeta.lane !== meta.lane
+    );
+    const futureHubScenes = collectFutureScenes(
+        sceneId,
+        scenePlan,
+        (_, candidateMeta) => !!candidateMeta.isHub
+    );
+
+    if (profile.planner === "linear") {
+        const nextSceneId = mainIds[meta.index + 1];
+        if (nextSceneId) {
+            targets.push(nextSceneId);
+        } else {
+            endingIds.forEach((endingId) => targets.push(endingId));
+        }
+    } else if (profile.planner === "hub") {
+        if (meta.isHub) {
+            futureOtherLanes.slice(0, choicesPerScene).forEach((targetId) => {
+                if (!targets.includes(targetId)) targets.push(targetId);
+            });
+        } else {
+            if (futureHubScenes[0]) targets.push(futureHubScenes[0]);
+            if (futureSameLane[0]) targets.push(futureSameLane[0]);
+        }
+
+        if (!futureHubScenes.length && meta.ownEnding) {
+            targets.push(meta.ownEnding);
+        }
+    } else if (profile.planner === "diamond") {
+        const totalLayers = scenePlan.layers.length;
+        const middleLayer = Math.floor(totalLayers / 2);
+        const isBeforeMiddle = meta.layerIndex < middleLayer;
+        const isAfterMiddle = meta.layerIndex > middleLayer;
+
+        if (isBeforeMiddle) {
+            if (futureOtherLanes[0]) targets.push(futureOtherLanes[0]);
+            if (futureSameLane[0]) targets.push(futureSameLane[0]);
+        } else if (meta.layerIndex === middleLayer) {
+            if (futureSameLane[0]) targets.push(futureSameLane[0]);
+            if (futureOtherLanes[0]) targets.push(futureOtherLanes[0]);
+        } else if (isAfterMiddle) {
+            if (futureSameLane[0]) targets.push(futureSameLane[0]);
+            if (futureSameLane[1] && choicesPerScene >= 3) targets.push(futureSameLane[1]);
+            if (meta.ownEnding) targets.push(meta.ownEnding);
+        }
+
+        const remainingLayers = scenePlan.layers.length - meta.layerIndex - 1;
+        if (remainingLayers <= profile.directEndingThreshold && meta.ownEnding) {
+            targets.push(meta.ownEnding);
+        }
+    } else {
+        if (futureSameLane[0]) {
+            targets.push(futureSameLane[0]);
+        }
+
+        if (profile.lateralLinks > 0 && futureOtherLanes[0]) {
+            targets.push(futureOtherLanes[0]);
+        }
+
+        if (futureSameLane[1] && choicesPerScene >= 3) {
+            targets.push(futureSameLane[1]);
+        }
+
+        if (profile.farLinks > 0 && futureOtherLanes[1] && choicesPerScene >= 4) {
+            targets.push(futureOtherLanes[1]);
+        }
+
+        const remainingLayers = scenePlan.layers.length - meta.layerIndex - 1;
+
+        if (remainingLayers <= profile.directEndingThreshold || !futureSameLane.length) {
+            targets.push(meta.ownEnding);
+        }
+
+        if (remainingLayers <= 1 && endingIds.length > 1) {
+            targets.push(endingIds[(meta.lane + 1) % endingIds.length] || endingIds[0]);
+        }
+    }
+
+    const fallbackCandidates = [
+        ...futureSameLane,
+        ...futureHubScenes,
+        ...futureOtherLanes,
+        ...endingIds.slice(meta.lane),
+        ...endingIds.slice(0, meta.lane)
+    ];
+
+    fallbackCandidates.forEach((candidateId) => {
+        if (candidateId && !targets.includes(candidateId) && targets.length < choicesPerScene) {
+            targets.push(candidateId);
+        }
+    });
+
+    if (!targets.length && endingIds[0]) {
+        targets.push(endingIds[0]);
+    }
+
+    return uniqueNonEmpty(targets).slice(0, choicesPerScene);
+}
+
+            function buildChoiceDescription(targetId, sceneId, scenePlan) {
+    if (endingIds.includes(targetId)) {
+        return `Conduire vers ${targetId.replace(/_/g, " ")}`;
+    }
+
+    const currentMeta = scenePlan?.sceneMeta?.[sceneId];
+    const targetMeta = scenePlan?.sceneMeta?.[targetId];
+
+    if (currentMeta && targetMeta) {
+        if (targetMeta.isHub) {
+            return `Rejoindre un carrefour narratif vers ${targetId.replace(/_/g, " ")}`;
+        }
+
+        if (currentMeta.isHub) {
+            return `Quitter le carrefour vers ${targetId.replace(/_/g, " ")}`;
+        }
+
+        if (currentMeta.lane === targetMeta.lane) {
+            return `Poursuivre cette trajectoire vers ${targetId.replace(/_/g, " ")}`;
+        }
+
+        return `Basculer vers une autre trajectoire : ${targetId.replace(/_/g, " ")}`;
+    }
+
+    return `Poursuivre vers ${targetId.replace(/_/g, " ")}`;
+}
 
             function getAnalysisAnchorIndexes() {
                 if (!analysisSceneIds.length) return [];
@@ -1689,6 +2094,7 @@
             }
 
             const profile = getStructureProfile(currentState.structure.type, mainIds.length);
+            const scenePlan = buildScenePlan(profile);
             const analysisAnchorIndexes = getAnalysisAnchorIndexes();
 
             if (currentState.structure.includeIntro) {
@@ -1714,7 +2120,7 @@
             }
 
             mainIds.forEach((sceneId, index) => {
-                const targets = pickForwardTargets(index, profile);
+                const targets = pickTargetsForScene(sceneId, profile, scenePlan);
 
                 scenes[sceneId] = {
                     chapter: currentState.structure.includeIntro ? 2 : 1,
@@ -1726,7 +2132,7 @@
                     analysis: false,
                     choices: targets.map((targetId, choiceIndex) => ({
                         title: `${currentState.scenePreset.defaultChoiceTitle || "Choix"} ${choiceIndex + 1}`,
-                        description: buildChoiceDescription(targetId, index, choiceIndex),
+                        description: buildChoiceDescription(targetId, sceneId, scenePlan),
                         goto: targetId,
                         effects: {
                             stepDelta: 1
@@ -1813,6 +2219,8 @@
                 };
             });
 
+                        enforceConnectivityRules();
+
             return {
                 scenes,
                 analysisSceneIds
@@ -1869,6 +2277,51 @@
                 messages.push({ type: "bad", text: "Aucune scène n’a été générée." });
             }
 
+                        const incomingMap = {};
+            sceneIds.forEach((sceneId) => {
+                incomingMap[sceneId] = 0;
+            });
+
+            sceneIds.forEach((sceneId) => {
+                const scene = project.scenes[sceneId];
+                (scene.choices || []).forEach((choice) => {
+                    if (choice?.goto && Object.prototype.hasOwnProperty.call(incomingMap, choice.goto)) {
+                        incomingMap[choice.goto] += 1;
+                    }
+                });
+            });
+
+            const orphanWithoutAncestors = sceneIds.filter((sceneId) => {
+                const scene = project.scenes[sceneId];
+                const isIntro = sceneId === "intro";
+                const isAnalysis = !!scene.analysis;
+                return !isIntro && !isAnalysis && incomingMap[sceneId] === 0;
+            });
+
+            const orphanWithoutDescendants = sceneIds.filter((sceneId) => {
+                const scene = project.scenes[sceneId];
+                const choices = Array.isArray(scene.choices) ? scene.choices : [];
+                return !scene.ending && choices.length === 0;
+            });
+
+            if (orphanWithoutAncestors.length === 0) {
+                messages.push({ type: "good", text: "Aucune scène non autorisée n’est orpheline en ancêtres." });
+            } else {
+                messages.push({
+                    type: "bad",
+                    text: `Scène orpheline en ancêtres : ${orphanWithoutAncestors[0]}`
+                });
+            }
+
+            if (orphanWithoutDescendants.length === 0) {
+                messages.push({ type: "good", text: "Aucune scène non terminale n’est orpheline en descendants." });
+            } else {
+                messages.push({
+                    type: "bad",
+                    text: `Scène orpheline en descendants : ${orphanWithoutDescendants[0]}`
+                });
+            }
+
             if (project.analyses.length > 0) {
                 messages.push({ type: "good", text: `${project.analyses.length} analyse(s) préparée(s).` });
             } else {
@@ -1876,7 +2329,7 @@
             }
 
             return messages;
-        }        
+        }
 
         function renderSummary(project) {
             const sceneIds = Object.keys(project.scenes);
@@ -1885,7 +2338,7 @@
             els.summaryContent.innerHTML = `
         <div class="summaryGrid">
           <div class="summaryCard">
-  <span class="label">Analyses textuelles</span>
+  <span class="label">Analyses</span>
   <div class="value">${project.analyses.length}</div>
 </div>
 <div class="summaryCard">
@@ -1951,7 +2404,7 @@
             els.validationContent.innerHTML = messages
                 .map((item) => `<div class="notice ${item.type}">${escapeHtml(item.text)}</div>`)
                 .join("");
-        }        
+        }
 
         function renderTabs() {
             els.tabButtons.forEach((btn) => {
@@ -1972,72 +2425,73 @@
     renderJson(project);
     renderValidation(project);
     renderTabs();
+    updateStructureTypeHint();
 }
 
         function setFormFromState(currentState) {
-  els.projectTitle.value = currentState.project.title;
-  els.projectId.value = currentState.project.id;
-  els.projectSubtitle.value = currentState.project.subtitle;
-  els.projectAuthor.value = currentState.project.author;
-  els.projectVersion.value = currentState.project.version;
-  els.projectDescription.value = currentState.project.description;
-  els.startSceneId.value = currentState.project.startScene;
-  els.totalSteps.value = currentState.project.totalSteps;
+            els.projectTitle.value = currentState.project.title;
+            els.projectId.value = currentState.project.id;
+            els.projectSubtitle.value = currentState.project.subtitle;
+            els.projectAuthor.value = currentState.project.author;
+            els.projectVersion.value = currentState.project.version;
+            els.projectDescription.value = currentState.project.description;
+            els.startSceneId.value = currentState.project.startScene;
+            els.totalSteps.value = currentState.project.totalSteps;
 
-  els.structureType.value = currentState.structure.type;
-  els.choicesPerScene.value = currentState.structure.choicesPerScene;
-  els.mainSceneCount.value = currentState.structure.mainSceneCount;
-  els.endingCount.value = currentState.structure.endingCount;
-  els.analysisSceneCount.value = currentState.structure.analysisSceneCount;
-  els.remediationsPerAnalysis.value = currentState.structure.remediationsPerAnalysis;
-  els.includeIntro.checked = currentState.structure.includeIntro;
+            els.structureType.value = currentState.structure.type;
+            els.choicesPerScene.value = currentState.structure.choicesPerScene;
+            els.mainSceneCount.value = currentState.structure.mainSceneCount;
+            els.endingCount.value = currentState.structure.endingCount;
+            els.analysisSceneCount.value = currentState.structure.analysisSceneCount;
+            els.remediationsPerAnalysis.value = currentState.structure.remediationsPerAnalysis;
+            els.includeIntro.checked = currentState.structure.includeIntro;
 
-  els.openHelpOnStart.checked = currentState.options.openHelpOnStart;
+            els.openHelpOnStart.checked = currentState.options.openHelpOnStart;
 
-  els.helpTitle.value = currentState.ui.helpTitle;
-  els.helpContent.value = currentState.ui.helpContent;
-  els.progressLabel.value = currentState.ui.progressLabel;
-  els.scoreLabel.value = currentState.ui.scoreLabel;
-  els.riskLabel.value = currentState.ui.riskLabel;
-  els.inventoryLabel.value = currentState.ui.inventoryLabel;
-  els.themePreset.value = currentState.ui.themePreset;
-  els.typographyPreset.value = currentState.ui.typographyPreset;
-  els.transitionPreset.value = currentState.ui.transitionPreset;
+            els.helpTitle.value = currentState.ui.helpTitle;
+            els.helpContent.value = currentState.ui.helpContent;
+            els.progressLabel.value = currentState.ui.progressLabel;
+            els.scoreLabel.value = currentState.ui.scoreLabel;
+            els.riskLabel.value = currentState.ui.riskLabel;
+            els.inventoryLabel.value = currentState.ui.inventoryLabel;
+            els.themePreset.value = currentState.ui.themePreset;
+            els.typographyPreset.value = currentState.ui.typographyPreset;
+            els.transitionPreset.value = currentState.ui.transitionPreset;
 
-  els.mainScenePrefix.value = currentState.scenePreset.mainScenePrefix;
-  els.endingPrefix.value = currentState.scenePreset.endingPrefix;
-  els.remediationPrefix.value = currentState.scenePreset.remediationPrefix;
-  els.analysisScenePrefix.value = currentState.scenePreset.analysisScenePrefix;
-  els.defaultSceneText.value = currentState.scenePreset.defaultSceneText;
-  els.defaultChoiceTitle.value = currentState.scenePreset.defaultChoiceTitle;
+            els.mainScenePrefix.value = currentState.scenePreset.mainScenePrefix;
+            els.endingPrefix.value = currentState.scenePreset.endingPrefix;
+            els.remediationPrefix.value = currentState.scenePreset.remediationPrefix;
+            els.analysisScenePrefix.value = currentState.scenePreset.analysisScenePrefix;
+            els.defaultSceneText.value = currentState.scenePreset.defaultSceneText;
+            els.defaultChoiceTitle.value = currentState.scenePreset.defaultChoiceTitle;
 
-  renderAll();
-}
+            renderAll();
+        }
 
         function buildExampleState() {
-    const example = createDefaultState();
+            const example = createDefaultState();
 
-    example.project.title = "Gestion d’une crise qualité";
-    example.project.subtitle = "Cas ramifié avec interruptions et remédiations";
-    example.project.author = "Votre équipe";
-    example.project.description = "Template de départ pour un cas métier avec embranchements, interruptions, analyses et remédiations.";
+            example.project.title = "Gestion d’une crise qualité";
+            example.project.subtitle = "Cas ramifié avec interruptions et remédiations";
+            example.project.author = "Votre équipe";
+            example.project.description = "Template de départ pour un cas métier avec embranchements, interruptions, analyses et remédiations.";
 
-    example.structure.type = "branched_remediation";
-    example.structure.mainSceneCount = 6;
-    example.structure.endingCount = 3;
-    example.structure.analysisSceneCount = 2;
-    example.structure.remediationsPerAnalysis = 2;
-    example.structure.choicesPerScene = 3;
+            example.structure.type = "diamond";
+            example.structure.mainSceneCount = 6;
+            example.structure.endingCount = 3;
+            example.structure.analysisSceneCount = 2;
+            example.structure.remediationsPerAnalysis = 2;
+            example.structure.choicesPerScene = 3;
 
-    example.scenePreset.mainScenePrefix = "situation";
-    example.scenePreset.endingPrefix = "fin";
-    example.scenePreset.analysisScenePrefix = "analyse";
-    example.scenePreset.remediationPrefix = "remediation";
-    example.scenePreset.defaultSceneText = "Rédigez ici le contenu de la scène.";
-    example.scenePreset.defaultChoiceTitle = "Option";
+            example.scenePreset.mainScenePrefix = "situation";
+            example.scenePreset.endingPrefix = "fin";
+            example.scenePreset.analysisScenePrefix = "analyse";
+            example.scenePreset.remediationPrefix = "remediation";
+            example.scenePreset.defaultSceneText = "Rédigez ici le contenu de la scène.";
+            example.scenePreset.defaultChoiceTitle = "Option";
 
-    return example;
-}
+            return example;
+        }
 
         function downloadJson(filename, data) {
             const blob = new Blob([data], { type: "application/json;charset=utf-8" });
@@ -2078,42 +2532,42 @@
         }
 
         function bindEvents() {
-  document.querySelectorAll("input, textarea, select").forEach((field) => {
-    field.addEventListener("input", renderAll);
-    field.addEventListener("change", renderAll);
-  });
+            document.querySelectorAll("input, textarea, select").forEach((field) => {
+                field.addEventListener("input", renderAll);
+                field.addEventListener("change", renderAll);
+            });
 
-  els.tabButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      state.activeTab = btn.dataset.tab;
-      renderTabs();
-    });
-  });
+            els.tabButtons.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    state.activeTab = btn.dataset.tab;
+                    renderTabs();
+                });
+            });
 
-  els.newConfigBtn.addEventListener("click", () => {
-    state = createDefaultState();
-    setFormFromState(state);
-  });
+            els.newConfigBtn.addEventListener("click", () => {
+                state = createDefaultState();
+                setFormFromState(state);
+            });
 
-  els.loadExampleBtn.addEventListener("click", () => {
-    state = buildExampleState();
-    setFormFromState(state);
-  });
+            els.loadExampleBtn.addEventListener("click", () => {
+                state = buildExampleState();
+                setFormFromState(state);
+            });
 
-  els.exportJsonBtn.addEventListener("click", exportCurrentProject);
+            els.exportJsonBtn.addEventListener("click", exportCurrentProject);
 
-  els.copyJsonBtn.addEventListener("click", async () => {
-    syncStateFromForm();
-    const project = buildProjectFromState(state);
-    await copyText(JSON.stringify(project, null, 2), "JSON copié dans le presse-papiers.");
-  });
+            els.copyJsonBtn.addEventListener("click", async () => {
+                syncStateFromForm();
+                const project = buildProjectFromState(state);
+                await copyText(JSON.stringify(project, null, 2), "JSON copié dans le presse-papiers.");
+            });
 
-  els.copyStructureBtn.addEventListener("click", async () => {
-    syncStateFromForm();
-    const project = buildProjectFromState(state);
-    await copyText(getStructureText(project), "Structure copiée dans le presse-papiers.");
-  });
-}
+            els.copyStructureBtn.addEventListener("click", async () => {
+                syncStateFromForm();
+                const project = buildProjectFromState(state);
+                await copyText(getStructureText(project), "Structure copiée dans le presse-papiers.");
+            });
+        }
 
         function makeToolbarTouchLabels() {
             document.querySelectorAll(".toolbarIconBtn").forEach((btn) => {
@@ -2220,16 +2674,16 @@
         }
 
         function init() {
-    cacheDom();
-    moveToolbarForResponsiveLayout();
-    window.addEventListener("resize", moveToolbarForResponsiveLayout);
-    initDesktopDivider();
-    applyDesktopPaneWidth(56);
-    bindEvents();
-    renderAll();
-}
+            cacheDom();
+            moveToolbarForResponsiveLayout();
+            window.addEventListener("resize", moveToolbarForResponsiveLayout);
+            initDesktopDivider();
+            applyDesktopPaneWidth(56);
+            bindEvents();
+            renderAll();
+        }
 
-init();
+        init();
     </script>
 </body>
 
