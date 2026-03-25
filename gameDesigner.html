@@ -5913,7 +5913,7 @@
       }
 
       const sceneName = (scene.title || sceneId || "").trim() || sceneId;
-      const sceneChapter = (scene.chapter || "").trim() || "Sans chapitre";
+      const sceneChapter = String(scene.chapter ?? "").trim() || "Sans chapitre";
       const sceneType = getSceneTypeLabel(scene.type);
       const sceneText = Array.isArray(scene.text) ? scene.text.filter(Boolean).join("\n\n") : String(scene.text || "");
       const choices = Array.isArray(scene.choices) ? scene.choices : [];
