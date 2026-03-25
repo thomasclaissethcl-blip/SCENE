@@ -1577,6 +1577,10 @@
                                 <div>
                                     <label for="mainSceneCount">Scènes principales</label>
                                     <input id="mainSceneCount" type="number" min="1" value="8">
+                                    <label class="checkboxRow" style="margin-top: 8px;">
+                                        <input id="autoMainSceneCount" type="checkbox">
+                                        <span>Calculer le nombre de scènes automatiquement</span>
+                                    </label>
                                 </div>
                                 <div>
                                     <label for="endingCount">Fins</label>
@@ -1945,6 +1949,7 @@
                     type: "branched",
                     includeIntro: true,
                     mainSceneCount: 8,
+                    autoMainSceneCount: false,
                     choicesPerScene: 3,
                     endingCount: 3,
                     analysisSceneCount: 2,
@@ -2008,6 +2013,49 @@
             return Number.isFinite(n) ? n : fallback;
         }
 
+        function calculateAutoMainSceneCount(currentState) {
+            const endingCount = Math.max(1, Number(currentState.structure.endingCount) || 1);
+            const analysisSceneCount = Math.max(0, Number(currentState.structure.analysisSceneCount) || 0);
+            const remediationsPerAnalysis = Math.max(0, Number(currentState.structure.remediationsPerAnalysis) || 0);
+            const choicesPerScene = Math.max(1, Math.min(4, Number(currentState.structure.choicesPerScene) || 2));
+
+            const sideSceneLoad =
+                endingCount +
+                analysisSceneCount +
+                (analysisSceneCount * remediationsPerAnalysis);
+
+            const branchingCapacity = Math.max(1, choicesPerScene - 1);
+
+            return Math.max(1, Math.ceil(sideSceneLoad / branchingCapacity) + 2);
+        }
+
+        function updateMainSceneCountAutoState() {
+            if (!els.mainSceneCount || !els.autoMainSceneCount) return;
+
+            const isAuto = !!els.autoMainSceneCount.checked;
+            els.mainSceneCount.disabled = isAuto;
+
+            if (!isAuto) return;
+
+            const draftState = {
+                ...state,
+                structure: {
+                    ...state.structure,
+                    type: els.structureType.value,
+                    choicesPerScene: normalizeNumericInput(els.choicesPerScene.value, 2),
+                    endingCount: normalizeNumericInput(els.endingCount.value, 3),
+                    analysisSceneCount: normalizeNumericInput(els.analysisSceneCount.value, 2),
+                    remediationsPerAnalysis: normalizeNumericInput(els.remediationsPerAnalysis.value, 2),
+                    includeIntro: !!els.includeIntro.checked,
+                    autoMainSceneCount: true,
+                    mainSceneCount: normalizeNumericInput(els.mainSceneCount.value, 8)
+                }
+            };
+
+            const autoValue = calculateAutoMainSceneCount(draftState);
+            els.mainSceneCount.value = autoValue;
+        }
+
         function updateStructureTypeHint() {
             if (!els.structureTypeHint || !els.structureType) return;
 
@@ -2050,6 +2098,7 @@
                 "structureType",
                 "choicesPerScene",
                 "mainSceneCount",
+                "autoMainSceneCount",
                 "endingCount",
                 "analysisSceneCount",
                 "remediationsPerAnalysis",
@@ -2125,11 +2174,18 @@
 
             state.structure.type = els.structureType.value;
             state.structure.choicesPerScene = normalizeNumericInput(els.choicesPerScene.value, 2);
-            state.structure.mainSceneCount = normalizeNumericInput(els.mainSceneCount.value, 8);
             state.structure.endingCount = normalizeNumericInput(els.endingCount.value, 3);
             state.structure.analysisSceneCount = normalizeNumericInput(els.analysisSceneCount.value, 2);
             state.structure.remediationsPerAnalysis = normalizeNumericInput(els.remediationsPerAnalysis.value, 2);
             state.structure.includeIntro = els.includeIntro.checked;
+            state.structure.autoMainSceneCount = !!els.autoMainSceneCount.checked;
+
+            if (state.structure.autoMainSceneCount) {
+                state.structure.mainSceneCount = calculateAutoMainSceneCount(state);
+                els.mainSceneCount.value = state.structure.mainSceneCount;
+            } else {
+                state.structure.mainSceneCount = normalizeNumericInput(els.mainSceneCount.value, 8);
+            }
 
             state.options.openHelpOnStart = els.openHelpOnStart.checked;
 
@@ -4765,7 +4821,7 @@
             if (project.analyses.length > 0) {
                 messages.push({ type: "good", text: `${project.analyses.length} analyse(s) préparée(s).` });
             } else {
-                messages.push({ type: "warn", text: "Aucune analyse textuelle n’a été ajoutée." });
+                messages.push({ type: "warn", text: "Aucune analyse n’a été ajoutée." });
             }
 
             const validationContext = buildValidationContextFromState(state);
@@ -5927,6 +5983,7 @@
 
         function renderAll() {
             syncStateFromForm();
+            updateMainSceneCountAutoState();
 
             const project = buildProjectFromState(state);
             renderSummary(project);
@@ -5950,6 +6007,7 @@
             els.structureType.value = currentState.structure.type;
             els.choicesPerScene.value = currentState.structure.choicesPerScene;
             els.mainSceneCount.value = currentState.structure.mainSceneCount;
+            els.autoMainSceneCount.checked = !!currentState.structure.autoMainSceneCount;
             els.endingCount.value = currentState.structure.endingCount;
             els.analysisSceneCount.value = currentState.structure.analysisSceneCount;
             els.remediationsPerAnalysis.value = currentState.structure.remediationsPerAnalysis;
@@ -5975,6 +6033,7 @@
             els.defaultChoiceTitle.value = currentState.scenePreset.defaultChoiceTitle;
             els.methodologyGuidanceEnabled.checked = currentState.scenePreset.methodologyGuidanceEnabled !== false;
 
+            updateMainSceneCountAutoState();
             updateStructureTypeHint();
             renderAll();
         }
