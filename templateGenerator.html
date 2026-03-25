@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SCENE — Générateur de templates</title>
+    <title>SCENE : Générateur de templates</title>
     <style>
         :root {
             --bg: #0b1020;
@@ -895,6 +895,21 @@
             grid-template-rows: auto 1fr;
         }
 
+        #graphPreviewSceneInfoModal .graphPreviewModalDialog {
+            width: min(100vw - 120px, 700px);
+            height: min(100vh - 160px, 520px);
+            margin: 80px auto;
+            display: grid;
+            grid-template-rows: auto 1fr;
+        }
+
+        #graphPreviewSceneInfoModal .graphPreviewModalDialog {
+            border: 1px solid rgba(124, 200, 255, 0.4);
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(124, 200, 255, 0.15);
+        }
+
         .graphPreviewModalHeader {
             display: flex;
             justify-content: space-between;
@@ -957,6 +972,222 @@
             display: grid;
             grid-template-rows: auto 1fr;
             gap: 12px;
+        }
+
+        #graphPreviewSceneInfoModal .graphPreviewModalContent {
+            overflow-y: auto;
+            overflow-x: hidden;
+            overflow-anchor: none;
+        }
+
+        #graphPreviewSceneInfoContent {
+            padding-right: 8px;
+            display: grid;
+            gap: 14px;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoSection {
+            background: #1a2343;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoSectionTitle {
+            margin: 0 0 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoMetaGrid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoMetaCard {
+            background: #182241;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoMetaLabel {
+            display: block;
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoMetaValue {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.35;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoBadgeRow {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoBadge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            font-size: 0.78rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoBadge.type-normal {
+            background: rgba(124, 200, 255, 0.12);
+            border-color: rgba(124, 200, 255, 0.35);
+            color: #d8eeff;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoBadge.type-analysis {
+            background: rgba(243, 202, 112, 0.14);
+            border-color: rgba(243, 202, 112, 0.4);
+            color: #ffe7a8;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoBadge.type-remediation {
+            background: rgba(160, 190, 255, 0.14);
+            border-color: rgba(160, 190, 255, 0.4);
+            color: #dfe7ff;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoBadge.type-ending {
+            background: rgba(116, 213, 163, 0.14);
+            border-color: rgba(116, 213, 163, 0.4);
+            color: #dfffee;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoSceneLink {
+            width: 100%;
+            text-align: left;
+            background: #182241;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition:
+                background 0.18s ease,
+                border-color 0.18s ease,
+                transform 0.18s ease;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoSceneLink:hover,
+        #graphPreviewSceneInfoContent .sceneInfoSceneLink:focus {
+            background: #22305a;
+            border-color: rgba(124, 200, 255, 0.45);
+            transform: translateY(-1px);
+            outline: none;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoSceneLinkName {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoSceneLinkMeta {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.4;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoTextBlock {
+            background: #11182f;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoList {
+            display: grid;
+            gap: 8px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoListItem {
+            background: #182241;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoChoiceList {
+            display: grid;
+            gap: 12px;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoChoiceCard {
+            background: #182241;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoChoiceHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoChoiceTitle {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoChoiceIndex {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoChoiceField+.sceneInfoChoiceField {
+            margin-top: 8px;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoChoiceFieldLabel {
+            display: block;
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        #graphPreviewSceneInfoContent .sceneInfoChoiceFieldValue {
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        #graphPreviewSceneInfoContent code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.84rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 2px 6px;
+        }
+
+        @media (max-width: 720px) {
+            #graphPreviewSceneInfoContent .sceneInfoMetaGrid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .graphToolbar {
@@ -1124,10 +1355,10 @@
         }
 
         .graphNode.is-focus rect {
-            fill: rgba(124, 200, 255, 0.3);
+            fill: rgba(124, 200, 255, 0.34);
             stroke: #ffd166;
-            stroke-width: 3;
-            filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)) drop-shadow(0 12px 22px rgba(255, 209, 102, 0.28));
+            stroke-width: 3.5;
+            filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)) drop-shadow(0 14px 26px rgba(255, 209, 102, 0.34));
         }
 
         .graphNode.is-focus text,
@@ -1590,6 +1821,10 @@
                     </div>
 
                     <div id="graphPreviewContextMenu" class="graphContextMenu" style="display: none">
+                        <button id="graphPreviewContextSceneInfoBtn" type="button" class="secondary">
+                            <span>Infos sur la scène</span>
+                        </button>
+
                         <button id="graphPreviewContextHighlightFullBtn" type="button" class="secondary">
                             <span>Afficher le chemin complet</span>
                         </button>
@@ -1606,6 +1841,32 @@
                     <svg id="graphPreviewSvg" class="graphSvg" viewBox="0 0 1200 800"
                         preserveAspectRatio="xMidYMid meet" aria-label="Graphe des scènes"></svg>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="graphPreviewSceneInfoModal" class="graphPreviewModal" aria-hidden="true" role="dialog" aria-modal="true"
+        aria-labelledby="graphPreviewSceneInfoModalTitle">
+        <div class="graphPreviewModalOverlay" data-action="closeGraphPreviewSceneInfoModal"></div>
+
+        <div class="graphPreviewModalDialog">
+            <div class="graphPreviewModalHeader">
+                <div class="graphPreviewHeaderMain">
+                    <div>
+                        <h2 id="graphPreviewSceneInfoModalTitle" style="margin: 0">Infos sur la scène</h2>
+                        <p id="graphPreviewSceneInfoModalSubtitle" class="muted small" style="margin: 6px 0 0">
+                            Informations détaillées sur la scène sélectionnée.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="itemActions">
+                    <button id="closeGraphPreviewSceneInfoModalBtn" type="button" class="secondary">Fermer</button>
+                </div>
+            </div>
+
+            <div class="graphPreviewModalContent">
+                <div id="graphPreviewSceneInfoContent" class="kv"></div>
             </div>
         </div>
     </div>
@@ -1840,11 +2101,16 @@
             els.graphPreviewZoomOutBtn = document.getElementById("graphPreviewZoomOutBtn");
             els.graphPreviewResetBtn = document.getElementById("graphPreviewResetBtn");
             els.graphPreviewContextMenu = document.getElementById("graphPreviewContextMenu");
+            els.graphPreviewContextSceneInfoBtn = document.getElementById("graphPreviewContextSceneInfoBtn");
             els.graphPreviewContextHighlightFullBtn = document.getElementById("graphPreviewContextHighlightFullBtn");
             els.graphPreviewContextHighlightAncestorsBtn = document.getElementById("graphPreviewContextHighlightAncestorsBtn");
             els.graphPreviewContextHighlightDescendantsBtn = document.getElementById("graphPreviewContextHighlightDescendantsBtn");
             els.graphPreviewStructureTypeBadge = document.getElementById("graphPreviewStructureTypeBadge");
             els.graphPreviewStructureHint = document.getElementById("graphPreviewStructureHint");
+            els.graphPreviewSceneInfoModal = document.getElementById("graphPreviewSceneInfoModal");
+            els.closeGraphPreviewSceneInfoModalBtn = document.getElementById("closeGraphPreviewSceneInfoModalBtn");
+            els.graphPreviewSceneInfoContent = document.getElementById("graphPreviewSceneInfoContent");
+            els.graphPreviewSceneInfoModalSubtitle = document.getElementById("graphPreviewSceneInfoModalSubtitle");
         }
 
         function syncStateFromForm() {
@@ -4787,7 +5053,7 @@
 
             const rect = els.graphPreviewViewport.getBoundingClientRect();
             const menuWidth = 220;
-            const menuHeight = 156;
+            const menuHeight = 204;
             const margin = 12;
             const offset = 10;
 
@@ -4920,6 +5186,21 @@
             renderGraphPreview(project);
         }
 
+        function focusGraphPreviewScene(sceneId) {
+            if (!sceneId) return;
+
+            graphPreviewHighlightState = {
+                sceneId,
+                mode: "scene_info"
+            };
+
+            closeGraphPreviewContextMenu();
+
+            syncStateFromForm();
+            const project = buildProjectFromState(state);
+            renderGraphPreview(project);
+        }
+
         function clearGraphPreviewHighlight() {
             graphPreviewHighlightState = null;
             closeGraphPreviewContextMenu();
@@ -4967,9 +5248,36 @@
             applyGraphPreviewTransform();
         }
 
-        function zoomGraphPreview(factor) {
-            const nextScale = clampGraphPreviewScale(graphPreviewState.scale * factor);
-            if (nextScale === graphPreviewState.scale) return;
+        function zoomGraphPreview(factor, anchorClientX = null, anchorClientY = null) {
+            const currentScale = graphPreviewState.scale;
+            const nextScale = clampGraphPreviewScale(currentScale * factor);
+            if (nextScale === currentScale) return;
+
+            if (
+                anchorClientX !== null &&
+                anchorClientY !== null &&
+                els.graphPreviewSvg
+            ) {
+                const svgPoint = els.graphPreviewSvg.createSVGPoint();
+                svgPoint.x = anchorClientX;
+                svgPoint.y = anchorClientY;
+
+                const ctm = els.graphPreviewSvg.getScreenCTM();
+
+                if (ctm) {
+                    const cursorSvgPoint = svgPoint.matrixTransform(ctm.inverse());
+
+                    const graphX = (cursorSvgPoint.x - graphPreviewState.x) / currentScale;
+                    const graphY = (cursorSvgPoint.y - graphPreviewState.y) / currentScale;
+
+                    graphPreviewState.scale = nextScale;
+                    graphPreviewState.x = cursorSvgPoint.x - graphX * nextScale;
+                    graphPreviewState.y = cursorSvgPoint.y - graphY * nextScale;
+
+                    applyGraphPreviewTransform();
+                    return;
+                }
+            }
 
             graphPreviewState.scale = nextScale;
             applyGraphPreviewTransform();
@@ -5081,6 +5389,340 @@
             applyGraphPreviewTransform();
         }
 
+        function getTemplateGraphSceneTypeLabel(sceneType) {
+            if (sceneType === "analysis") return "analyse";
+            if (sceneType === "remediation") return "remédiation";
+            if (sceneType === "ending") return "fin";
+            return "normale";
+        }
+
+        function buildTemplateGraphSceneInfoContext(currentState) {
+            const analysisSceneIds = buildAnalysisSceneIds(currentState);
+
+            const mainPrefix = slugify(currentState.scenePreset.mainScenePrefix || "scene");
+            const endingPrefix = slugify(currentState.scenePreset.endingPrefix || "fin");
+            const remediationPrefix = slugify(currentState.scenePreset.remediationPrefix || "remediation");
+
+            const mainCount = Math.max(1, Number(currentState.structure.mainSceneCount) || 1);
+            const endingCount = Math.max(1, Number(currentState.structure.endingCount) || 1);
+            const remediationsPerAnalysis = Math.max(0, Number(currentState.structure.remediationsPerAnalysis) || 0);
+            const choicesPerScene = Math.max(1, Math.min(4, Number(currentState.structure.choicesPerScene) || 2));
+
+            const mainIds = Array.from({ length: mainCount }, (_, index) => `${mainPrefix}_${index + 1}`);
+            const endingIds = Array.from({ length: endingCount }, (_, index) => `${endingPrefix}_${index + 1}`);
+            const remediationGroups = analysisSceneIds.map((analysisId, analysisIndex) =>
+                Array.from({ length: remediationsPerAnalysis }, (_, remediationIndex) =>
+                    `${remediationPrefix}_${analysisIndex + 1}_${remediationIndex + 1}`
+                )
+            );
+
+            const generationContext = buildGenerationContext(currentState, {
+                mainIds,
+                endingIds,
+                analysisSceneIds,
+                remediationGroups,
+                choicesPerScene,
+                mainPrefix,
+                endingPrefix,
+                remediationPrefix,
+                remediationsPerAnalysis
+            });
+
+            const generator =
+                STRUCTURE_GENERATORS[generationContext.options.structureType] ||
+                STRUCTURE_GENERATORS.branched;
+
+            const profile = generator.buildProfile(generationContext);
+            const rolePlan = generator.buildRolePlan(generationContext, profile);
+
+            generationContext.rolePlan = rolePlan;
+
+            return {
+                analysisSceneIds,
+                remediationGroups,
+                endingIds,
+                rolePlan
+            };
+        }
+
+        function getTemplateGraphSceneMeta(currentState, sceneId) {
+            const infoContext = buildTemplateGraphSceneInfoContext(currentState);
+
+            if (sceneId === "intro" && currentState.structure.includeIntro) {
+                return {
+                    role: "context",
+                    phase: "early",
+                    isHub: false
+                };
+            }
+
+            if (infoContext.analysisSceneIds.includes(sceneId)) {
+                return {
+                    role: "analysis",
+                    phase: "mid",
+                    isHub: false
+                };
+            }
+
+            if (infoContext.remediationGroups.some((group) => group.includes(sceneId))) {
+                return {
+                    role: "remediation",
+                    phase: "mid",
+                    isHub: false
+                };
+            }
+
+            if (infoContext.endingIds.includes(sceneId)) {
+                return {
+                    role: "ending",
+                    phase: "late",
+                    isHub: false
+                };
+            }
+
+            return infoContext.rolePlan?.sceneMeta?.[sceneId] || null;
+        }
+
+        function getTemplateGraphIncomingSceneIds(project, sceneId) {
+            const incomingIds = [];
+
+            Object.entries(project?.scenes || {}).forEach(([sourceId, scene]) => {
+                (scene.choices || []).forEach((choice) => {
+                    if (choice?.goto === sceneId) {
+                        incomingIds.push(sourceId);
+                    }
+                });
+            });
+
+            return Array.from(new Set(incomingIds));
+        }
+
+        function getSceneInfoBadgeType(sceneType) {
+            if (sceneType === "analysis") return "type-analysis";
+            if (sceneType === "remediation") return "type-remediation";
+            if (sceneType === "ending") return "type-ending";
+            return "type-normal";
+        }
+
+        function buildSceneInfoLinkButton(project, targetSceneId) {
+            const targetScene = project.scenes?.[targetSceneId];
+            const targetName = String(targetScene?.title || targetSceneId).trim() || targetSceneId;
+            const targetTypeLabel = getTemplateGraphSceneTypeLabel(targetScene?.type || "normal");
+            const badgeClass = getSceneInfoBadgeType(targetScene?.type || "normal");
+
+            return `
+        <button
+            type="button"
+            class="sceneInfoSceneLink"
+            data-scene-link="${escapeHtml(targetSceneId)}"
+        >
+            <div class="sceneInfoSceneLinkName">${escapeHtml(targetName)}</div>
+            <div class="sceneInfoSceneLinkMeta">
+                <code>${escapeHtml(targetSceneId)}</code>
+                <span class="sceneInfoBadge ${badgeClass}" style="margin-left: 8px">${escapeHtml(targetTypeLabel)}</span>
+            </div>
+        </button>
+    `;
+        }
+
+        function renderGraphPreviewSceneInfo(sceneId) {
+            if (!els.graphPreviewSceneInfoContent) return;
+
+            syncStateFromForm();
+            const project = buildProjectFromState(state);
+            const scene = project.scenes?.[sceneId];
+
+            if (!scene) {
+                els.graphPreviewSceneInfoContent.innerHTML = `
+            <div class="row">
+                <strong>Erreur</strong>
+                <div>Impossible d’afficher les informations de cette scène.</div>
+            </div>
+        `;
+
+                if (els.graphPreviewSceneInfoModalSubtitle) {
+                    els.graphPreviewSceneInfoModalSubtitle.textContent = "La scène demandée est introuvable.";
+                }
+                return;
+            }
+
+            const sceneName = String(scene.title || sceneId || "").trim() || sceneId;
+            const sceneTypeLabel = getTemplateGraphSceneTypeLabel(scene.type);
+            const sceneMeta = getTemplateGraphSceneMeta(state, sceneId);
+            const sceneRoleLabel = getReadableSceneRoleLabel(sceneMeta, scene.type || "normal");
+
+            const sceneText = Array.isArray(scene.text)
+                ? scene.text.filter(Boolean).join("\n\n")
+                : String(scene.text || "");
+
+            const textHtml = sceneText
+                ? escapeHtml(sceneText).replace(/\n/g, "<br>")
+                : '<span class="muted">Aucun texte.</span>';
+
+            const incomingSceneIds = getTemplateGraphIncomingSceneIds(project, sceneId);
+
+            const incomingHtml = incomingSceneIds.length
+                ? `
+        <div class="sceneInfoSection">
+            <h3 class="sceneInfoSectionTitle">Scènes d’origine immédiate</h3>
+            <div class="sceneInfoList">
+                ${incomingSceneIds.map((sourceId) => buildSceneInfoLinkButton(project, sourceId)).join("")}
+            </div>
+        </div>
+    `
+                : `
+        <div class="sceneInfoSection">
+            <h3 class="sceneInfoSectionTitle">Scènes d’origine immédiate</h3>
+            <div class="muted small">Aucune scène d’origine immédiate.</div>
+        </div>
+    `;
+
+            const choices = Array.isArray(scene.choices) ? scene.choices : [];
+
+            const choicesHtml = choices.length
+                ? `
+        <div class="sceneInfoSection">
+            <h3 class="sceneInfoSectionTitle">Choix et destinations</h3>
+            <div class="sceneInfoChoiceList">
+                ${choices.map((choice, index) => {
+                    const choiceTitle = String(choice?.title || `Choix ${index + 1}`).trim() || `Choix ${index + 1}`;
+                    const choiceDescription = String(choice?.desc || "").trim();
+                    const targetId = String(choice?.goto || "").trim();
+                    const targetScene = targetId ? project.scenes?.[targetId] : null;
+                    const targetName = targetScene ? (String(targetScene.title || targetId).trim() || targetId) : "";
+
+                    return `
+                        <div class="sceneInfoChoiceCard">
+                            <div class="sceneInfoChoiceHeader">
+                                <div class="sceneInfoChoiceTitle">${escapeHtml(choiceTitle)}</div>
+                                <div class="sceneInfoChoiceIndex">Choix ${index + 1}</div>
+                            </div>
+
+                            <div class="sceneInfoChoiceField">
+                                <span class="sceneInfoChoiceFieldLabel">Description</span>
+                                <div class="sceneInfoChoiceFieldValue">
+                                    ${choiceDescription ? escapeHtml(choiceDescription) : '<span class="muted">Aucune description.</span>'}
+                                </div>
+                            </div>
+
+                            <div class="sceneInfoChoiceField">
+    <span class="sceneInfoChoiceFieldLabel">Scène cible</span>
+    <div class="sceneInfoChoiceFieldValue">
+        ${targetId
+                            ? buildSceneInfoLinkButton(project, targetId)
+                            : '<span class="muted">Non définie.</span>'}
+    </div>
+</div>
+                        </div>
+                    `;
+                }).join("")}
+            </div>
+        </div>
+    `
+                : `
+        <div class="sceneInfoSection">
+            <h3 class="sceneInfoSectionTitle">Choix et destinations</h3>
+            <div class="muted small">Aucun choix pour cette scène.</div>
+        </div>
+    `;
+
+            const sceneBadgeClass = getSceneInfoBadgeType(scene.type || "normal");
+
+            els.graphPreviewSceneInfoContent.innerHTML = `
+    <div class="sceneInfoSection">
+        <h3 class="sceneInfoSectionTitle">Informations générales</h3>
+        <div class="sceneInfoMetaGrid">
+            <div class="sceneInfoMetaCard">
+                <span class="sceneInfoMetaLabel">Nom</span>
+                <div class="sceneInfoMetaValue">${escapeHtml(sceneName)}</div>
+            </div>
+
+            <div class="sceneInfoMetaCard">
+                <span class="sceneInfoMetaLabel">Type</span>
+                <div class="sceneInfoMetaValue">
+                    <span class="sceneInfoBadge ${sceneBadgeClass}">${escapeHtml(sceneTypeLabel)}</span>
+                </div>
+            </div>
+
+            <div class="sceneInfoMetaCard">
+                <span class="sceneInfoMetaLabel">Rôle dans la structure</span>
+                <div class="sceneInfoMetaValue">${escapeHtml(sceneRoleLabel)}</div>
+            </div>
+        </div>
+
+        <div class="sceneInfoBadgeRow">
+            <span class="sceneInfoBadge ${sceneBadgeClass}">${escapeHtml(sceneTypeLabel)}</span>
+        </div>
+    </div>
+
+    <div class="sceneInfoSection">
+        <h3 class="sceneInfoSectionTitle">Texte de la scène</h3>
+        <div class="sceneInfoTextBlock">${textHtml}</div>
+    </div>
+
+    ${incomingHtml}
+
+    ${choicesHtml}
+`;
+
+            if (els.graphPreviewSceneInfoModalSubtitle) {
+                els.graphPreviewSceneInfoModalSubtitle.textContent = `Informations de la scène « ${sceneName} ».`;
+            }
+
+            resetGraphPreviewSceneInfoScroll();
+
+            els.graphPreviewSceneInfoContent
+                .querySelectorAll("[data-scene-link]")
+                .forEach((button) => {
+                    button.addEventListener("click", (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        const targetSceneId = button.dataset.sceneLink;
+                        if (!targetSceneId || targetSceneId === sceneId) return;
+
+                        focusGraphPreviewScene(targetSceneId);
+                        renderGraphPreviewSceneInfo(targetSceneId);
+                        els.graphPreviewSceneInfoModal.dataset.sceneId = targetSceneId;
+                    });
+                });
+        }
+
+        function openGraphPreviewSceneInfoModal(sceneId) {
+            if (!sceneId || !els.graphPreviewSceneInfoModal) return;
+
+            closeGraphPreviewContextMenu();
+            focusGraphPreviewScene(sceneId);
+            renderGraphPreviewSceneInfo(sceneId);
+            els.graphPreviewSceneInfoModal.dataset.sceneId = sceneId;
+            els.graphPreviewSceneInfoModal.classList.add("open");
+            els.graphPreviewSceneInfoModal.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+        }
+
+        function resetGraphPreviewSceneInfoScroll() {
+            const modalContent = els.graphPreviewSceneInfoModal?.querySelector(".graphPreviewModalContent");
+            if (!modalContent) return;
+
+            modalContent.scrollTop = 0;
+
+            requestAnimationFrame(() => {
+                modalContent.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+            });
+        }
+
+        function closeGraphPreviewSceneInfoModal() {
+            if (!els.graphPreviewSceneInfoModal) return;
+
+            els.graphPreviewSceneInfoModal.classList.remove("open");
+            els.graphPreviewSceneInfoModal.setAttribute("aria-hidden", "true");
+            els.graphPreviewSceneInfoModal.dataset.sceneId = "";
+            document.body.style.overflow = els.graphPreviewModal?.classList.contains("open") ? "hidden" : "";
+        }
+
         function openGraphPreviewModal() {
             if (window.innerWidth <= 1170) return;
 
@@ -5158,7 +5800,12 @@
 
                 closeGraphPreviewContextMenu();
                 event.preventDefault();
-                zoomGraphPreview(event.deltaY < 0 ? 1.1 : 0.9);
+
+                zoomGraphPreview(
+                    event.deltaY < 0 ? 1.1 : 0.9,
+                    event.clientX,
+                    event.clientY
+                );
             }, { passive: false });
 
             els.graphPreviewZoomInBtn.addEventListener("click", () => zoomGraphPreview(1.15));
@@ -5191,6 +5838,12 @@
                 event.stopPropagation();
             });
 
+            els.graphPreviewContextSceneInfoBtn.addEventListener("click", (event) => {
+                event.stopPropagation();
+                if (!graphPreviewContextMenuState?.sceneId) return;
+                openGraphPreviewSceneInfoModal(graphPreviewContextMenuState.sceneId);
+            });
+
             els.graphPreviewContextHighlightFullBtn.addEventListener("click", (event) => {
                 event.stopPropagation();
                 applyGraphPreviewHighlight("full");
@@ -5204,6 +5857,28 @@
             els.graphPreviewContextHighlightDescendantsBtn.addEventListener("click", (event) => {
                 event.stopPropagation();
                 applyGraphPreviewHighlight("descendants");
+            });
+
+            els.closeGraphPreviewSceneInfoModalBtn.addEventListener("click", () => {
+                closeGraphPreviewSceneInfoModal();
+            });
+
+            els.graphPreviewSceneInfoModal.addEventListener("click", (event) => {
+                const action = event.target?.dataset?.action;
+                if (action === "closeGraphPreviewSceneInfoModal") {
+                    closeGraphPreviewSceneInfoModal();
+                    return;
+                }
+
+                const clickedSceneLink = event.target.closest("[data-scene-link]");
+                if (clickedSceneLink) {
+                    return;
+                }
+
+                const clickedInsideDialog = event.target.closest(".graphPreviewModalDialog");
+                if (!clickedInsideDialog) {
+                    closeGraphPreviewSceneInfoModal();
+                }
             });
 
             els.graphPreviewModal.addEventListener("click", (event) => {
@@ -5228,7 +5903,14 @@
             });
 
             window.addEventListener("keydown", (event) => {
-                if (event.key === "Escape" && els.graphPreviewModal.classList.contains("open")) {
+                if (event.key !== "Escape") return;
+
+                if (els.graphPreviewSceneInfoModal?.classList.contains("open")) {
+                    closeGraphPreviewSceneInfoModal();
+                    return;
+                }
+
+                if (els.graphPreviewModal.classList.contains("open")) {
                     closeGraphPreviewModal();
                 }
             });
