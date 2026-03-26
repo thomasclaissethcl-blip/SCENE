@@ -3655,7 +3655,7 @@
       };
     }
 
-    function choiceTemplate(sceneIds) {
+        function choiceTemplate(sceneIds) {
       return {
         title: "Nouveau choix",
         desc: "",
@@ -3671,7 +3671,6 @@
           logs: [],
           inventory: [],
           salvage: false,
-          fatal: false,
         },
       };
     }
@@ -3956,8 +3955,7 @@
                   },
                   logs: ["Observation initiale"],
                   inventory: [],
-                  salvage: false,
-                  fatal: false,
+                  salvage: false,                  
                 },
               },
               {
@@ -3978,7 +3976,7 @@
                   logs: ["Décision rapide"],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4004,7 +4002,7 @@
                     },
                   ],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4044,7 +4042,7 @@
                   logs: ["Analyse"],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4064,7 +4062,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4104,7 +4102,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4124,7 +4122,7 @@
                   logs: [],
                   inventory: [],
                   salvage: true,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4163,7 +4161,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4187,7 +4185,7 @@
                     },
                   ],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4226,7 +4224,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4244,7 +4242,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4283,7 +4281,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4304,7 +4302,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4324,7 +4322,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4344,7 +4342,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4383,7 +4381,7 @@
                   logs: [],
                   inventory: [],
                   salvage: true,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4403,7 +4401,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4442,7 +4440,7 @@
                   logs: [],
                   inventory: [],
                   salvage: true,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4462,7 +4460,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4499,7 +4497,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4539,7 +4537,7 @@
                   logs: [],
                   inventory: [],
                   salvage: true,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4576,7 +4574,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4594,7 +4592,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4631,7 +4629,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4649,7 +4647,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4686,7 +4684,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4704,7 +4702,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
               {
@@ -4722,7 +4720,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -4759,7 +4757,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  fatal: false,
+                  
                 },
               },
             ],
@@ -7310,19 +7308,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
   <div class="helpBubble" id="help-choiceSalvage-${idx}" role="note">
     Activez cette option si le choix sert à corriger ou compenser une erreur antérieure dans le parcours du joueur.
   </div>
-</div>
-              <div data-simple-hide="advanced">
-  <div class="fieldLabel">
-    <label>
-      <input type="checkbox" data-action="choiceFatal" data-index="${idx}" style="width:auto; margin-right:8px;" ${choice.effects?.fatal ? "checked" : ""} />
-      Rend ce choix fatal
-    </label>
-    <button type="button" class="helpIcon" data-help-toggle="help-choiceFatal-${idx}" aria-label="Aide sur le caractère fatal du choix" aria-expanded="false">?</button>
-  </div>
-  <div class="helpBubble" id="help-choiceFatal-${idx}" role="note">
-    Activez cette option si ce choix doit conduire directement à une impasse ou à un ech échec irréversible du parcours.
-  </div>
-</div>
+</div>              
             </div>
             
               ${isSimpleMode()
@@ -10184,12 +10170,11 @@ function playSceneTransition(el) {
   }, 420);
 }
 
-      const state = {
+                 const state = {
         current: project.meta?.startScene,
         step: 0,
         score: 0,
         risk: 0,
-        fatal: false,
         history: [],
         log: [],
         decisions: [],
@@ -10197,13 +10182,12 @@ function playSceneTransition(el) {
         flags: createInitialFlags()
       };
 
-      function snapshot() {
+                 function snapshot() {
         state.history.push(JSON.stringify({
           current: state.current,
           step: state.step,
           score: state.score,
           risk: state.risk,
-          fatal: state.fatal,
           log: state.log,
           decisions: state.decisions,
           inventory: state.inventory,
@@ -10259,7 +10243,6 @@ function restore() {
   state.step = prev.step;
   state.score = prev.score;
   state.risk = prev.risk;
-  state.fatal = prev.fatal;
   state.log = prev.log;
   state.decisions = prev.decisions;
   state.inventory = prev.inventory;
@@ -10274,7 +10257,6 @@ function restart() {
   state.step = 0;
   state.score = 0;
   state.risk = 0;
-  state.fatal = false;
   state.history = [];
   state.log = [];
   state.decisions = [];
@@ -10435,8 +10417,7 @@ function addDecision(text) {
     effects.inventory.forEach(item => addInfo(item.key, item.label, item.relevant));
   }
 
-  if (effects.goto) state.current = effects.goto;
-  if (effects.fatal) state.fatal = true;
+   if (effects.goto) state.current = effects.goto;
 }
 
       function choose(choice) {
@@ -10444,9 +10425,8 @@ function addDecision(text) {
   clearNewMarkers();
   applyEffects(choice.effects, choice);
 
-  if (shouldCollapse(state) && !state.fatal) {
+  if (shouldCollapse(state)) {
     state.current = resolveCollapseScene(state);
-    state.fatal = true;
   } else if (choice.goto) {
     state.current = choice.goto;
   }
