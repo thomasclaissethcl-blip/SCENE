@@ -6041,7 +6041,7 @@
                   <div class="muted small" style="margin-top: 6px">
                     Destination :
                     <code>${escapeHtml(targetId)}</code>
-                    ${targetName && targetName !== targetId ? ` — ${escapeHtml(targetName)}` : ""}
+                    ${targetName && targetName !== targetId ? `  :  ${escapeHtml(targetName)}` : ""}
                   </div>
                 `
               : `
@@ -6099,10 +6099,10 @@
   >
     <div>
       <strong>${escapeHtml(sourceName)}</strong>
-      <span class="muted small"> — <code>${escapeHtml(link.sourceSceneId)}</code></span>
+      <span class="muted small">  :  <code>${escapeHtml(link.sourceSceneId)}</code></span>
     </div>
     <div class="muted small" style="margin-top: 6px">
-      Choix ${link.choiceIndex + 1} — ${escapeHtml(choiceLabel)}
+      Choix ${link.choiceIndex + 1}  :  ${escapeHtml(choiceLabel)}
     </div>
   </button>
 `;
@@ -7165,7 +7165,7 @@
         .map(
           (choice, idx) => `
         <details class="choiceBlock" data-choice-index="${idx}">
-          <summary>Choix ${idx + 1} — ${escapeHtml(choice.title || "Sans titre")}</summary>
+          <summary>Choix ${idx + 1}  :  ${escapeHtml(choice.title || "Sans titre")}</summary>
                     <div class="itemActions" style="padding: 0 12px 12px;">
             <button
               type="button"
@@ -9544,7 +9544,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         <div>
           <strong>${escapeHtml(link.sourceSceneId)}</strong>
           <p class="muted small" style="margin:6px 0 0;">
-            Choix ${link.choiceIndex + 1} — ${escapeHtml(link.choiceTitle)}
+            Choix ${link.choiceIndex + 1}  :  ${escapeHtml(link.choiceTitle)}
           </p>
         </div>
         <div class="itemActions">
@@ -10893,7 +10893,8 @@ function normalizeInlineOperator(operator) {
           const items = buildAnalysisItems(state.flags, state);
           html += \`
             <div class="ending">
-              <p class="bad"><strong>Analyse du parcours</strong></p>
+              <div>
+              <p class="bad"><strong>Éléments d'analyse</strong></p>
               <p class="muted">Score : \${state.score}. Risque : \${state.risk}. Étape atteinte : \${state.step} / \${TOTAL_STEPS}.</p>
             </div>
             <div class="analysis">
@@ -10903,6 +10904,7 @@ function normalizeInlineOperator(operator) {
                   <div style="margin-top:8px;">\${renderSimpleMarkdown(resolveTemplateText(item.text, state))}</div>
                 </div>
               \`).join("")}
+            </div>
             </div>
           \`;
 
