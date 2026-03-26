@@ -3675,7 +3675,7 @@
       };
     }
 
-    function conditionTemplate(variableName = "risk") {
+       function conditionTemplate(variableName = "risk") {
       return {
         variable: variableName,
         operator: ">=",
@@ -3683,13 +3683,85 @@
       };
     }
 
+    function conditionGroupTemplate(variableName = "risk") {
+      return {
+        id: uid("group"),
+        operator: "AND",
+        conditions: [conditionTemplate(variableName)],
+      };
+    }
+
+    function normalizeConditionOwner(owner, fallbackVariableName = "risk") {
+      if (!owner || typeof owner !== "object") {
+        return {
+          groupOperator: "AND",
+          conditionGroups: [conditionGroupTemplate(fallbackVariableName)],
+        };
+      }
+
+      const hasNewFormat =
+        Array.isArray(owner.conditionGroups) && owner.conditionGroups.length > 0;
+
+      if (!hasNewFormat) {
+        const legacyConditions =
+          Array.isArray(owner.conditions) && owner.conditions.length
+            ? owner.conditions
+            : [conditionTemplate(fallbackVariableName)];
+
+        owner.conditionGroups = [
+          {
+            id: uid("group"),
+            operator: owner.operator === "OR" ? "OR" : "AND",
+            conditions: legacyConditions.map((cond) => ({
+              variable: cond?.variable || fallbackVariableName,
+              operator: ["==", "!=", ">", "<", ">=", "<="].includes(cond?.operator)
+                ? cond.operator
+                : ">=",
+              value: cond?.value ?? 1,
+            })),
+          },
+        ];
+      }
+
+      owner.groupOperator = owner.groupOperator === "OR" ? "OR" : "AND";
+
+      owner.conditionGroups = owner.conditionGroups
+        .filter((group) => group && typeof group === "object")
+        .map((group) => ({
+          id:
+            typeof group.id === "string" && group.id.trim()
+              ? group.id
+              : uid("group"),
+          operator: group.operator === "OR" ? "OR" : "AND",
+          conditions:
+            Array.isArray(group.conditions) && group.conditions.length
+              ? group.conditions.map((cond) => ({
+                  variable: cond?.variable || fallbackVariableName,
+                  operator: ["==", "!=", ">", "<", ">=", "<="].includes(cond?.operator)
+                    ? cond.operator
+                    : ">=",
+                  value: cond?.value ?? 1,
+                }))
+              : [conditionTemplate(fallbackVariableName)],
+        }));
+
+      if (!owner.conditionGroups.length) {
+        owner.conditionGroups = [conditionGroupTemplate(fallbackVariableName)];
+      }
+
+      delete owner.operator;
+      delete owner.conditions;
+
+      return owner;
+    }
+
     function ruleTemplate(variableName = "risk") {
       return {
         id: uid("rule"),
         name: "Nouvelle règle",
-        operator: "AND",
+        groupOperator: "AND",
         goto: "analyse_collapse",
-        conditions: [conditionTemplate(variableName)],
+        conditionGroups: [conditionGroupTemplate(variableName)],
       };
     }
 
@@ -3698,8 +3770,8 @@
         id: uid("diag"),
         title: "Nouvelle analyse",
         text: "Texte de l'analyse.",
-        operator: "AND",
-        conditions: [conditionTemplate(variableName)],
+        groupOperator: "AND",
+        conditionGroups: [conditionGroupTemplate(variableName)],
       };
     }
 
@@ -5148,6 +5220,13 @@
       if (!proj.rules) proj.rules = { collapse: [] };
       if (!Array.isArray(proj.rules.collapse)) proj.rules.collapse = [];
       if (!Array.isArray(proj.analyses)) proj.analyses = [];
+            proj.rules.collapse = proj.rules.collapse
+        .filter((rule) => rule && typeof rule === "object")
+        .map((rule) => normalizeConditionOwner(rule, "risk"));
+
+      proj.analyses = proj.analyses
+        .filter((diag) => diag && typeof diag === "object")
+        .map((diag) => normalizeConditionOwner(diag, "risk"));
       if (!Array.isArray(proj.journal)) proj.journal = [];
       proj.journal = proj.journal
         .filter((note) => note && typeof note === "object")
@@ -6291,22 +6370,31 @@
         });
       });
 
-      proj.rules.collapse.forEach((rule) => {
+            proj.rules.collapse.forEach((rule) => {
         if (!rule.goto || !proj.scenes[rule.goto]) {
           errors.push(`La règle d’interruption '${rule.name}' pointe vers une scène inexistante : '${rule.goto}'.`);
         }
-        (rule.conditions || []).forEach((cond) => {
-          if (!varNames.includes(cond.variable)) {
-            errors.push(`La règle '${rule.name}' utilise une variable inconnue : '${cond.variable}'.`);
-          }
+
+        (rule.conditionGroups || []).forEach((group, groupIndex) => {
+          (group.conditions || []).forEach((cond) => {
+            if (!varNames.includes(cond.variable)) {
+              errors.push(
+                `La règle '${rule.name}' utilise une variable inconnue dans le groupe ${groupIndex + 1} : '${cond.variable}'.`,
+              );
+            }
+          });
         });
       });
 
       proj.analyses.forEach((diag) => {
-        (diag.conditions || []).forEach((cond) => {
-          if (!varNames.includes(cond.variable)) {
-            errors.push(`L'analyse '${diag.title}' utilise une variable inconnue : '${cond.variable}'.`);
-          }
+        (diag.conditionGroups || []).forEach((group, groupIndex) => {
+          (group.conditions || []).forEach((cond) => {
+            if (!varNames.includes(cond.variable)) {
+              errors.push(
+                `L'analyse '${diag.title}' utilise une variable inconnue dans le groupe ${groupIndex + 1} : '${cond.variable}'.`,
+              );
+            }
+          });
         });
       });
 
@@ -6591,7 +6679,174 @@
       });
     }
 
-    function renderRules() {
+        function collectConditionSearchValues(owner) {
+      return [
+        owner.groupOperator || "",
+        ...((owner.conditionGroups || []).flatMap((group) => [
+          group.operator || "",
+          ...((group.conditions || []).flatMap((cond) => [
+            cond.variable,
+            cond.operator,
+            String(cond.value),
+          ])),
+        ])),
+      ];
+    }
+
+    function renderConditionGroupsEditor(kind, owner, idx, varNames) {
+      const isRule = kind === "rule";
+      const prefix = isRule ? "rule" : "diag";
+      const addGroupAction = isRule ? "addRuleGroup" : "addDiagGroup";
+      const deleteGroupAction = isRule ? "deleteRuleGroup" : "deleteDiagGroup";
+      const addConditionAction = isRule ? "addRuleGroupCondition" : "addDiagGroupCondition";
+      const deleteConditionAction = isRule ? "deleteRuleGroupCondition" : "deleteDiagGroupCondition";
+      const groupOperatorAction = isRule ? "ruleGroupOperator" : "diagGroupOperator";
+      const insideOperatorAction = isRule ? "ruleCondGroupOperator" : "diagCondGroupOperator";
+      const variableAction = isRule ? "ruleGroupCondVariable" : "diagGroupCondVariable";
+      const operatorAction = isRule ? "ruleGroupCondOperator" : "diagGroupCondOperator";
+      const valueAction = isRule ? "ruleGroupCondValue" : "diagGroupCondValue";
+      const ownerLabel = isRule ? "règle" : "analyse";
+
+      return `
+        <div>
+          <div class="fieldLabel">
+            <label>Combinaison entre les groupes</label>
+            <button
+              type="button"
+              class="helpIcon"
+              data-help-toggle="help-${prefix}GroupOperator-${idx}"
+              aria-label="Aide sur la combinaison entre les groupes"
+              aria-expanded="false"
+            >?</button>
+          </div>
+          <div class="helpBubble" id="help-${prefix}GroupOperator-${idx}" role="note">
+            <strong>Combinaison entre les groupes</strong>
+            Cette valeur sert à combiner les groupes entre eux.
+            Par exemple, vous pouvez créer un groupe 1 en OU, un groupe 2 en ET, puis demander que les deux groupes soient vrais ensemble avec ET.
+          </div>
+          <select data-action="${groupOperatorAction}" data-index="${idx}">
+            <option value="AND" ${owner.groupOperator === "AND" ? "selected" : ""}>ET</option>
+            <option value="OR" ${owner.groupOperator === "OR" ? "selected" : ""}>OU</option>
+          </select>
+        </div>
+
+        <div class="stack" style="margin-top:10px;">
+          ${(owner.conditionGroups || [])
+            .map(
+              (group, gIdx) => `
+                <div class="itemCard">
+                  <div class="itemHead">
+                    <strong>Groupe ${gIdx + 1}</strong>
+                    <div class="itemActions">
+                      <button
+                        data-action="${deleteGroupAction}"
+                        data-index="${idx}"
+                        data-gindex="${gIdx}"
+                        class="bad"
+                      >Supprimer le groupe</button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="fieldLabel">
+                      <label>Combinaison à l’intérieur du groupe</label>
+                      <button
+                        type="button"
+                        class="helpIcon"
+                        data-help-toggle="help-${prefix}CondGroupOperator-${idx}-${gIdx}"
+                        aria-label="Aide sur la combinaison à l’intérieur du groupe"
+                        aria-expanded="false"
+                      >?</button>
+                    </div>
+                    <div class="helpBubble" id="help-${prefix}CondGroupOperator-${idx}-${gIdx}" role="note">
+                      <strong>Combinaison à l’intérieur du groupe</strong>
+                      Cette valeur sert à combiner les conditions de ce groupe uniquement.
+                    </div>
+                    <select data-action="${insideOperatorAction}" data-index="${idx}" data-gindex="${gIdx}">
+                      <option value="AND" ${group.operator === "AND" ? "selected" : ""}>ET</option>
+                      <option value="OR" ${group.operator === "OR" ? "selected" : ""}>OU</option>
+                    </select>
+                  </div>
+
+                  <div class="stack" style="margin-top:10px;">
+                    ${(group.conditions || [])
+                      .map(
+                        (cond, cIdx) => `
+                          <div class="itemCard">
+                            <div class="itemHead">
+                              <strong>Condition ${cIdx + 1}</strong>
+                              <div class="itemActions">
+                                <button
+                                  data-action="${deleteConditionAction}"
+                                  data-index="${idx}"
+                                  data-gindex="${gIdx}"
+                                  data-cindex="${cIdx}"
+                                  class="bad"
+                                >Supprimer</button>
+                              </div>
+                            </div>
+
+                            <div class="fieldGrid three">
+                              <div>
+                                <label>Variable</label>
+                                <select data-action="${variableAction}" data-index="${idx}" data-gindex="${gIdx}" data-cindex="${cIdx}">
+                                  ${varNames
+                                    .map(
+                                      (name) =>
+                                        `<option value="${escapeAttr(name)}" ${cond.variable === name ? "selected" : ""}>${escapeHtml(name)}</option>`,
+                                    )
+                                    .join("")}
+                                </select>
+                              </div>
+
+                              <div>
+                                <label>Opérateur</label>
+                                <select data-action="${operatorAction}" data-index="${idx}" data-gindex="${gIdx}" data-cindex="${cIdx}">
+                                  ${["==", "!=", ">", "<", ">=", "<="]
+                                    .map(
+                                      (op) =>
+                                        `<option value="${op}" ${cond.operator === op ? "selected" : ""}>${op}</option>`,
+                                    )
+                                    .join("")}
+                                </select>
+                              </div>
+
+                              <div>
+                                <label>Valeur</label>
+                                <input
+                                  data-action="${valueAction}"
+                                  data-index="${idx}"
+                                  data-gindex="${gIdx}"
+                                  data-cindex="${cIdx}"
+                                  value="${escapeAttr(String(cond.value))}"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        `,
+                      )
+                      .join("")}
+
+                    <button
+                      data-action="${addConditionAction}"
+                      data-index="${idx}"
+                      data-gindex="${gIdx}"
+                      class="secondary"
+                    >Ajouter une condition à ce groupe</button>
+                  </div>
+                </div>
+              `,
+            )
+            .join("")}
+
+          <button data-action="${addGroupAction}" data-index="${idx}" class="secondary">
+            Ajouter un groupe
+          </button>
+        </div>
+      `;
+    }
+
+        function renderRules() {
       const varNames = getAllVariableNames();
       const sceneIds = Object.keys(project.scenes);
       const filterValue = editorFilters.rules;
@@ -6599,7 +6854,7 @@
       els.rulesList.innerHTML = project.rules.collapse
         .filter((rule) =>
           textMatchesFilter(
-            [rule.name, rule.goto, rule.operator, ...(rule.conditions || []).flatMap((cond) => [cond.variable, cond.operator, String(cond.value)])],
+            [rule.name, rule.goto, ...collectConditionSearchValues(rule)],
             filterValue,
           ),
         )
@@ -6621,115 +6876,29 @@
                 <button type="button" class="helpIcon" data-help-toggle="help-ruleName-${idx}" aria-label="Aide sur le nom de la règle" aria-expanded="false">?</button>
               </div>
               <div class="helpBubble" id="help-ruleName-${idx}" role="note">
-  <strong>Nom de la règle</strong>
-  Donnez un nom clair à la règle d’interruption. Cela aide à comprendre rapidement la logique de redirection déclenchée par le système.
-</div>
+                <strong>Nom de la règle</strong>
+                Donnez un nom clair à la règle d’interruption.
+              </div>
               <input data-action="ruleName" data-index="${idx}" value="${escapeAttr(rule.name || "")}" />
             </div>
-          <div>
-          <div class="fieldLabel">
-            <label>Combinaison des conditions</label>
-            <button type="button" class="helpIcon" data-help-toggle="help-ruleOperator-${idx}" aria-label="Aide sur la combinaison des conditions" aria-expanded="false">?</button>
-          </div>
-          <div class="helpBubble" id="help-ruleOperator-${idx}" role="note">
-  <strong>Combinaison des conditions</strong>
-  Vous pouvez décider que cette interruption se produit en raison de plusieurs conditions. Choisissez ET si toutes les conditions doivent être vraies ensemble. Choisissez OU si une seule condition vraie parmi les différentes conditions suffit à déclencher la règle.
-</div>
-              <select data-action="ruleOperator" data-index="${idx}">
-                <option value="AND" ${rule.operator === "AND" ? "selected" : ""}>ET</option>
-                <option value="OR" ${rule.operator === "OR" ? "selected" : ""}>OU</option>
-              </select>
-          </div>
-          <div>
-          <div class="fieldLabel">
-            <label>Scène de destination</label>
-            <button type="button" class="helpIcon" data-help-toggle="help-ruleGoto-${idx}" aria-label="Aide sur la scène de destination de la règle" aria-expanded="false">?</button>
-          </div>
-          <div class="helpBubble" id="help-ruleGoto-${idx}" role="note">
-            <strong>Ce qui est attendu</strong>
-            Sélectionnez la scène vers laquelle le jeu basculera si cette règle devient vraie. Il s’agit généralement d’une scène d'analyse.
-          </div>
-          <select data-action="ruleGoto" data-index="${idx}">
-            ${sceneIds.map((id) => `<option value="${escapeAttr(id)}" ${rule.goto === id ? "selected" : ""}>${escapeHtml(id)}</option>`).join("")}
-          </select>
-        </div>
-      </div>
 
-          <div class="stack" style="margin-top:10px;">
-            ${(rule.conditions || [])
-              .map(
-                (cond, cIdx) => `
-              <div class="itemCard">
-                <div class="itemHead">
-                  <strong>Condition ${cIdx + 1}</strong>
-                  <div class="itemActions">
-                    <button data-action="deleteRuleCondition" data-index="${idx}" data-cindex="${cIdx}" class="bad">Supprimer</button>
-                  </div>
-                </div>
-                <div class="fieldGrid three">
-                  <div>
-<div>
-  <div class="fieldLabel">
-    <label>Variable</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-ruleCondVariable-${idx}-${cIdx}" aria-label="Aide sur la variable de la condition" aria-expanded="false">?</button>
-  </div>
-  <div class="helpBubble" id="help-ruleCondVariable-${idx}-${cIdx}" role="note">
-    <strong>Variable</strong>
-    Choisissez ici l’information du jeu que la règle doit surveiller. Il peut s’agir d’une variable que vous avez créée, ou d’une variable du moteur comme le risque ou le score.
-    <br><br>
-    <strong>Exemple</strong>
-    Si vous choisissez <em>risk</em>, la règle pourra se déclencher lorsque le niveau global de la variable risk devient trop élevé (niveau défini plus loin).
-  </div>
-  <select data-action="ruleCondVariable" data-index="${idx}" data-cindex="${cIdx}">
-                      ${varNames.map((name) => `<option value="${escapeAttr(name)}" ${cond.variable === name ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}
-                    </select>
-                  </div>
-                  </div>
-<div>
-  <div class="fieldLabel">
-    <label>Opérateur</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-ruleCondOperator-${idx}-${cIdx}" aria-label="Aide sur l’opérateur de la condition" aria-expanded="false">?</button>
-  </div>
-  <div class="helpBubble" id="help-ruleCondOperator-${idx}-${cIdx}" role="note">
-    <strong>Opérateur</strong>
-    L’opérateur indique comment comparer la variable à la valeur choisie.
-    <br><br>
-    <strong>Exemples</strong>
-    <em>==</em> signifie égal à,
-    <em>!=</em> signifie différent de,
-    <em>&gt;=</em> signifie supérieur ou égal à.
-    <br><br>
-    <strong>Bon usage</strong>
-    Utilisez un opérateur simple et cohérent avec le type de variable. Par exemple, pour un compteur de risque, on utilise souvent <em>&gt;=</em>.
-  </div>
-  <select data-action="ruleCondOperator" data-index="${idx}" data-cindex="${cIdx}">
-                      ${["==", "!=", ">", "<", ">=", "<="].map((op) => `<option value="${op}" ${cond.operator === op ? "selected" : ""}>${op}</option>`).join("")}
-                    </select>
-                  </div>
-<div>
-  <div class="fieldLabel">
-    <label>Valeur</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-ruleCondValue-${idx}-${cIdx}" aria-label="Aide sur la valeur de la condition" aria-expanded="false">?</button>
-  </div>
-  <div class="helpBubble" id="help-ruleCondValue-${idx}-${cIdx}" role="note">
-    <strong>Valeur</strong>
-    Saisissez la valeur à laquelle la variable sera comparée.
-    <br><br>
-    <strong>Exemples</strong>
-    Pour une variable booléenne, on met souvent <em>true</em> ou <em>false</em>.
-    Pour une variable numérique, on met un nombre, par exemple <em>3</em> ou <em>8</em>.
-    <br><br>
-    <strong>Bon usage</strong>
-    Cette valeur doit représenter un seuil ou un état significatif dans votre logique de jeu.
-  </div>
-  <input data-action="ruleCondValue" data-index="${idx}" data-cindex="${cIdx}" value="${escapeAttr(String(cond.value))}" />
-</div>
-                </div>
+            <div>
+              <div class="fieldLabel">
+                <label>Scène de destination</label>
+                <button type="button" class="helpIcon" data-help-toggle="help-ruleGoto-${idx}" aria-label="Aide sur la scène de destination de la règle" aria-expanded="false">?</button>
               </div>
-            `,
-              )
-              .join("")}
-            <button data-action="addRuleCondition" data-index="${idx}" class="secondary">Ajouter une condition</button>
+              <div class="helpBubble" id="help-ruleGoto-${idx}" role="note">
+                <strong>Ce qui est attendu</strong>
+                Sélectionnez la scène vers laquelle le jeu basculera si cette règle devient vraie.
+              </div>
+              <select data-action="ruleGoto" data-index="${idx}">
+                ${sceneIds.map((id) => `<option value="${escapeAttr(id)}" ${rule.goto === id ? "selected" : ""}>${escapeHtml(id)}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            ${renderConditionGroupsEditor("rule", rule, idx, varNames)}
           </div>
         </div>
       `,
@@ -6737,19 +6906,14 @@
         .join("");
     }
 
-    function renderAnalyses() {
+        function renderAnalyses() {
       const varNames = getAllVariableNames();
       const filterValue = editorFilters.analyses;
 
       els.analysesList.innerHTML = project.analyses
         .filter((diag) =>
           textMatchesFilter(
-            [
-              diag.title,
-              diag.text,
-              diag.operator,
-              ...(diag.conditions || []).flatMap((cond) => [cond.variable, cond.operator, String(cond.value)]),
-            ],
+            [diag.title, diag.text, ...collectConditionSearchValues(diag)],
             filterValue,
           ),
         )
@@ -6765,98 +6929,33 @@
           </div>
 
           <div class="fieldGrid">
-<div>
-  <div class="fieldLabel">
-    <label>Titre</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-diagTitle-${idx}" aria-label="Aide sur le titre de l'analyse" aria-expanded="false">?</button>
-  </div>
-  <div class="helpBubble" id="help-diagTitle-${idx}" role="note">
-    <strong>Titre de l'analyse</strong>
-    Donnez un titre synthétique à l'analyse. Il doit permettre d’identifier rapidement la nature de l'objet analysé.
-  </div>
-  <input data-action="diagTitle" data-index="${idx}" value="${escapeAttr(diag.title || "")}" />
-</div>
-<div>
-  <div class="fieldLabel">
-    <label>Texte</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-diagText-${idx}" aria-label="Aide sur le texte de l'analyse" aria-expanded="false">?</button>
-  </div>
-  <div class="helpBubble" id="help-diagText-${idx}" role="note">
-    <strong>Texte de l'analyse</strong>
-    Rédigez une explication claire du problème diagnostiqué. Ce texte doit aider le joueur à comprendre la logique de l’échec ou de la fragilité constatée.
-  </div>
-  <textarea data-action="diagText" data-index="${idx}">${escapeHtml(diag.text || "")}</textarea>
-</div>
             <div>
-              <label>Combinaison des conditions</label>
-              <select data-action="diagOperator" data-index="${idx}">
-                <option value="AND" ${diag.operator === "AND" ? "selected" : ""}>ET</option>
-                <option value="OR" ${diag.operator === "OR" ? "selected" : ""}>OU</option>
-              </select>
+              <div class="fieldLabel">
+                <label>Titre</label>
+                <button type="button" class="helpIcon" data-help-toggle="help-diagTitle-${idx}" aria-label="Aide sur le titre de l'analyse" aria-expanded="false">?</button>
+              </div>
+              <div class="helpBubble" id="help-diagTitle-${idx}" role="note">
+                <strong>Titre de l'analyse</strong>
+                Donnez un titre synthétique à l'analyse.
+              </div>
+              <input data-action="diagTitle" data-index="${idx}" value="${escapeAttr(diag.title || "")}" />
+            </div>
+
+            <div>
+              <div class="fieldLabel">
+                <label>Texte</label>
+                <button type="button" class="helpIcon" data-help-toggle="help-diagText-${idx}" aria-label="Aide sur le texte de l'analyse" aria-expanded="false">?</button>
+              </div>
+              <div class="helpBubble" id="help-diagText-${idx}" role="note">
+                <strong>Texte de l'analyse</strong>
+                Rédigez une explication claire du problème diagnostiqué.
+              </div>
+              <textarea data-action="diagText" data-index="${idx}">${escapeHtml(diag.text || "")}</textarea>
             </div>
           </div>
 
-          <div class="stack" style="margin-top:10px;">
-            ${(diag.conditions || [])
-              .map(
-                (cond, cIdx) => `
-              <div class="itemCard">
-                <div class="itemHead">
-                  <strong>Condition ${cIdx + 1}</strong>
-                  <div class="itemActions">
-                    <button data-action="deleteDiagCondition" data-index="${idx}" data-cindex="${cIdx}" class="bad">Supprimer</button>
-                  </div>
-                </div>
-                <div class="fieldGrid three">
- <div>
-  <div class="fieldLabel">
-    <label>Variable</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-diagCondVariable-${idx}-${cIdx}" aria-label="Aide sur la variable de l'analyse" aria-expanded="false">?</button>
-  </div>
-  <div class="helpBubble" id="help-diagCondVariable-${idx}-${cIdx}" role="note">
-    <strong>Variable</strong>
-    Choisissez la variable qui servira à décider si cette analyse doit apparaître dans une scène de type analyse.
-  </div>
-  <select data-action="diagCondVariable" data-index="${idx}" data-cindex="${cIdx}">
-                      ${varNames.map((name) => `<option value="${escapeAttr(name)}" ${cond.variable === name ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}
-                    </select>
-                  </div>
-      <div>
-  <div class="fieldLabel">
-    <label>Opérateur</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-diagCondOperator-${idx}-${cIdx}" aria-label="Aide sur l’opérateur de l'analyse" aria-expanded="false">?</button>
-  </div>
-  <div class="helpBubble" id="help-diagCondOperator-${idx}-${cIdx}" role="note">
-    <strong>Opérateur</strong>
-    L’opérateur indique comment la variable doit être comparée à la valeur pour décider d’afficher cette analyse.
-  </div>
-  <select data-action="diagCondOperator" data-index="${idx}" data-cindex="${cIdx}">
-                      ${["==", "!=", ">", "<", ">=", "<="].map((op) => `<option value="${op}" ${cond.operator === op ? "selected" : ""}>${op}</option>`).join("")}
-                    </select>
-                  </div>
-<div>
-  <div class="fieldLabel">
-    <label>Valeur</label>
-    <button type="button" class="helpIcon" data-help-toggle="help-diagCondValue-${idx}-${cIdx}" aria-label="Aide sur la valeur de l'analyse" aria-expanded="false">?</button>
-  </div>
-  <div class="helpBubble" id="help-diagCondValue-${idx}-${cIdx}" role="note">
-    <strong>Valeur</strong>
-    Saisissez la valeur de référence qui permettra de décider si cette analyse doit être affichée.
-    <br><br>
-    <strong>Exemples</strong>
-    Vous pouvez utiliser <em>true</em> pour un état présent, ou un nombre comme <em>1</em>, <em>2</em> ou <em>3</em> pour un seuil de déclenchement.
-    <br><br>
-    <strong>Bon usage</strong>
-    Choisissez une valeur qui corresponde à un vrai signal pédagogique, pas à une simple variation sans importance.
-  </div>
-  <input data-action="diagCondValue" data-index="${idx}" data-cindex="${cIdx}" value="${escapeAttr(String(cond.value))}" />
-</div>
-                </div>
-              </div>
-            `,
-              )
-              .join("")}
-            <button data-action="addDiagCondition" data-index="${idx}" class="secondary">Ajouter une condition</button>
+          <div style="margin-top:10px;">
+            ${renderConditionGroupsEditor("diag", diag, idx, varNames)}
           </div>
         </div>
       `,
@@ -10061,12 +10160,42 @@ font-style:italic;
   }
 }
 
-      function evaluateConditions(state, conditions = [], operator = "AND") {
+           function evaluateConditions(state, conditions = [], operator = "AND") {
         if (!conditions.length) return true;
         if (operator === "OR") {
-          return conditions.some(cond => evaluateCondition(state, cond));
+          return conditions.some((cond) => evaluateCondition(state, cond));
         }
-        return conditions.every(cond => evaluateCondition(state, cond));
+        return conditions.every((cond) => evaluateCondition(state, cond));
+      }
+
+      function evaluateConditionGroups(state, conditionGroups = [], groupOperator = "AND") {
+        if (!conditionGroups.length) return true;
+
+        const results = conditionGroups.map((group) =>
+          evaluateConditions(state, group.conditions || [], group.operator || "AND"),
+        );
+
+        if (groupOperator === "OR") {
+          return results.some(Boolean);
+        }
+
+        return results.every(Boolean);
+      }
+
+      function evaluateConditionOwner(state, owner) {
+        if (Array.isArray(owner?.conditionGroups) && owner.conditionGroups.length) {
+          return evaluateConditionGroups(
+            state,
+            owner.conditionGroups,
+            owner.groupOperator || "AND",
+          );
+        }
+
+        return evaluateConditions(
+          state,
+          owner?.conditions || [],
+          owner?.operator || "AND",
+        );
       }
 
       function parseChoiceCondition(conditionText) {
@@ -10113,29 +10242,29 @@ font-style:italic;
         });
       }
 
-      function buildAnalysisItems(flags, state) {
+           function buildAnalysisItems(flags, state) {
         return (project.analyses || [])
-          .filter(diag => evaluateConditions(state, diag.conditions || [], diag.operator || "AND"))
-          .map(diag => ({
+          .filter((diag) => evaluateConditionOwner(state, diag))
+          .map((diag) => ({
             title: diag.title,
-            text: diag.text
+            text: diag.text,
           }))
           .concat(
             (project.analyses || []).length === 0
               ? [{ title: "Analyse", text: "Aucune analyse n’a été configurée pour ce projet." }]
-              : []
+              : [],
           );
       }
 
       function shouldCollapse(state) {
-        return (project.rules?.collapse || []).some(rule =>
-          evaluateConditions(state, rule.conditions || [], rule.operator || "AND")
+        return (project.rules?.collapse || []).some((rule) =>
+          evaluateConditionOwner(state, rule),
         );
       }
-      
+
       function resolveCollapseScene(state) {
-        const matched = (project.rules?.collapse || []).find(rule =>
-          evaluateConditions(state, rule.conditions || [], rule.operator || "AND")
+        const matched = (project.rules?.collapse || []).find((rule) =>
+          evaluateConditionOwner(state, rule),
         );
         return matched?.goto || "analyse_collapse";
       }
@@ -11790,8 +11919,9 @@ if (document.readyState === "loading") {
       const btn = event.target.closest("button[data-action]");
       if (!btn) return;
 
-      const action = btn.dataset.action;
+            const action = btn.dataset.action;
       const idx = Number(btn.dataset.index);
+      const gIdx = Number(btn.dataset.gindex);
       const cIdx = Number(btn.dataset.cindex);
 
       if (action === "deleteVar") {
@@ -11816,16 +11946,36 @@ if (document.readyState === "loading") {
         renderAll();
       }
 
-      if (action === "addRuleCondition") {
+            if (action === "addRuleGroup") {
         captureEditorSnapshot();
-        project.rules.collapse[idx].conditions.push(conditionTemplate(getAllVariableNames()[0] || "risk"));
+        project.rules.collapse[idx].conditionGroups.push(conditionGroupTemplate(getAllVariableNames()[0] || "risk"));
         clearEditorUndoFocusTarget();
         renderAll();
       }
 
-      if (action === "deleteRuleCondition") {
+      if (action === "deleteRuleGroup") {
         captureEditorSnapshot();
-        project.rules.collapse[idx].conditions.splice(cIdx, 1);
+        project.rules.collapse[idx].conditionGroups.splice(gIdx, 1);
+        if (!project.rules.collapse[idx].conditionGroups.length) {
+          project.rules.collapse[idx].conditionGroups.push(conditionGroupTemplate(getAllVariableNames()[0] || "risk"));
+        }
+        clearEditorUndoFocusTarget();
+        renderAll();
+      }
+
+      if (action === "addRuleGroupCondition") {
+        captureEditorSnapshot();
+        project.rules.collapse[idx].conditionGroups[gIdx].conditions.push(conditionTemplate(getAllVariableNames()[0] || "risk"));
+        clearEditorUndoFocusTarget();
+        renderAll();
+      }
+
+      if (action === "deleteRuleGroupCondition") {
+        captureEditorSnapshot();
+        project.rules.collapse[idx].conditionGroups[gIdx].conditions.splice(cIdx, 1);
+        if (!project.rules.collapse[idx].conditionGroups[gIdx].conditions.length) {
+          project.rules.collapse[idx].conditionGroups[gIdx].conditions.push(conditionTemplate(getAllVariableNames()[0] || "risk"));
+        }
         clearEditorUndoFocusTarget();
         renderAll();
       }
@@ -11845,16 +11995,36 @@ if (document.readyState === "loading") {
         renderAll();
       }
 
-      if (action === "addDiagCondition") {
+            if (action === "addDiagGroup") {
         captureEditorSnapshot();
-        project.analyses[idx].conditions.push(conditionTemplate(getAllVariableNames()[0] || "risk"));
+        project.analyses[idx].conditionGroups.push(conditionGroupTemplate(getAllVariableNames()[0] || "risk"));
         clearEditorUndoFocusTarget();
         renderAll();
       }
 
-      if (action === "deleteDiagCondition") {
+      if (action === "deleteDiagGroup") {
         captureEditorSnapshot();
-        project.analyses[idx].conditions.splice(cIdx, 1);
+        project.analyses[idx].conditionGroups.splice(gIdx, 1);
+        if (!project.analyses[idx].conditionGroups.length) {
+          project.analyses[idx].conditionGroups.push(conditionGroupTemplate(getAllVariableNames()[0] || "risk"));
+        }
+        clearEditorUndoFocusTarget();
+        renderAll();
+      }
+
+      if (action === "addDiagGroupCondition") {
+        captureEditorSnapshot();
+        project.analyses[idx].conditionGroups[gIdx].conditions.push(conditionTemplate(getAllVariableNames()[0] || "risk"));
+        clearEditorUndoFocusTarget();
+        renderAll();
+      }
+
+      if (action === "deleteDiagGroupCondition") {
+        captureEditorSnapshot();
+        project.analyses[idx].conditionGroups[gIdx].conditions.splice(cIdx, 1);
+        if (!project.analyses[idx].conditionGroups[gIdx].conditions.length) {
+          project.analyses[idx].conditionGroups[gIdx].conditions.push(conditionTemplate(getAllVariableNames()[0] || "risk"));
+        }
         clearEditorUndoFocusTarget();
         renderAll();
       }
@@ -11963,7 +12133,8 @@ if (document.readyState === "loading") {
         return;
       }
 
-      const idx = Number(el.dataset.index);
+            const idx = Number(el.dataset.index);
+      const gIdx = Number(el.dataset.gindex);
       const cIdx = Number(el.dataset.cindex);
       let needsFullRender = false;
 
@@ -11991,30 +12162,34 @@ if (document.readyState === "loading") {
         project.variables[idx].category = el.value;
       } else if (action === "varDescription") {
         project.variables[idx].description = el.value;
-      } else if (action === "ruleName") {
+            } else if (action === "ruleName") {
         project.rules.collapse[idx].name = el.value;
-      } else if (action === "ruleOperator") {
-        project.rules.collapse[idx].operator = el.value;
+      } else if (action === "ruleGroupOperator") {
+        project.rules.collapse[idx].groupOperator = el.value;
       } else if (action === "ruleGoto") {
         project.rules.collapse[idx].goto = el.value;
-      } else if (action === "ruleCondVariable") {
-        project.rules.collapse[idx].conditions[cIdx].variable = el.value;
-      } else if (action === "ruleCondOperator") {
-        project.rules.collapse[idx].conditions[cIdx].operator = el.value;
-      } else if (action === "ruleCondValue") {
-        project.rules.collapse[idx].conditions[cIdx].value = el.value;
+      } else if (action === "ruleCondGroupOperator") {
+        project.rules.collapse[idx].conditionGroups[gIdx].operator = el.value;
+      } else if (action === "ruleGroupCondVariable") {
+        project.rules.collapse[idx].conditionGroups[gIdx].conditions[cIdx].variable = el.value;
+      } else if (action === "ruleGroupCondOperator") {
+        project.rules.collapse[idx].conditionGroups[gIdx].conditions[cIdx].operator = el.value;
+      } else if (action === "ruleGroupCondValue") {
+        project.rules.collapse[idx].conditionGroups[gIdx].conditions[cIdx].value = el.value;
       } else if (action === "diagTitle") {
         project.analyses[idx].title = el.value;
       } else if (action === "diagText") {
         project.analyses[idx].text = el.value;
-      } else if (action === "diagOperator") {
-        project.analyses[idx].operator = el.value;
-      } else if (action === "diagCondVariable") {
-        project.analyses[idx].conditions[cIdx].variable = el.value;
-      } else if (action === "diagCondOperator") {
-        project.analyses[idx].conditions[cIdx].operator = el.value;
-      } else if (action === "diagCondValue") {
-        project.analyses[idx].conditions[cIdx].value = el.value;
+      } else if (action === "diagGroupOperator") {
+        project.analyses[idx].groupOperator = el.value;
+      } else if (action === "diagCondGroupOperator") {
+        project.analyses[idx].conditionGroups[gIdx].operator = el.value;
+      } else if (action === "diagGroupCondVariable") {
+        project.analyses[idx].conditionGroups[gIdx].conditions[cIdx].variable = el.value;
+      } else if (action === "diagGroupCondOperator") {
+        project.analyses[idx].conditionGroups[gIdx].conditions[cIdx].operator = el.value;
+      } else if (action === "diagGroupCondValue") {
+        project.analyses[idx].conditionGroups[gIdx].conditions[cIdx].value = el.value;
       } else {
         const scene = project.scenes[selectedSceneId];
         if (!scene) return;
