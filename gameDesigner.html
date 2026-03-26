@@ -5217,6 +5217,33 @@
       if (!proj.ui.labels) proj.ui.labels = {};
       if (!proj.help) proj.help = {};
       if (!Array.isArray(proj.variables)) proj.variables = [];
+      proj.variables = proj.variables
+  .filter((v) => v && typeof v === "object")
+  .map((v, index) => {
+    const type =
+      v.type === "boolean" || v.type === "number" || v.type === "text"
+        ? v.type
+        : "boolean";
+
+    let initial;
+
+    if (type === "boolean") {
+      initial = v.initial === true;
+    } else if (type === "number") {
+      initial = Number(v.initial) || 0;
+    } else {
+      initial = v.initial == null ? "" : String(v.initial);
+    }
+
+    return {
+      name: typeof v.name === "string" && v.name.trim() ? v.name.trim() : `flag_${index}`,
+      label: typeof v.label === "string" && v.label.trim() ? v.label : "Nouvelle variable",
+      type,
+      initial,
+      category: typeof v.category === "string" ? v.category : "custom",
+      description: typeof v.description === "string" ? v.description : "",
+    };
+  });
       if (!proj.rules) proj.rules = { collapse: [] };
       if (!Array.isArray(proj.rules.collapse)) proj.rules.collapse = [];
       if (!Array.isArray(proj.analyses)) proj.analyses = [];
@@ -10530,7 +10557,16 @@ function addDecision(text) {
 
   if (effects.bumpFlags) {
     Object.keys(effects.bumpFlags).forEach(key => {
-      state.flags[key] = (state.flags[key] || 0) + effects.bumpFlags[key];
+      const variableDef = findVariable(key);
+
+      if (variableDef && variableDef.type !== "number") {
+        return;
+      }
+
+      const currentValue = Number(state.flags[key] ?? 0);
+      const delta = Number(effects.bumpFlags[key] ?? 0);
+
+      state.flags[key] = currentValue + delta;
     });
   }
 
