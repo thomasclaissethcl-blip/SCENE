@@ -1512,6 +1512,40 @@
       align-items: center;
     }
 
+        .graphPathControls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .graphPathToggleWrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #11182f;
+      color: var(--text);
+      min-height: 42px;
+      margin-top: 0.4em;
+    }
+
+    .graphPathToggleWrap input {
+      width: auto;
+      margin: 0;
+    }
+
+    .graphPathSelect {
+      min-width: 320px;
+      max-width: 560px;
+    }
+
+    .graphPathSelect:disabled {
+      opacity: 0.6;
+    }
+
     .graphViewport {
       position: relative;
       min-height: 720px;
@@ -3388,17 +3422,31 @@
                   l’ouvrir dans l’éditeur.
                   <br /><br />
                   <strong>Bon usage</strong>
-                  Utilisez ce graphe pour vérifier rapidement la structure d’embranchement, les impasses et les scènes
+                                    Utilisez ce graphe pour vérifier rapidement la structure d’embranchement, les arrêts de parcours et les scènes
                   très sollicitées.
                 </div>
                 <p class="muted small">Seules les scènes reliées à au moins une autre scène sont affichées.</p>
               </div>
-              <div class="graphControls">
+
+              <div class="graphPathControls">
+                  <label class="graphPathToggleWrap" for="graphPathToggle">
+                    <input id="graphPathToggle" type="checkbox" />
+                    <span>Afficher un chemin</span>
+                  </label>
+
+                  <select id="graphPathSelect" class="graphPathSelect" disabled>
+                    <option value="">Aucun chemin disponible</option>
+                  </select>
+              
+                            <div class="graphControls">
                 <button id="refreshGraphBtn" type="button" class="secondary">Mettre à
                   jour</button>
                 <button id="graphZoomOutBtn" type="button" class="secondary">Zoom -</button>
                 <button id="graphResetViewBtn" type="button" class="secondary">Vue complète</button>
                 <button id="graphZoomInBtn" type="button" class="secondary">Zoom +</button>
+
+                
+                </div>
               </div>
             </div>
 
@@ -5024,6 +5072,8 @@
     let currentTab = "editor";
     let graphContextMenuState = null;
     let graphHighlightState = null;
+        let graphPathOptions = [];
+    let selectedGraphPathKey = "";
     let validationCycleAlerts = [];
     let lastEditorSnapshot = null;
     let editorUndoFocusTarget = null;
@@ -5132,10 +5182,12 @@
       graphContextHighlightAncestorsBtn: document.getElementById("graphContextHighlightAncestorsBtn"),
       graphContextHighlightDescendantsBtn: document.getElementById("graphContextHighlightDescendantsBtn"),
       graphContextHighlightNearbyBtn: document.getElementById("graphContextHighlightNearbyBtn"),
-      refreshGraphBtn: document.getElementById("refreshGraphBtn"),
+            refreshGraphBtn: document.getElementById("refreshGraphBtn"),
       graphZoomInBtn: document.getElementById("graphZoomInBtn"),
       graphZoomOutBtn: document.getElementById("graphZoomOutBtn"),
       graphResetViewBtn: document.getElementById("graphResetViewBtn"),
+      graphPathToggle: document.getElementById("graphPathToggle"),
+      graphPathSelect: document.getElementById("graphPathSelect"),
 
       journalNoteInput: document.getElementById("journalNoteInput"),
       addJournalRemBtn: document.getElementById("addJournalRemBtn"),
@@ -8630,12 +8682,251 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       return visited;
     }
 
-    function buildGraphHighlightState(data, highlightConfig) {
+            function getGraphPathStartSceneIds(data) {
+      const startIds = [];
+      const seen = new Set();
+
+      function addStartId(sceneId) {
+        if (!sceneId || seen.has(sceneId) || !project.scenes[sceneId]) return;
+        if (!data.nodes.some((node) => node.id === sceneId)) return;
+        seen.add(sceneId);
+        startIds.push(sceneId);
+      }
+
+      addStartId(project.meta.startScene);
+
+      data.nodes
+        .filter((node) => project.scenes[node.id]?.analysis)
+        .sort((a, b) => a.id.localeCompare(b.id, "fr"))
+        .forEach((node) => addStartId(node.id));
+
+      data.nodes
+        .filter((node) => node.incoming === 0)
+        .sort((a, b) => a.id.localeCompare(b.id, "fr"))
+        .forEach((node) => addStartId(node.id));
+
+      if (!startIds.length && data.nodes[0]?.id) {
+        addStartId(data.nodes[0].id);
+      }
+
+      return startIds;
+    }
+
+    function getGraphSceneShortLabel(sceneId) {
+      const scene = project.scenes[sceneId];
+      if (!scene) return sceneId;
+
+      const rawTitle = String(scene.title || scene.chapter || sceneId).trim();
+      if (!rawTitle) return sceneId;
+
+      const cleaned = rawTitle
+        .replace(/^\[[^\]]+\]\s*/g, "")
+        .replace(/[_-]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      return cleaned || sceneId;
+    }
+
+    function getGraphPathEndingLabel(path) {
+      const lastSceneId = path.sceneIds[path.sceneIds.length - 1];
+      if (!lastSceneId) return "sortie inconnue";
+
+      const lastScene = project.scenes[lastSceneId];
+      if (!lastScene) return lastSceneId;
+
+      if (lastScene.ending) {
+        return getGraphSceneShortLabel(lastSceneId);
+      }
+
+      if (path.isTruncated) {
+        return `${getGraphSceneShortLabel(lastSceneId)} (boucle interrompue)`;
+      }
+
+      return `${getGraphSceneShortLabel(lastSceneId)} (arrêt du parcours)`;
+    }
+
+    function computeGraphPathSignatures(paths) {
+      const countsBySceneId = new Map();
+
+      paths.forEach((path) => {
+        const uniqueSceneIds = [...new Set(path.sceneIds.slice(1, -1))];
+        uniqueSceneIds.forEach((sceneId) => {
+          countsBySceneId.set(sceneId, (countsBySceneId.get(sceneId) || 0) + 1);
+        });
+      });
+
+      return paths.map((path) => {
+        const candidateSceneIds = [...new Set(path.sceneIds.slice(1, -1))]
+          .filter((sceneId) => (countsBySceneId.get(sceneId) || 0) < paths.length)
+          .sort((a, b) => {
+            const diff = (countsBySceneId.get(a) || 0) - (countsBySceneId.get(b) || 0);
+            if (diff !== 0) return diff;
+            return path.sceneIds.indexOf(a) - path.sceneIds.indexOf(b);
+          });
+
+        return {
+          ...path,
+          signatureSceneIds: candidateSceneIds.slice(0, 3),
+        };
+      });
+    }
+
+    function formatGraphPathLabel(path, index) {
+      const originLabel = getGraphSceneShortLabel(path.originSceneId);
+      const endingLabel = getGraphPathEndingLabel(path);
+
+      const viaLabel = path.signatureSceneIds?.length
+        ? ` via ${path.signatureSceneIds.map((sceneId) => getGraphSceneShortLabel(sceneId)).join(" → ")}`
+        : "";
+
+      const suffix = path.isTruncated
+        ? " · boucle interrompue"
+        : path.isDeadEnd
+          ? " · arrêt du parcours"
+          : " · fin de parcours";
+
+      return `Parcours ${index + 1} · ${originLabel} → ${endingLabel}${viaLabel}${suffix}`;
+    }
+
+    function buildGraphPathOptions(data) {
+      const startIds = getGraphPathStartSceneIds(data);
+      if (!startIds.length) {
+        return [];
+      }
+
+      const options = [];
+      const MAX_PATHS = 200;
+
+      function visit(originSceneId, currentId, sceneIds, edgeKeys, visited) {
+        if (options.length >= MAX_PATHS) return;
+
+        const scene = project.scenes[currentId];
+        const rawChoices = Array.isArray(scene?.choices) ? scene.choices : [];
+        const validChoices = rawChoices.filter((choice) => choice?.goto && project.scenes[choice.goto]);
+        const nextChoices = validChoices.filter((choice) => !visited.has(choice.goto));
+
+        if (!nextChoices.length) {
+          options.push({
+            key: `path-${options.length + 1}`,
+            originSceneId,
+            sceneIds: [...sceneIds],
+            edgeKeys: [...edgeKeys],
+            isDeadEnd: validChoices.length === 0,
+            isTruncated: validChoices.length > 0,
+          });
+          return;
+        }
+
+        nextChoices.forEach((choice) => {
+          if (options.length >= MAX_PATHS) return;
+
+          const nextVisited = new Set(visited);
+          nextVisited.add(choice.goto);
+
+          visit(
+            originSceneId,
+            choice.goto,
+            [...sceneIds, choice.goto],
+            [...edgeKeys, `${currentId}=>${choice.goto}`],
+            nextVisited,
+          );
+        });
+      }
+
+      startIds.forEach((startId) => {
+        visit(startId, startId, [startId], [], new Set([startId]));
+      });
+
+      return computeGraphPathSignatures(options).map((path, index) => ({
+        ...path,
+        label: formatGraphPathLabel(path, index),
+      }));
+    }
+
+    function renderGraphPathControls(dataInput = null) {
+      if (!els.graphPathToggle || !els.graphPathSelect) return;
+
+      const data = dataInput || getCachedGraphBundle().data;
+
+      if (!data?.nodes?.length || !data?.edges?.length) {
+        graphPathOptions = [];
+        selectedGraphPathKey = "";
+        els.graphPathToggle.checked = false;
+        els.graphPathToggle.disabled = true;
+        els.graphPathSelect.innerHTML = `<option value="">Aucun chemin disponible</option>`;
+        els.graphPathSelect.disabled = true;
+        return;
+      }
+
+      graphPathOptions = buildGraphPathOptions(data);
+
+      if (!graphPathOptions.length) {
+        selectedGraphPathKey = "";
+        els.graphPathToggle.checked = false;
+        els.graphPathToggle.disabled = true;
+        els.graphPathSelect.innerHTML = `<option value="">Aucun chemin disponible</option>`;
+        els.graphPathSelect.disabled = true;
+        return;
+      }
+
+      const activePathKey = graphHighlightState?.type === "path"
+        ? graphHighlightState.pathKey
+        : selectedGraphPathKey;
+
+      const matchingPath = graphPathOptions.find((path) => path.key === activePathKey);
+      selectedGraphPathKey = matchingPath?.key || graphPathOptions[0].key;
+
+      els.graphPathToggle.disabled = false;
+      els.graphPathToggle.checked = graphHighlightState?.type === "path";
+
+      els.graphPathSelect.innerHTML = graphPathOptions
+        .map((path) => `<option value="${escapeAttr(path.key)}">${escapeHtml(path.label)}</option>`)
+        .join("");
+
+      els.graphPathSelect.value = selectedGraphPathKey;
+      els.graphPathSelect.disabled = !els.graphPathToggle.checked;
+    }
+
+    function applySelectedGraphPathHighlight() {
+      if (!graphPathOptions.length) {
+        graphHighlightState = null;
+        renderGraphPathControls();
+        renderStructureGraph();
+        return;
+      }
+
+      const selectedPath = graphPathOptions.find((path) => path.key === selectedGraphPathKey) || graphPathOptions[0];
+      selectedGraphPathKey = selectedPath.key;
+
+            graphHighlightState = {
+        type: "path",
+        pathKey: selectedPath.key,
+        sceneId: selectedPath.sceneIds[0] || null,
+        originSceneId: selectedPath.originSceneId || selectedPath.sceneIds[0] || null,
+        sceneIds: [...selectedPath.sceneIds],
+        edgeKeys: [...selectedPath.edgeKeys],
+      };
+
+      closeGraphContextMenu();
+      renderGraphPathControls();
+      renderStructureGraph();
+    }
+
+        function buildGraphHighlightState(data, highlightConfig) {
       if (highlightConfig?.type === "cycle") {
         return {
           highlightedNodeIds: new Set(highlightConfig.sceneIds || []),
           highlightedEdgeKeys: new Set(highlightConfig.edgeKeys || []),
           highlightType: "cycle",
+        };
+      }
+
+      if (highlightConfig?.type === "path") {
+        return {
+          highlightedNodeIds: new Set(highlightConfig.sceneIds || []),
+          highlightedEdgeKeys: new Set(highlightConfig.edgeKeys || []),
+          highlightType: "default",
         };
       }
 
@@ -8694,6 +8985,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       els.graphEmptyState.style.display = "none";
 
       const nodeMap = new Map(layout.nodes.map((node) => [node.id, node]));
+            renderGraphPathControls(data);
       const highlightState = buildGraphHighlightState(data, graphHighlightState);
       const defs = `
           <defs>
@@ -9011,7 +9303,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         project.meta.startScene = sceneIds[0] || "";
       }
 
-      renderMeta();
+           renderMeta();
       renderVariables();
       renderRules();
       renderAnalyses();
@@ -9019,6 +9311,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       bindEditorFilters();
       renderSceneEditor();
       renderJsonPreview();
+      renderGraphPathControls();
 
       if (els.validationBox) {
         renderStaleValidationNotice();
@@ -11577,6 +11870,29 @@ if (document.readyState === "loading") {
       renderStructureGraph();
     });
 
+        els.graphPathToggle?.addEventListener("change", () => {
+      closeGraphContextMenu();
+
+      if (!els.graphPathToggle.checked) {
+        if (graphHighlightState?.type === "path") {
+          graphHighlightState = null;
+        }
+        renderGraphPathControls();
+        renderStructureGraph();
+        return;
+      }
+
+      applySelectedGraphPathHighlight();
+    });
+
+    els.graphPathSelect?.addEventListener("change", () => {
+      selectedGraphPathKey = els.graphPathSelect.value || "";
+
+      if (els.graphPathToggle?.checked) {
+        applySelectedGraphPathHighlight();
+      }
+    });
+
     els.graphScenePreviewOpenEditorBtn?.addEventListener("click", () => {
       const sceneId = els.graphScenePreviewModal?.dataset.sceneId;
       if (!sceneId) return;
@@ -12441,8 +12757,9 @@ if (document.readyState === "loading") {
           return;
         }
 
-        if (shouldResetHighlight) {
+               if (shouldResetHighlight) {
           graphHighlightState = null;
+          renderGraphPathControls();
           closeGraphContextMenu();
           renderStructureGraph();
         }
