@@ -1512,34 +1512,21 @@
       align-items: center;
     }
 
-        .graphPathControls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
+    .graphPathControls {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
     }
 
-    .graphPathToggleWrap {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #11182f;
-      color: var(--text);
-      min-height: 42px;
-      margin-top: 0.4em;
-    }
-
-    .graphPathToggleWrap input {
-      width: auto;
+    .graphPathContextLabel {
       margin: 0;
+      font-size: 0.8rem;
+      color: var(--muted);
     }
 
     .graphPathSelect {
       min-width: 320px;
-      max-width: 560px;
+      max-width: 640px;
     }
 
     .graphPathSelect:disabled {
@@ -3422,31 +3409,26 @@
                   l’ouvrir dans l’éditeur.
                   <br /><br />
                   <strong>Bon usage</strong>
-                                    Utilisez ce graphe pour vérifier rapidement la structure d’embranchement, les arrêts de parcours et les scènes
+                  Utilisez ce graphe pour vérifier rapidement la structure d’embranchement, les arrêts de parcours et
+                  les scènes
                   très sollicitées.
                 </div>
                 <p class="muted small">Seules les scènes reliées à au moins une autre scène sont affichées.</p>
               </div>
 
-              <div class="graphPathControls">
-                  <label class="graphPathToggleWrap" for="graphPathToggle">
-                    <input id="graphPathToggle" type="checkbox" />
-                    <span>Afficher un chemin</span>
-                  </label>
-
-                  <select id="graphPathSelect" class="graphPathSelect" disabled>
-                    <option value="">Aucun chemin disponible</option>
-                  </select>
-              
-                            <div class="graphControls">
+              <div class="graphControls">
                 <button id="refreshGraphBtn" type="button" class="secondary">Mettre à
                   jour</button>
                 <button id="graphZoomOutBtn" type="button" class="secondary">Zoom -</button>
                 <button id="graphResetViewBtn" type="button" class="secondary">Vue complète</button>
                 <button id="graphZoomInBtn" type="button" class="secondary">Zoom +</button>
+              </div>
 
-                
-                </div>
+              <div class="graphPathControls">
+                <label for="graphPathSelect" class="graphPathContextLabel">Parcours de la scène sélectionnée</label>
+                <select id="graphPathSelect" class="graphPathSelect" disabled>
+                  <option value="">Cliquez droit sur une scène pour afficher ses parcours</option>
+                </select>
               </div>
             </div>
 
@@ -3479,16 +3461,26 @@
                   <span>Voir un aperçu</span>
                 </button>
 
-                <button id="graphContextHighlightFullBtn" type="button" class="secondary">
+                <button id="graphContextPathsFromBtn" type="button" class="secondary">
                   <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <circle cx="5" cy="6" r="2" stroke="currentColor" stroke-width="1.8" />
-                    <circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.8" />
-                    <circle cx="19" cy="6" r="2" stroke="currentColor" stroke-width="1.8" />
-                    <circle cx="19" cy="18" r="2" stroke="currentColor" stroke-width="1.8" />
-                    <path d="M6.7 7.2l3.6 3.6M13.7 10.8l3.6-3.6M13.4 13.4l4.2 3.2" stroke="currentColor"
-                      stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="6" cy="12" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="13" cy="7" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="18" cy="16" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <path d="M7.8 11l3.4-2.4M14.6 8.8l2 5.1" stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
-                  <span>Afficher le chemin complet</span>
+                  <span>Voir les chemins à partir d’ici</span>
+                </button>
+
+                <button id="graphContextPathsToBtn" type="button" class="secondary">
+                  <svg class="graphMenuIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="6" cy="8" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="6" cy="16" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="18" cy="12" r="2" stroke="currentColor" stroke-width="1.8" />
+                    <path d="M7.8 8.8l8.2 2.2M7.8 15.2l8.2-2.2" stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span>Voir les chemins menant jusqu’ici</span>
                 </button>
 
                 <button id="graphContextHighlightAncestorsBtn" type="button" class="secondary">
@@ -3703,7 +3695,7 @@
       };
     }
 
-        function choiceTemplate(sceneIds) {
+    function choiceTemplate(sceneIds) {
       return {
         title: "Nouveau choix",
         desc: "",
@@ -3723,7 +3715,7 @@
       };
     }
 
-       function conditionTemplate(variableName = "risk") {
+    function conditionTemplate(variableName = "risk") {
       return {
         variable: variableName,
         operator: ">=",
@@ -3784,12 +3776,12 @@
           conditions:
             Array.isArray(group.conditions) && group.conditions.length
               ? group.conditions.map((cond) => ({
-                  variable: cond?.variable || fallbackVariableName,
-                  operator: ["==", "!=", ">", "<", ">=", "<="].includes(cond?.operator)
-                    ? cond.operator
-                    : ">=",
-                  value: cond?.value ?? 1,
-                }))
+                variable: cond?.variable || fallbackVariableName,
+                operator: ["==", "!=", ">", "<", ">=", "<="].includes(cond?.operator)
+                  ? cond.operator
+                  : ">=",
+                value: cond?.value ?? 1,
+              }))
               : [conditionTemplate(fallbackVariableName)],
         }));
 
@@ -4075,7 +4067,7 @@
                   },
                   logs: ["Observation initiale"],
                   inventory: [],
-                  salvage: false,                  
+                  salvage: false,
                 },
               },
               {
@@ -4096,7 +4088,7 @@
                   logs: ["Décision rapide"],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
               {
@@ -4122,7 +4114,7 @@
                     },
                   ],
                   salvage: false,
-                  
+
                 },
               },
             ],
@@ -4162,7 +4154,7 @@
                   logs: ["Analyse"],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
               {
@@ -4182,7 +4174,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
             ],
@@ -4222,7 +4214,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
               {
@@ -4242,7 +4234,7 @@
                   logs: [],
                   inventory: [],
                   salvage: true,
-                  
+
                 },
               },
             ],
@@ -4281,7 +4273,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
               {
@@ -4305,7 +4297,7 @@
                     },
                   ],
                   salvage: false,
-                  
+
                 },
               },
             ],
@@ -4344,7 +4336,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
               {
@@ -4362,7 +4354,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
             ],
@@ -4401,7 +4393,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
               {
@@ -4422,7 +4414,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
               {
@@ -4442,7 +4434,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
               {
@@ -4462,7 +4454,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
             ],
@@ -4501,7 +4493,7 @@
                   logs: [],
                   inventory: [],
                   salvage: true,
-                  
+
                 },
               },
               {
@@ -4521,7 +4513,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
             ],
@@ -4560,7 +4552,7 @@
                   logs: [],
                   inventory: [],
                   salvage: true,
-                  
+
                 },
               },
               {
@@ -4580,7 +4572,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
             ],
@@ -4617,7 +4609,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
             ],
@@ -4657,7 +4649,7 @@
                   logs: [],
                   inventory: [],
                   salvage: true,
-                  
+
                 },
               },
             ],
@@ -4694,7 +4686,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
               {
@@ -4712,7 +4704,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
             ],
@@ -4749,7 +4741,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
               {
@@ -4767,7 +4759,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
             ],
@@ -4804,7 +4796,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
               {
@@ -4822,7 +4814,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
               {
@@ -4840,7 +4832,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
             ],
@@ -4877,7 +4869,7 @@
                   logs: [],
                   inventory: [],
                   salvage: false,
-                  
+
                 },
               },
             ],
@@ -5072,7 +5064,8 @@
     let currentTab = "editor";
     let graphContextMenuState = null;
     let graphHighlightState = null;
-        let graphPathOptions = [];
+    let graphPathExplorerState = null;
+    let graphPathOptions = [];
     let selectedGraphPathKey = "";
     let validationCycleAlerts = [];
     let lastEditorSnapshot = null;
@@ -5178,14 +5171,16 @@
       graphContextMenu: document.getElementById("graphContextMenu"),
       graphContextGotoBtn: document.getElementById("graphContextGotoBtn"),
       graphContextPreviewBtn: document.getElementById("graphContextPreviewBtn"),
-      graphContextHighlightFullBtn: document.getElementById("graphContextHighlightFullBtn"),
+      graphContextPathsFromBtn: document.getElementById("graphContextPathsFromBtn"),
+      graphContextPathsToBtn: document.getElementById("graphContextPathsToBtn"),
       graphContextHighlightAncestorsBtn: document.getElementById("graphContextHighlightAncestorsBtn"),
       graphContextHighlightDescendantsBtn: document.getElementById("graphContextHighlightDescendantsBtn"),
       graphContextHighlightNearbyBtn: document.getElementById("graphContextHighlightNearbyBtn"),
-            refreshGraphBtn: document.getElementById("refreshGraphBtn"),
+      refreshGraphBtn: document.getElementById("refreshGraphBtn"),
       graphZoomInBtn: document.getElementById("graphZoomInBtn"),
       graphZoomOutBtn: document.getElementById("graphZoomOutBtn"),
       graphResetViewBtn: document.getElementById("graphResetViewBtn"),
+      graphPathSelect: document.getElementById("graphPathSelect"),
       graphPathToggle: document.getElementById("graphPathToggle"),
       graphPathSelect: document.getElementById("graphPathSelect"),
 
@@ -5270,36 +5265,36 @@
       if (!proj.help) proj.help = {};
       if (!Array.isArray(proj.variables)) proj.variables = [];
       proj.variables = proj.variables
-  .filter((v) => v && typeof v === "object")
-  .map((v, index) => {
-    const type =
-      v.type === "boolean" || v.type === "number" || v.type === "text"
-        ? v.type
-        : "boolean";
+        .filter((v) => v && typeof v === "object")
+        .map((v, index) => {
+          const type =
+            v.type === "boolean" || v.type === "number" || v.type === "text"
+              ? v.type
+              : "boolean";
 
-    let initial;
+          let initial;
 
-    if (type === "boolean") {
-      initial = v.initial === true;
-    } else if (type === "number") {
-      initial = Number(v.initial) || 0;
-    } else {
-      initial = v.initial == null ? "" : String(v.initial);
-    }
+          if (type === "boolean") {
+            initial = v.initial === true;
+          } else if (type === "number") {
+            initial = Number(v.initial) || 0;
+          } else {
+            initial = v.initial == null ? "" : String(v.initial);
+          }
 
-    return {
-      name: typeof v.name === "string" && v.name.trim() ? v.name.trim() : `flag_${index}`,
-      label: typeof v.label === "string" && v.label.trim() ? v.label : "Nouvelle variable",
-      type,
-      initial,
-      category: typeof v.category === "string" ? v.category : "custom",
-      description: typeof v.description === "string" ? v.description : "",
-    };
-  });
+          return {
+            name: typeof v.name === "string" && v.name.trim() ? v.name.trim() : `flag_${index}`,
+            label: typeof v.label === "string" && v.label.trim() ? v.label : "Nouvelle variable",
+            type,
+            initial,
+            category: typeof v.category === "string" ? v.category : "custom",
+            description: typeof v.description === "string" ? v.description : "",
+          };
+        });
       if (!proj.rules) proj.rules = { collapse: [] };
       if (!Array.isArray(proj.rules.collapse)) proj.rules.collapse = [];
       if (!Array.isArray(proj.analyses)) proj.analyses = [];
-            proj.rules.collapse = proj.rules.collapse
+      proj.rules.collapse = proj.rules.collapse
         .filter((rule) => rule && typeof rule === "object")
         .map((rule) => normalizeConditionOwner(rule, "risk"));
 
@@ -6449,7 +6444,7 @@
         });
       });
 
-            proj.rules.collapse.forEach((rule) => {
+      proj.rules.collapse.forEach((rule) => {
         if (!rule.goto || !proj.scenes[rule.goto]) {
           errors.push(`La règle d’interruption '${rule.name}' pointe vers une scène inexistante : '${rule.goto}'.`);
         }
@@ -6758,7 +6753,7 @@
       });
     }
 
-        function collectConditionSearchValues(owner) {
+    function collectConditionSearchValues(owner) {
       return [
         owner.groupOperator || "",
         ...((owner.conditionGroups || []).flatMap((group) => [
@@ -6811,8 +6806,8 @@
 
         <div class="stack" style="margin-top:10px;">
           ${(owner.conditionGroups || [])
-            .map(
-              (group, gIdx) => `
+          .map(
+            (group, gIdx) => `
                 <div class="itemCard">
                   <div class="itemHead">
                     <strong>Groupe ${gIdx + 1}</strong>
@@ -6849,8 +6844,8 @@
 
                   <div class="stack" style="margin-top:10px;">
                     ${(group.conditions || [])
-                      .map(
-                        (cond, cIdx) => `
+                .map(
+                  (cond, cIdx) => `
                           <div class="itemCard">
                             <div class="itemHead">
                               <strong>Condition ${cIdx + 1}</strong>
@@ -6870,11 +6865,11 @@
                                 <label>Variable</label>
                                 <select data-action="${variableAction}" data-index="${idx}" data-gindex="${gIdx}" data-cindex="${cIdx}">
                                   ${varNames
-                                    .map(
-                                      (name) =>
-                                        `<option value="${escapeAttr(name)}" ${cond.variable === name ? "selected" : ""}>${escapeHtml(name)}</option>`,
-                                    )
-                                    .join("")}
+                      .map(
+                        (name) =>
+                          `<option value="${escapeAttr(name)}" ${cond.variable === name ? "selected" : ""}>${escapeHtml(name)}</option>`,
+                      )
+                      .join("")}
                                 </select>
                               </div>
 
@@ -6882,11 +6877,11 @@
                                 <label>Opérateur</label>
                                 <select data-action="${operatorAction}" data-index="${idx}" data-gindex="${gIdx}" data-cindex="${cIdx}">
                                   ${["==", "!=", ">", "<", ">=", "<="]
-                                    .map(
-                                      (op) =>
-                                        `<option value="${op}" ${cond.operator === op ? "selected" : ""}>${op}</option>`,
-                                    )
-                                    .join("")}
+                      .map(
+                        (op) =>
+                          `<option value="${op}" ${cond.operator === op ? "selected" : ""}>${op}</option>`,
+                      )
+                      .join("")}
                                 </select>
                               </div>
 
@@ -6903,8 +6898,8 @@
                             </div>
                           </div>
                         `,
-                      )
-                      .join("")}
+                )
+                .join("")}
 
                     <button
                       data-action="${addConditionAction}"
@@ -6915,8 +6910,8 @@
                   </div>
                 </div>
               `,
-            )
-            .join("")}
+          )
+          .join("")}
 
           <button data-action="${addGroupAction}" data-index="${idx}" class="secondary">
             Ajouter un groupe
@@ -6925,7 +6920,7 @@
       `;
     }
 
-        function renderRules() {
+    function renderRules() {
       const varNames = getAllVariableNames();
       const sceneIds = Object.keys(project.scenes);
       const filterValue = editorFilters.rules;
@@ -6985,7 +6980,7 @@
         .join("");
     }
 
-        function renderAnalyses() {
+    function renderAnalyses() {
       const varNames = getAllVariableNames();
       const filterValue = editorFilters.analyses;
 
@@ -8682,215 +8677,189 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       return visited;
     }
 
-            function getGraphPathStartSceneIds(data) {
-      const startIds = [];
-      const seen = new Set();
-
-      function addStartId(sceneId) {
-        if (!sceneId || seen.has(sceneId) || !project.scenes[sceneId]) return;
-        if (!data.nodes.some((node) => node.id === sceneId)) return;
-        seen.add(sceneId);
-        startIds.push(sceneId);
-      }
-
-      addStartId(project.meta.startScene);
-
-      data.nodes
-        .filter((node) => project.scenes[node.id]?.analysis)
-        .sort((a, b) => a.id.localeCompare(b.id, "fr"))
-        .forEach((node) => addStartId(node.id));
-
-      data.nodes
-        .filter((node) => node.incoming === 0)
-        .sort((a, b) => a.id.localeCompare(b.id, "fr"))
-        .forEach((node) => addStartId(node.id));
-
-      if (!startIds.length && data.nodes[0]?.id) {
-        addStartId(data.nodes[0].id);
-      }
-
-      return startIds;
-    }
-
     function getGraphSceneShortLabel(sceneId) {
       const scene = project.scenes[sceneId];
       if (!scene) return sceneId;
 
-      const rawTitle = String(scene.title || scene.chapter || sceneId).trim();
-      if (!rawTitle) return sceneId;
+      const raw = String(scene.title || scene.chapter || sceneId).trim();
+      if (!raw) return sceneId;
 
-      const cleaned = rawTitle
+      return raw
         .replace(/^\[[^\]]+\]\s*/g, "")
         .replace(/[_-]+/g, " ")
         .replace(/\s+/g, " ")
         .trim();
-
-      return cleaned || sceneId;
     }
 
-    function getGraphPathEndingLabel(path) {
-      const lastSceneId = path.sceneIds[path.sceneIds.length - 1];
-      if (!lastSceneId) return "sortie inconnue";
-
-      const lastScene = project.scenes[lastSceneId];
-      if (!lastScene) return lastSceneId;
-
-      if (lastScene.ending) {
-        return getGraphSceneShortLabel(lastSceneId);
-      }
-
-      if (path.isTruncated) {
-        return `${getGraphSceneShortLabel(lastSceneId)} (boucle interrompue)`;
-      }
-
-      return `${getGraphSceneShortLabel(lastSceneId)} (arrêt du parcours)`;
-    }
-
-    function computeGraphPathSignatures(paths) {
-      const countsBySceneId = new Map();
+    function computeGraphPathSignatureSceneIds(paths) {
+      const counts = new Map();
 
       paths.forEach((path) => {
-        const uniqueSceneIds = [...new Set(path.sceneIds.slice(1, -1))];
-        uniqueSceneIds.forEach((sceneId) => {
-          countsBySceneId.set(sceneId, (countsBySceneId.get(sceneId) || 0) + 1);
+        const middleIds = [...new Set(path.sceneIds.slice(1, -1))];
+        middleIds.forEach((sceneId) => {
+          counts.set(sceneId, (counts.get(sceneId) || 0) + 1);
         });
       });
 
       return paths.map((path) => {
-        const candidateSceneIds = [...new Set(path.sceneIds.slice(1, -1))]
-          .filter((sceneId) => (countsBySceneId.get(sceneId) || 0) < paths.length)
+        const candidateIds = [...new Set(path.sceneIds.slice(1, -1))]
+          .filter((sceneId) => (counts.get(sceneId) || 0) < paths.length)
           .sort((a, b) => {
-            const diff = (countsBySceneId.get(a) || 0) - (countsBySceneId.get(b) || 0);
+            const diff = (counts.get(a) || 0) - (counts.get(b) || 0);
             if (diff !== 0) return diff;
             return path.sceneIds.indexOf(a) - path.sceneIds.indexOf(b);
           });
 
         return {
           ...path,
-          signatureSceneIds: candidateSceneIds.slice(0, 3),
+          signatureSceneIds: candidateIds.slice(0, 3),
         };
       });
     }
 
     function formatGraphPathLabel(path, index) {
-      const originLabel = getGraphSceneShortLabel(path.originSceneId);
-      const endingLabel = getGraphPathEndingLabel(path);
+      const firstSceneId = path.sceneIds[0];
+      const lastSceneId = path.sceneIds[path.sceneIds.length - 1];
+      const firstLabel = getGraphSceneShortLabel(firstSceneId);
+      const lastLabel = getGraphSceneShortLabel(lastSceneId);
 
       const viaLabel = path.signatureSceneIds?.length
         ? ` via ${path.signatureSceneIds.map((sceneId) => getGraphSceneShortLabel(sceneId)).join(" → ")}`
         : "";
 
-      const suffix = path.isTruncated
-        ? " · boucle interrompue"
-        : path.isDeadEnd
-          ? " · arrêt du parcours"
-          : " · fin de parcours";
+      const suffix = path.isTruncated ? " · boucle interrompue" : "";
 
-      return `Parcours ${index + 1} · ${originLabel} → ${endingLabel}${viaLabel}${suffix}`;
+      if (path.mode === "to") {
+        return `Parcours ${index + 1} · ${firstLabel} → ${lastLabel}${viaLabel}${suffix}`;
+      }
+
+      return `Parcours ${index + 1} · ${firstLabel} → ${lastLabel}${viaLabel}${suffix}`;
     }
 
-    function buildGraphPathOptions(data) {
-      const startIds = getGraphPathStartSceneIds(data);
-      if (!startIds.length) {
+    function buildGraphPathOptionsForAnchor(data, anchorSceneId, mode = "from") {
+      if (!anchorSceneId || !project.scenes[anchorSceneId]) {
         return [];
       }
 
+      const { forwardMap, reverseMap } = buildGraphAdjacencyMaps(data);
+      const adjacencyMap = mode === "to" ? reverseMap : forwardMap;
       const options = [];
-      const MAX_PATHS = 200;
+      const MAX_PATHS = 400;
 
-      function visit(originSceneId, currentId, sceneIds, edgeKeys, visited) {
+      function visit(currentId, sceneTrail, edgeTrail, visited) {
         if (options.length >= MAX_PATHS) return;
 
-        const scene = project.scenes[currentId];
-        const rawChoices = Array.isArray(scene?.choices) ? scene.choices : [];
-        const validChoices = rawChoices.filter((choice) => choice?.goto && project.scenes[choice.goto]);
-        const nextChoices = validChoices.filter((choice) => !visited.has(choice.goto));
+        const nextIds = (adjacencyMap.get(currentId) || []).filter((sceneId) => project.scenes[sceneId]);
+        const freshNextIds = nextIds.filter((sceneId) => !visited.has(sceneId));
 
-        if (!nextChoices.length) {
+        if (!freshNextIds.length) {
+          let sceneIds = [...sceneTrail];
+          let edgeKeys = [...edgeTrail];
+
+          if (mode === "to") {
+            sceneIds = [...sceneTrail].reverse();
+            edgeKeys = [...edgeTrail]
+              .reverse()
+              .map((edgeKey) => {
+                const [source, target] = edgeKey.split("<=");
+                return `${source}=>${target}`;
+              });
+          }
+
           options.push({
             key: `path-${options.length + 1}`,
-            originSceneId,
-            sceneIds: [...sceneIds],
-            edgeKeys: [...edgeKeys],
-            isDeadEnd: validChoices.length === 0,
-            isTruncated: validChoices.length > 0,
+            mode,
+            anchorSceneId,
+            sceneIds,
+            edgeKeys,
+            isTruncated: nextIds.length > 0,
           });
           return;
         }
 
-        nextChoices.forEach((choice) => {
+        freshNextIds.forEach((nextId) => {
           if (options.length >= MAX_PATHS) return;
 
           const nextVisited = new Set(visited);
-          nextVisited.add(choice.goto);
+          nextVisited.add(nextId);
+
+          const edgeKey = mode === "to"
+            ? `${nextId}<=${currentId}`
+            : `${currentId}=>${nextId}`;
 
           visit(
-            originSceneId,
-            choice.goto,
-            [...sceneIds, choice.goto],
-            [...edgeKeys, `${currentId}=>${choice.goto}`],
+            nextId,
+            [...sceneTrail, nextId],
+            [...edgeTrail, edgeKey],
             nextVisited,
           );
         });
       }
 
-      startIds.forEach((startId) => {
-        visit(startId, startId, [startId], [], new Set([startId]));
-      });
+      visit(anchorSceneId, [anchorSceneId], [], new Set([anchorSceneId]));
 
-      return computeGraphPathSignatures(options).map((path, index) => ({
+      return computeGraphPathSignatureSceneIds(options).map((path, index) => ({
         ...path,
         label: formatGraphPathLabel(path, index),
       }));
     }
 
     function renderGraphPathControls(dataInput = null) {
-      if (!els.graphPathToggle || !els.graphPathSelect) return;
+      if (!els.graphPathSelect) return;
 
       const data = dataInput || getCachedGraphBundle().data;
 
       if (!data?.nodes?.length || !data?.edges?.length) {
         graphPathOptions = [];
         selectedGraphPathKey = "";
-        els.graphPathToggle.checked = false;
-        els.graphPathToggle.disabled = true;
-        els.graphPathSelect.innerHTML = `<option value="">Aucun chemin disponible</option>`;
+        els.graphPathSelect.innerHTML = `<option value="">Aucun parcours disponible</option>`;
         els.graphPathSelect.disabled = true;
         return;
       }
 
-      graphPathOptions = buildGraphPathOptions(data);
+      if (!graphPathExplorerState?.anchorSceneId || !project.scenes[graphPathExplorerState.anchorSceneId]) {
+        graphPathOptions = [];
+        selectedGraphPathKey = "";
+        els.graphPathSelect.innerHTML = `<option value="">Cliquez droit sur une scène pour afficher ses parcours</option>`;
+        els.graphPathSelect.disabled = true;
+        return;
+      }
+
+      graphPathOptions = buildGraphPathOptionsForAnchor(
+        data,
+        graphPathExplorerState.anchorSceneId,
+        graphPathExplorerState.mode,
+      );
 
       if (!graphPathOptions.length) {
         selectedGraphPathKey = "";
-        els.graphPathToggle.checked = false;
-        els.graphPathToggle.disabled = true;
-        els.graphPathSelect.innerHTML = `<option value="">Aucun chemin disponible</option>`;
+        els.graphPathSelect.innerHTML = `<option value="">Aucun parcours trouvé pour cette scène</option>`;
         els.graphPathSelect.disabled = true;
         return;
       }
 
-      const activePathKey = graphHighlightState?.type === "path"
-        ? graphHighlightState.pathKey
-        : selectedGraphPathKey;
-
-      const matchingPath = graphPathOptions.find((path) => path.key === activePathKey);
+      const matchingPath = graphPathOptions.find((path) => path.key === selectedGraphPathKey);
       selectedGraphPathKey = matchingPath?.key || graphPathOptions[0].key;
-
-      els.graphPathToggle.disabled = false;
-      els.graphPathToggle.checked = graphHighlightState?.type === "path";
 
       els.graphPathSelect.innerHTML = graphPathOptions
         .map((path) => `<option value="${escapeAttr(path.key)}">${escapeHtml(path.label)}</option>`)
         .join("");
 
       els.graphPathSelect.value = selectedGraphPathKey;
-      els.graphPathSelect.disabled = !els.graphPathToggle.checked;
+      els.graphPathSelect.disabled = false;
     }
 
     function applySelectedGraphPathHighlight() {
       if (!graphPathOptions.length) {
-        graphHighlightState = null;
+        if (graphPathExplorerState?.anchorSceneId) {
+          graphHighlightState = {
+            sceneId: graphPathExplorerState.anchorSceneId,
+            mode: graphPathExplorerState.mode === "to" ? "ancestors" : "descendants",
+          };
+        } else {
+          graphHighlightState = null;
+        }
+
         renderGraphPathControls();
         renderStructureGraph();
         return;
@@ -8899,11 +8868,10 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       const selectedPath = graphPathOptions.find((path) => path.key === selectedGraphPathKey) || graphPathOptions[0];
       selectedGraphPathKey = selectedPath.key;
 
-            graphHighlightState = {
+      graphHighlightState = {
         type: "path",
         pathKey: selectedPath.key,
-        sceneId: selectedPath.sceneIds[0] || null,
-        originSceneId: selectedPath.originSceneId || selectedPath.sceneIds[0] || null,
+        sceneId: graphPathExplorerState?.anchorSceneId || selectedPath.sceneIds[0] || null,
         sceneIds: [...selectedPath.sceneIds],
         edgeKeys: [...selectedPath.edgeKeys],
       };
@@ -8913,7 +8881,20 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       renderStructureGraph();
     }
 
-        function buildGraphHighlightState(data, highlightConfig) {
+    function activateGraphPathExplorer(sceneId, mode) {
+      if (!sceneId) return;
+
+      graphPathExplorerState = {
+        anchorSceneId: sceneId,
+        mode,
+      };
+
+      selectedGraphPathKey = "";
+      renderGraphPathControls();
+      applySelectedGraphPathHighlight();
+    }
+
+    function buildGraphHighlightState(data, highlightConfig) {
       if (highlightConfig?.type === "cycle") {
         return {
           highlightedNodeIds: new Set(highlightConfig.sceneIds || []),
@@ -8943,11 +8924,10 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
 
       let highlightedNodeIds = new Set();
 
-      if (mode === "full") {
-        const ancestors = collectReachableSceneIdsWithDepth(sceneId, reverseMap);
-        const descendants = collectReachableSceneIdsWithDepth(sceneId, forwardMap);
-        highlightedNodeIds = new Set([...ancestors, ...descendants, sceneId]);
-      } else if (mode === "ancestors") {
+      if (mode === "ancestors") {
+        highlightedNodeIds = collectReachableSceneIdsWithDepth(sceneId, reverseMap);
+        highlightedNodeIds.add(sceneId);
+      } else if (mode === "descendants") {
         highlightedNodeIds = collectReachableSceneIdsWithDepth(sceneId, reverseMap);
         highlightedNodeIds.add(sceneId);
       } else if (mode === "descendants") {
@@ -8985,7 +8965,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       els.graphEmptyState.style.display = "none";
 
       const nodeMap = new Map(layout.nodes.map((node) => [node.id, node]));
-            renderGraphPathControls(data);
+      renderGraphPathControls(data);
       const highlightState = buildGraphHighlightState(data, graphHighlightState);
       const defs = `
           <defs>
@@ -9303,7 +9283,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         project.meta.startScene = sceneIds[0] || "";
       }
 
-           renderMeta();
+      renderMeta();
       renderVariables();
       renderRules();
       renderAnalyses();
@@ -11830,14 +11810,14 @@ if (document.readyState === "loading") {
       openGraphScenePreviewModal(graphContextMenuState.sceneId);
     });
 
-    els.graphContextHighlightFullBtn?.addEventListener("click", () => {
+        els.graphContextPathsFromBtn?.addEventListener("click", () => {
       if (!graphContextMenuState?.sceneId) return;
-      graphHighlightState = {
-        sceneId: graphContextMenuState.sceneId,
-        mode: "full",
-      };
-      closeGraphContextMenu();
-      renderStructureGraph();
+      activateGraphPathExplorer(graphContextMenuState.sceneId, "from");
+    });
+
+    els.graphContextPathsToBtn?.addEventListener("click", () => {
+      if (!graphContextMenuState?.sceneId) return;
+      activateGraphPathExplorer(graphContextMenuState.sceneId, "to");
     });
 
     els.graphContextHighlightAncestorsBtn?.addEventListener("click", () => {
@@ -11870,27 +11850,9 @@ if (document.readyState === "loading") {
       renderStructureGraph();
     });
 
-        els.graphPathToggle?.addEventListener("change", () => {
-      closeGraphContextMenu();
-
-      if (!els.graphPathToggle.checked) {
-        if (graphHighlightState?.type === "path") {
-          graphHighlightState = null;
-        }
-        renderGraphPathControls();
-        renderStructureGraph();
-        return;
-      }
-
-      applySelectedGraphPathHighlight();
-    });
-
-    els.graphPathSelect?.addEventListener("change", () => {
+       els.graphPathSelect?.addEventListener("change", () => {
       selectedGraphPathKey = els.graphPathSelect.value || "";
-
-      if (els.graphPathToggle?.checked) {
-        applySelectedGraphPathHighlight();
-      }
+      applySelectedGraphPathHighlight();
     });
 
     els.graphScenePreviewOpenEditorBtn?.addEventListener("click", () => {
@@ -12273,7 +12235,7 @@ if (document.readyState === "loading") {
       const btn = event.target.closest("button[data-action]");
       if (!btn) return;
 
-            const action = btn.dataset.action;
+      const action = btn.dataset.action;
       const idx = Number(btn.dataset.index);
       const gIdx = Number(btn.dataset.gindex);
       const cIdx = Number(btn.dataset.cindex);
@@ -12300,7 +12262,7 @@ if (document.readyState === "loading") {
         renderAll();
       }
 
-            if (action === "addRuleGroup") {
+      if (action === "addRuleGroup") {
         captureEditorSnapshot();
         project.rules.collapse[idx].conditionGroups.push(conditionGroupTemplate(getAllVariableNames()[0] || "risk"));
         clearEditorUndoFocusTarget();
@@ -12349,7 +12311,7 @@ if (document.readyState === "loading") {
         renderAll();
       }
 
-            if (action === "addDiagGroup") {
+      if (action === "addDiagGroup") {
         captureEditorSnapshot();
         project.analyses[idx].conditionGroups.push(conditionGroupTemplate(getAllVariableNames()[0] || "risk"));
         clearEditorUndoFocusTarget();
@@ -12487,7 +12449,7 @@ if (document.readyState === "loading") {
         return;
       }
 
-            const idx = Number(el.dataset.index);
+      const idx = Number(el.dataset.index);
       const gIdx = Number(el.dataset.gindex);
       const cIdx = Number(el.dataset.cindex);
       let needsFullRender = false;
@@ -12516,7 +12478,7 @@ if (document.readyState === "loading") {
         project.variables[idx].category = el.value;
       } else if (action === "varDescription") {
         project.variables[idx].description = el.value;
-            } else if (action === "ruleName") {
+      } else if (action === "ruleName") {
         project.rules.collapse[idx].name = el.value;
       } else if (action === "ruleGroupOperator") {
         project.rules.collapse[idx].groupOperator = el.value;
@@ -12759,6 +12721,9 @@ if (document.readyState === "loading") {
 
                if (shouldResetHighlight) {
           graphHighlightState = null;
+          graphPathExplorerState = null;
+          graphPathOptions = [];
+          selectedGraphPathKey = "";
           renderGraphPathControls();
           closeGraphContextMenu();
           renderStructureGraph();
