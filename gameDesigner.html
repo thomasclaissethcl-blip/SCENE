@@ -1263,7 +1263,8 @@
         display: none !important;
       }
 
-      #graphScenePreviewModal.open {
+      #graphScenePreviewModal.open,
+      #forceStructureAnalysisModal.open {
         display: block !important;
       }
     }
@@ -3638,6 +3639,46 @@
   </div>
 
   <input id="hiddenJsonImport" type="file" accept=".json,application/json" style="display: none" />
+
+  <div id="forceStructureAnalysisModal" class="sceneEditorModal" aria-hidden="true" role="dialog" aria-modal="true"
+    aria-labelledby="forceStructureAnalysisModalTitle">
+    <div class="sceneEditorModalOverlay" data-action="closeForceStructureAnalysisModal"></div>
+
+    <div class="sceneEditorModalDialog">
+      <div class="sceneEditorModalHeader">
+        <div>
+          <h2 id="forceStructureAnalysisModalTitle" style="margin: 0">Forcer l’analyse structurelle</h2>
+          <p class="muted small" style="margin: 6px 0 0">
+            Confirmez uniquement si vous acceptez le risque de blocage temporaire du navigateur.
+          </p>
+        </div>
+
+        <div class="itemActions">
+          <button id="closeForceStructureAnalysisModalBtn" type="button" class="secondary">Annuler</button>
+        </div>
+      </div>
+
+      <div class="sceneEditorModalContent">
+        <div id="forceStructureAnalysisModalContent" class="stack">
+          <div class="notice attention">
+            Cette analyse a été bloquée automatiquement car votre projet dépasse les seuils de complexité définis.
+          </div>
+
+          <div class="notice">
+            En forçant l’analyse, vous acceptez le risque que cette page ralentisse fortement le navigateur pendant
+            plusieurs minutes,
+            voire plusieurs dizaines de minutes selon la complexité du projet.
+          </div>
+
+          <div class="inlineBtns">
+            <button id="confirmForceStructureAnalysisBtn" type="button" class="bad">Forcer l’analyse quand-même</button>
+            <button id="cancelForceStructureAnalysisBtn" type="button" class="secondary">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="actionFeedbackModal" class="actionFeedbackModal" aria-hidden="true" role="status" aria-live="polite">
     <div class="actionFeedbackOverlay"></div>
     <div class="actionFeedbackBox">
@@ -5067,6 +5108,12 @@
     let graphPathExplorerState = null;
     let graphPathOptions = [];
     let selectedGraphPathKey = "";
+    let graphPathComputationMeta = {
+      truncated: false,
+      exploredStates: 0,
+      maxStates: 0,
+      generatedPathCount: 0,
+    };
     let validationCycleAlerts = [];
     let lastEditorSnapshot = null;
     let editorUndoFocusTarget = null;
@@ -5142,6 +5189,11 @@
       graphScenePreviewModalSubtitle: document.getElementById("graphScenePreviewModalSubtitle"),
       graphScenePreviewOpenEditorBtn: document.getElementById("graphScenePreviewOpenEditorBtn"),
       closeGraphScenePreviewModalBtn: document.getElementById("closeGraphScenePreviewModalBtn"),
+      forceStructureAnalysisModal: document.getElementById("forceStructureAnalysisModal"),
+      forceStructureAnalysisModalContent: document.getElementById("forceStructureAnalysisModalContent"),
+      closeForceStructureAnalysisModalBtn: document.getElementById("closeForceStructureAnalysisModalBtn"),
+      confirmForceStructureAnalysisBtn: document.getElementById("confirmForceStructureAnalysisBtn"),
+      cancelForceStructureAnalysisBtn: document.getElementById("cancelForceStructureAnalysisBtn"),
       desktopEditorDivider: document.getElementById("desktopEditorDivider"),
 
       sceneId: document.getElementById("sceneId"),
@@ -7505,9 +7557,11 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       restoreChoicesUiState(previousUiState);
     }
 
-    const STRUCTURE_ANALYSIS_COST_LIMIT = 450;
-    const STRUCTURE_ANALYSIS_INVALID_GOTO_LIMIT = 40;
-    const STRUCTURE_ANALYSIS_SELF_LOOP_LIMIT = 20;
+    const STRUCTURE_ANALYSIS_COST_LIMIT = 220;
+    const STRUCTURE_ANALYSIS_INVALID_GOTO_LIMIT = 20;
+    const STRUCTURE_ANALYSIS_SELF_LOOP_LIMIT = 10;
+    const STRUCTURE_ANALYSIS_SCENE_LIMIT = 120;
+    const STRUCTURE_ANALYSIS_CHOICE_LIMIT = 260;
 
     function getStructureAnalysisComplexity() {
       const scenesById = project.scenes || {};
@@ -7546,12 +7600,16 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         });
       });
 
+      const averageChoicesPerScene = sceneCount ? choiceCount / sceneCount : 0;
+      const branchingPenalty = Math.max(0, averageChoicesPerScene - 1.6) * sceneCount * 4;
+
       const score =
-        sceneCount +
-        (choiceCount * 2) +
-        (backLinkCount * 6) +
-        (selfLoopCount * 12) +
-        (invalidGotoCount * 8);
+        (sceneCount * 1.5) +
+        (choiceCount * 3) +
+        (backLinkCount * 8) +
+        (selfLoopCount * 14) +
+        (invalidGotoCount * 10) +
+        branchingPenalty;
 
       return {
         sceneCount,
@@ -7559,12 +7617,22 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         invalidGotoCount,
         selfLoopCount,
         backLinkCount,
+        averageChoicesPerScene,
+        branchingPenalty,
         score,
       };
     }
 
     function hasTooManyScenesForStructureAnalysis() {
       const complexity = getStructureAnalysisComplexity();
+
+      if (complexity.sceneCount >= STRUCTURE_ANALYSIS_SCENE_LIMIT) {
+        return true;
+      }
+
+      if (complexity.choiceCount >= STRUCTURE_ANALYSIS_CHOICE_LIMIT) {
+        return true;
+      }
 
       if (complexity.invalidGotoCount >= STRUCTURE_ANALYSIS_INVALID_GOTO_LIMIT) {
         return true;
@@ -7577,42 +7645,136 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       return complexity.score > STRUCTURE_ANALYSIS_COST_LIMIT;
     }
 
-    function renderStructureAnalysisLimitMessage() {
+    function getStructureAnalysisSummaryHtml(isBlocked = false) {
       const complexity = getStructureAnalysisComplexity();
-      const message =
-        `Projet trop complexe. Analyse désactivée. ` +
+
+      const message = isBlocked
+        ? `Projet trop complexe. Analyse structurelle désactivée. ` +
+        `Vous pouvez toujours lancer l'analyse des textes.`
+        : `Analyse structurelle disponible. ` +
+        `Les indicateurs ci-dessous sont affichés à titre informatif.`;
+
+      const details =
         `Scènes : ${complexity.sceneCount}. ` +
         `Choix : ${complexity.choiceCount}. ` +
+        `Moyenne de choix par scène : ${complexity.averageChoicesPerScene.toFixed(2)}. ` +
         `Retours arrière : ${complexity.backLinkCount}. ` +
         `Boucles directes : ${complexity.selfLoopCount}. ` +
         `Destinations invalides : ${complexity.invalidGotoCount}. ` +
-        `Score de complexité : ${complexity.score}. ` +
-        `Vous pouvez toujours lancer l'analyse des textes.`;
+        `Pénalité d’embranchement : ${Math.round(complexity.branchingPenalty)}. ` +
+        `Score de complexité : ${Math.round(complexity.score)}. ` +
+        `Seuil score : ${STRUCTURE_ANALYSIS_COST_LIMIT}. ` +
+        `Seuil scènes : ${STRUCTURE_ANALYSIS_SCENE_LIMIT}. ` +
+        `Seuil choix : ${STRUCTURE_ANALYSIS_CHOICE_LIMIT}. ` +
+        `Seuil destinations invalides : ${STRUCTURE_ANALYSIS_INVALID_GOTO_LIMIT}. ` +
+        `Seuil boucles directes : ${STRUCTURE_ANALYSIS_SELF_LOOP_LIMIT}.`;
+
+      const cssClass = isBlocked ? "notice attention" : "notice";
+
+      const forceButtonHtml = isBlocked
+        ? `
+        <div style="margin-top:14px;">
+          <button id="forceStructureAnalysisBtn" type="button" class="warn">Forcer l’analyse</button>
+        </div>
+      `
+        : "";
+
+      return `
+      <div class="${cssClass}">
+        ${escapeHtml(message)}<br /><br />
+        ${escapeHtml(details)}
+        ${forceButtonHtml}
+      </div>
+    `;
+    }
+
+    function renderStructureAnalysisSummaryMessage(isBlocked = false) {
+      const complexity = getStructureAnalysisComplexity();
+      const message = isBlocked
+        ? `Projet trop complexe. Analyse structurelle désactivée. ` +
+        `Vous pouvez toujours lancer l'analyse des textes.`
+        : `Analyse structurelle disponible. ` +
+        `Les indicateurs ci-dessous sont affichés à titre informatif.`;
+
+      const details =
+        `Scènes : ${complexity.sceneCount}. ` +
+        `Choix : ${complexity.choiceCount}. ` +
+        `Moyenne de choix par scène : ${complexity.averageChoicesPerScene.toFixed(2)}. ` +
+        `Retours arrière : ${complexity.backLinkCount}. ` +
+        `Boucles directes : ${complexity.selfLoopCount}. ` +
+        `Destinations invalides : ${complexity.invalidGotoCount}. ` +
+        `Pénalité d’embranchement : ${Math.round(complexity.branchingPenalty)}. ` +
+        `Score de complexité : ${Math.round(complexity.score)}. ` +
+        `Seuil score : ${STRUCTURE_ANALYSIS_COST_LIMIT}. ` +
+        `Seuil scènes : ${STRUCTURE_ANALYSIS_SCENE_LIMIT}. ` +
+        `Seuil choix : ${STRUCTURE_ANALYSIS_CHOICE_LIMIT}. ` +
+        `Seuil destinations invalides : ${STRUCTURE_ANALYSIS_INVALID_GOTO_LIMIT}. ` +
+        `Seuil boucles directes : ${STRUCTURE_ANALYSIS_SELF_LOOP_LIMIT}.`;
 
       if (els.validationBox) {
-        els.validationBox.innerHTML = `
-      <div class="notice attention">${escapeHtml(message)}</div>
-    `;
+        els.validationBox.innerHTML = getStructureAnalysisSummaryHtml(isBlocked);
+
+        if (isBlocked) {
+          const forceBtn = document.getElementById("forceStructureAnalysisBtn");
+          if (forceBtn) {
+            forceBtn.addEventListener("click", () => {
+              openForceStructureAnalysisModal();
+            });
+          }
+        }
       }
 
-      if (els.jsonPreview) {
-        els.jsonPreview.textContent = message;
+      if (isBlocked && els.jsonPreview) {
+        els.jsonPreview.textContent = `${message} ${details}`;
       }
 
       const refreshBtn = document.getElementById("refreshJsonAnalysisBtn");
       if (refreshBtn) {
-        refreshBtn.disabled = true;
+        refreshBtn.disabled = isBlocked;
       }
+
+      const refreshInlineBtn = document.getElementById("refreshJsonAnalysisInlineBtn");
+      if (refreshInlineBtn) {
+        refreshInlineBtn.disabled = isBlocked;
+      }
+    }
+
+    function renderStructureAnalysisLimitMessage() {
+      renderStructureAnalysisSummaryMessage(true);
+    }
+
+    function openForceStructureAnalysisModal() {
+      if (!els.forceStructureAnalysisModal) return;
+      els.forceStructureAnalysisModal.classList.add("open");
+      els.forceStructureAnalysisModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeForceStructureAnalysisModal() {
+      if (!els.forceStructureAnalysisModal) return;
+      els.forceStructureAnalysisModal.classList.remove("open");
+      els.forceStructureAnalysisModal.setAttribute("aria-hidden", "true");
+    }
+
+    function runForcedStructureAnalysis() {
+      forceStructureAnalysisOnce = true;
+      closeForceStructureAnalysisModal();
+      invalidatePerformanceCaches();
+      renderJsonPreview();
+      renderValidationIfNeeded(true);
     }
 
     function renderJsonPreview() {
       const refreshBtn = document.getElementById("refreshJsonAnalysisBtn");
 
       if (hasTooManyScenesForStructureAnalysis()) {
-        els.jsonPreview.textContent = "Votre projet contient trop de scènes pour lancer l’analyse.";
+        renderStructureAnalysisLimitMessage();
 
-        if (refreshBtn) {
-          refreshBtn.disabled = true;
+        if (els.textAnalysisBox && !els.textAnalysisBox.innerHTML.trim()) {
+          els.textAnalysisBox.innerHTML = `
+<div class="notice">
+  L’analyse des textes reste disponible pour ce projet.
+</div>
+`;
         }
 
         return;
@@ -7622,6 +7784,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         refreshBtn.disabled = false;
       }
 
+      renderStructureAnalysisSummaryMessage(false);
       els.jsonPreview.textContent = JSON.stringify(project, null, 2);
     }
 
@@ -8097,7 +8260,9 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
     }
 
     function renderValidationIfNeeded(force = false) {
-      if (hasTooManyScenesForStructureAnalysis()) {
+      const shouldBypassComplexityGate = force && forceStructureAnalysisOnce;
+
+      if (hasTooManyScenesForStructureAnalysis() && !shouldBypassComplexityGate) {
         renderStructureAnalysisLimitMessage();
         validationDirty = false;
         return;
@@ -8120,6 +8285,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
             renderValidation(true);
             validationDirty = false;
             hasValidatedAtLeastOnce = true;
+            forceStructureAnalysisOnce = false;
             stopFakeLoadingProgress("json", true);
             setTimeout(() => {
               setTabLoading("json", false);
@@ -8132,13 +8298,29 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
     function renderStaleValidationNotice() {
       if (!els.validationBox) return;
 
+      if (hasTooManyScenesForStructureAnalysis()) {
+        renderStructureAnalysisLimitMessage();
+
+        if (els.textAnalysisBox && !els.textAnalysisBox.innerHTML.trim()) {
+          els.textAnalysisBox.innerHTML = `
+<div class="notice">
+  L’analyse des textes reste disponible pour ce projet.
+</div>
+`;
+        }
+
+        return;
+      }
+
       const isFirstDisplay = !hasValidatedAtLeastOnce && !lastValidationHtml;
+      const complexitySummaryBlock = getStructureAnalysisSummaryHtml(false);
       const previousAnalysisBlock =
         !isFirstDisplay && lastValidationHtml ? `<div id="staleValidationContent" class="stack">${lastValidationHtml}</div>` : "";
 
       if (isFirstDisplay) {
         els.validationBox.innerHTML = `
-<div class="stack" style="min-height:320px; display:flex; align-items:center; justify-content:center;">
+<div class="stack">
+  ${complexitySummaryBlock}
   <div class="notice attention" style="text-align:center; max-width:700px; margin:auto; padding:24px;">
     <div style="margin-bottom:16px;">
       Aucune analyse n’a encore été lancée.
@@ -8161,9 +8343,22 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
 `;
         }
 
+        const refreshInlineBtn = document.getElementById("refreshJsonAnalysisInlineBtn");
+        if (refreshInlineBtn) {
+          refreshInlineBtn.addEventListener("click", () => {
+            if (hasTooManyScenesForStructureAnalysis()) {
+              renderStructureAnalysisLimitMessage();
+              return;
+            }
+            renderJsonPreview();
+            renderValidationIfNeeded(true);
+          });
+        }
+
       } else {
         els.validationBox.innerHTML = `
 <div class="stack">
+  ${complexitySummaryBlock}
   <div class="notice attention" style="text-align:center; max-width:700px; margin:auto;">
     Votre scénario a changé. Cliquez sur le bouton <button id="refreshJsonAnalysisInlineBtn" type="button" class="secondary">Mettre à jour</button> pour relancer l'analyse.<br><br>
     <span class="small muted">Peut prendre plusieurs minutes si votre projet est complexe.</span>
@@ -8183,6 +8378,8 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         });
       }
     }
+
+    let forceStructureAnalysisOnce = false;
 
     let hasValidatedAtLeastOnce = false;
 
@@ -8717,6 +8914,365 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       });
     }
 
+    function getGraphPathPrimaryBranchId(path) {
+      if (!path?.sceneIds?.length) return "";
+
+      if (path.mode === "to") {
+        return path.sceneIds.length >= 2 ? path.sceneIds[path.sceneIds.length - 2] : "";
+      }
+
+      return path.sceneIds.length >= 2 ? path.sceneIds[1] : "";
+    }
+
+    function buildGraphPathDiversityTokenSet(path) {
+      const tokens = new Set();
+      const middleSceneIds = path.sceneIds.slice(1, -1);
+      const firstSceneId = path.sceneIds[0] || "";
+      const lastSceneId = path.sceneIds[path.sceneIds.length - 1] || "";
+      const primaryBranchId = getGraphPathPrimaryBranchId(path);
+
+      tokens.add(`start:${firstSceneId}`);
+      tokens.add(`end:${lastSceneId}`);
+      tokens.add(`lengthBucket:${Math.min(Math.floor(path.sceneIds.length / 3), 6)}`);
+
+      if (primaryBranchId) {
+        tokens.add(`branch:${primaryBranchId}`);
+      }
+
+      (path.signatureSceneIds || []).forEach((sceneId) => {
+        tokens.add(`signature:${sceneId}`);
+      });
+
+      const uniqueMiddleIds = [...new Set(middleSceneIds)];
+      uniqueMiddleIds.forEach((sceneId) => {
+        tokens.add(`middle:${sceneId}`);
+      });
+
+      const sampledMiddleIds = [];
+      if (middleSceneIds.length > 0) {
+        sampledMiddleIds.push(middleSceneIds[0]);
+        sampledMiddleIds.push(middleSceneIds[Math.floor(middleSceneIds.length / 2)]);
+        sampledMiddleIds.push(middleSceneIds[middleSceneIds.length - 1]);
+      }
+
+      [...new Set(sampledMiddleIds.filter(Boolean))].forEach((sceneId) => {
+        tokens.add(`sample:${sceneId}`);
+      });
+
+      return tokens;
+    }
+
+    function computeGraphPathRepresentativeScore(path, globalSceneCounts, globalEdgeCounts) {
+      const middleSceneIds = [...new Set(path.sceneIds.slice(1, -1))];
+      const rareSceneScore = middleSceneIds.reduce((sum, sceneId) => {
+        return sum + (1 / (globalSceneCounts.get(sceneId) || 1));
+      }, 0);
+
+      const rareEdgeScore = (path.edgeKeys || []).reduce((sum, edgeKey) => {
+        return sum + (1 / (globalEdgeCounts.get(edgeKey) || 1));
+      }, 0);
+
+      const signatureBonus = (path.signatureSceneIds?.length || 0) * 2;
+      const lengthBonus = Math.min(path.sceneIds.length, 12) * 0.08;
+      const truncationPenalty = path.isTruncated ? 0.35 : 0;
+
+      return rareSceneScore + rareEdgeScore + signatureBonus + lengthBonus - truncationPenalty;
+    }
+
+    function buildGraphPathFamilyKey(path) {
+      const firstSceneId = path.sceneIds[0] || "";
+      const lastSceneId = path.sceneIds[path.sceneIds.length - 1] || "";
+      const middleSceneIds = path.sceneIds.slice(1, -1);
+      const signatureIds = (path.signatureSceneIds || []).slice(0, 2);
+      const primaryBranchId = getGraphPathPrimaryBranchId(path);
+
+      const sampledIds = [];
+      if (middleSceneIds.length > 0) {
+        sampledIds.push(middleSceneIds[0]);
+        sampledIds.push(middleSceneIds[Math.floor(middleSceneIds.length / 2)]);
+        sampledIds.push(middleSceneIds[middleSceneIds.length - 1]);
+      }
+
+      const normalizedCore = [...new Set([...signatureIds, ...sampledIds].filter(Boolean))].slice(0, 4);
+      const lengthBucket = Math.min(Math.floor(path.sceneIds.length / 3), 6);
+
+      return [
+        path.mode || "from",
+        firstSceneId,
+        primaryBranchId || "",
+        lastSceneId,
+        `len:${lengthBucket}`,
+        normalizedCore.join("|"),
+      ].join("::");
+    }
+
+    function buildGraphPathVariantFingerprint(path) {
+      const firstSceneId = path.sceneIds[0] || "";
+      const lastSceneId = path.sceneIds[path.sceneIds.length - 1] || "";
+      const primaryBranchId = getGraphPathPrimaryBranchId(path);
+      const signatureIds = [...new Set(path.signatureSceneIds || [])].slice(0, 3);
+      const middleSceneIds = path.sceneIds.slice(1, -1);
+      const sampledIds = [];
+
+      if (middleSceneIds.length > 0) {
+        sampledIds.push(middleSceneIds[0]);
+        sampledIds.push(middleSceneIds[Math.floor(middleSceneIds.length / 2)]);
+        sampledIds.push(middleSceneIds[middleSceneIds.length - 1]);
+      }
+
+      return [
+        path.mode || "from",
+        firstSceneId,
+        primaryBranchId || "",
+        lastSceneId,
+        [...new Set([...signatureIds, ...sampledIds].filter(Boolean))].join("|"),
+      ].join("::");
+    }
+
+    function collapseSimilarGraphPaths(paths, maxPerFamily = 3) {
+      const keptPaths = [];
+      const familyBuckets = new Map();
+
+      paths.forEach((path) => {
+        const familyKey = buildGraphPathFamilyKey(path);
+        const variantFingerprint = buildGraphPathVariantFingerprint(path);
+
+        if (!familyBuckets.has(familyKey)) {
+          familyBuckets.set(familyKey, {
+            paths: [],
+            fingerprints: new Set(),
+          });
+        }
+
+        const familyBucket = familyBuckets.get(familyKey);
+
+        if (familyBucket.fingerprints.has(variantFingerprint)) {
+          return;
+        }
+
+        if (familyBucket.paths.length >= maxPerFamily) {
+          return;
+        }
+
+        familyBucket.fingerprints.add(variantFingerprint);
+        familyBucket.paths.push(path);
+        keptPaths.push(path);
+      });
+
+      return keptPaths;
+    }
+
+    function selectRepresentativeGraphPaths(paths, maxCount = 600) {
+      if (!paths.length) {
+        return [];
+      }
+
+      const globalSceneCounts = new Map();
+      const globalEdgeCounts = new Map();
+
+      paths.forEach((path) => {
+        [...new Set(path.sceneIds.slice(1, -1))].forEach((sceneId) => {
+          globalSceneCounts.set(sceneId, (globalSceneCounts.get(sceneId) || 0) + 1);
+        });
+
+        (path.edgeKeys || []).forEach((edgeKey) => {
+          globalEdgeCounts.set(edgeKey, (globalEdgeCounts.get(edgeKey) || 0) + 1);
+        });
+      });
+
+      const enrichedPaths = paths.map((path, index) => ({
+        ...path,
+        _originalIndex: index,
+        _primaryBranchId: getGraphPathPrimaryBranchId(path),
+        _familyKey: buildGraphPathFamilyKey(path),
+        _variantFingerprint: buildGraphPathVariantFingerprint(path),
+        _tokens: buildGraphPathDiversityTokenSet(path),
+        _baseScore: computeGraphPathRepresentativeScore(path, globalSceneCounts, globalEdgeCounts),
+      }));
+
+      enrichedPaths.sort((a, b) => {
+        const scoreDiff = b._baseScore - a._baseScore;
+        if (scoreDiff !== 0) return scoreDiff;
+
+        const branchDiff = String(a._primaryBranchId || "").localeCompare(String(b._primaryBranchId || ""), "fr");
+        if (branchDiff !== 0) return branchDiff;
+
+        const endDiff = String(a.sceneIds[a.sceneIds.length - 1] || "").localeCompare(
+          String(b.sceneIds[b.sceneIds.length - 1] || ""),
+          "fr",
+        );
+        if (endDiff !== 0) return endDiff;
+
+        return a._originalIndex - b._originalIndex;
+      });
+
+      const collapsedPaths = collapseSimilarGraphPaths(enrichedPaths, 3);
+
+      if (collapsedPaths.length <= maxCount) {
+        return collapsedPaths.map((path, index) => ({
+          ...path,
+          key: `path-${index + 1}`,
+        }));
+      }
+
+      const selected = [];
+      const coveredTokens = new Set();
+      const selectedFamilyCounts = new Map();
+      const selectedEndCounts = new Map();
+      const selectedBranchCounts = new Map();
+      const remainingPaths = [...collapsedPaths];
+
+      function chooseBestPath(candidates) {
+        let bestIndex = 0;
+        let bestGain = -Infinity;
+
+        candidates.forEach((path, index) => {
+          const endSceneId = path.sceneIds[path.sceneIds.length - 1] || "";
+          const familyCount = selectedFamilyCounts.get(path._familyKey) || 0;
+          const endCount = selectedEndCounts.get(endSceneId) || 0;
+          const branchCount = selectedBranchCounts.get(path._primaryBranchId || "") || 0;
+
+          let noveltyGain = 0;
+          path._tokens.forEach((token) => {
+            if (!coveredTokens.has(token)) {
+              if (token.startsWith("branch:")) {
+                noveltyGain += 8;
+              } else if (token.startsWith("end:")) {
+                noveltyGain += 6;
+              } else if (token.startsWith("signature:")) {
+                noveltyGain += 4;
+              } else if (token.startsWith("sample:")) {
+                noveltyGain += 3;
+              } else if (token.startsWith("middle:")) {
+                noveltyGain += 2;
+              } else {
+                noveltyGain += 1;
+              }
+            }
+          });
+
+          const familyPenalty = familyCount * 120;
+          const endPenalty = endCount * 35;
+          const branchPenalty = branchCount * 220;
+
+          const combinedScore = noveltyGain * 1000 + path._baseScore * 100 - familyPenalty - endPenalty - branchPenalty;
+
+          if (combinedScore > bestGain) {
+            bestGain = combinedScore;
+            bestIndex = index;
+          }
+        });
+
+        return bestIndex;
+      }
+
+      const branchBuckets = new Map();
+      remainingPaths.forEach((path) => {
+        const branchKey = path._primaryBranchId || "__no_branch__";
+        if (!branchBuckets.has(branchKey)) {
+          branchBuckets.set(branchKey, []);
+        }
+        branchBuckets.get(branchKey).push(path);
+      });
+
+      const guaranteedBranchSelections = [];
+
+      branchBuckets.forEach((branchPaths) => {
+        const sortedBranchPaths = [...branchPaths].sort((a, b) => {
+          const scoreDiff = b._baseScore - a._baseScore;
+          if (scoreDiff !== 0) return scoreDiff;
+          return a._originalIndex - b._originalIndex;
+        });
+
+        if (sortedBranchPaths[0]) {
+          guaranteedBranchSelections.push(sortedBranchPaths[0]);
+        }
+      });
+
+      guaranteedBranchSelections
+        .sort((a, b) => {
+          const scoreDiff = b._baseScore - a._baseScore;
+          if (scoreDiff !== 0) return scoreDiff;
+          return a._originalIndex - b._originalIndex;
+        })
+        .slice(0, maxCount)
+        .forEach((chosen) => {
+          const indexInRemaining = remainingPaths.indexOf(chosen);
+          if (indexInRemaining === -1) return;
+
+          remainingPaths.splice(indexInRemaining, 1);
+          selected.push(chosen);
+
+          chosen._tokens.forEach((token) => {
+            coveredTokens.add(token);
+          });
+
+          selectedFamilyCounts.set(
+            chosen._familyKey,
+            (selectedFamilyCounts.get(chosen._familyKey) || 0) + 1,
+          );
+
+          const chosenEndSceneId = chosen.sceneIds[chosen.sceneIds.length - 1] || "";
+          selectedEndCounts.set(
+            chosenEndSceneId,
+            (selectedEndCounts.get(chosenEndSceneId) || 0) + 1,
+          );
+
+          const chosenBranchId = chosen._primaryBranchId || "";
+          selectedBranchCounts.set(
+            chosenBranchId,
+            (selectedBranchCounts.get(chosenBranchId) || 0) + 1,
+          );
+        });
+
+      while (selected.length < maxCount && remainingPaths.length) {
+        const bestIndex = chooseBestPath(remainingPaths);
+        const [chosen] = remainingPaths.splice(bestIndex, 1);
+        selected.push(chosen);
+
+        chosen._tokens.forEach((token) => {
+          coveredTokens.add(token);
+        });
+
+        selectedFamilyCounts.set(
+          chosen._familyKey,
+          (selectedFamilyCounts.get(chosen._familyKey) || 0) + 1,
+        );
+
+        const chosenEndSceneId = chosen.sceneIds[chosen.sceneIds.length - 1] || "";
+        selectedEndCounts.set(
+          chosenEndSceneId,
+          (selectedEndCounts.get(chosenEndSceneId) || 0) + 1,
+        );
+
+        const chosenBranchId = chosen._primaryBranchId || "";
+        selectedBranchCounts.set(
+          chosenBranchId,
+          (selectedBranchCounts.get(chosenBranchId) || 0) + 1,
+        );
+      }
+
+      return selected
+        .sort((a, b) => {
+          const branchDiff = String(a._primaryBranchId || "").localeCompare(String(b._primaryBranchId || ""), "fr");
+          if (branchDiff !== 0) return branchDiff;
+
+          const endA = String(a.sceneIds[a.sceneIds.length - 1] || "");
+          const endB = String(b.sceneIds[b.sceneIds.length - 1] || "");
+          const endDiff = endA.localeCompare(endB, "fr");
+          if (endDiff !== 0) return endDiff;
+
+          const scoreDiff = b._baseScore - a._baseScore;
+          if (scoreDiff !== 0) return scoreDiff;
+
+          return a._originalIndex - b._originalIndex;
+        })
+        .map((path, index) => ({
+          ...path,
+          key: `path-${index + 1}`,
+        }));
+    }
+
     function formatGraphPathLabel(path, index) {
       const firstSceneId = path.sceneIds[0];
       const lastSceneId = path.sceneIds[path.sceneIds.length - 1];
@@ -8738,27 +9294,54 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
 
     function buildGraphPathOptionsForAnchor(data, anchorSceneId, mode = "from") {
       if (!anchorSceneId || !project.scenes[anchorSceneId]) {
+        graphPathComputationMeta = {
+          truncated: false,
+          exploredStates: 0,
+          maxStates: 0,
+          generatedPathCount: 0,
+        };
         return [];
       }
 
       const { forwardMap, reverseMap } = buildGraphAdjacencyMaps(data);
       const adjacencyMap = mode === "to" ? reverseMap : forwardMap;
-      const options = [];
-      const MAX_PATHS = 400;
 
-      function visit(currentId, sceneTrail, edgeTrail, visited) {
-        if (options.length >= MAX_PATHS) return;
+      const completedPaths = [];
+      const completedPathKeys = new Set();
 
-        const nextIds = (adjacencyMap.get(currentId) || []).filter((sceneId) => project.scenes[sceneId]);
-        const freshNextIds = nextIds.filter((sceneId) => !visited.has(sceneId));
+      const queue = [{
+        currentId: anchorSceneId,
+        sceneTrail: [anchorSceneId],
+        edgeTrail: [],
+        visited: new Set([anchorSceneId]),
+      }];
+
+      const MAX_STATES = 50000;
+      let exploredStates = 0;
+      let safetyTruncated = false;
+
+      while (queue.length) {
+        const state = queue.shift();
+        exploredStates += 1;
+
+        if (exploredStates > MAX_STATES) {
+          safetyTruncated = true;
+          break;
+        }
+
+        const nextIds = [...(adjacencyMap.get(state.currentId) || [])]
+          .filter((sceneId) => project.scenes[sceneId])
+          .sort((a, b) => a.localeCompare(b, "fr"));
+
+        const freshNextIds = nextIds.filter((sceneId) => !state.visited.has(sceneId));
 
         if (!freshNextIds.length) {
-          let sceneIds = [...sceneTrail];
-          let edgeKeys = [...edgeTrail];
+          let sceneIds = [...state.sceneTrail];
+          let edgeKeys = [...state.edgeTrail];
 
           if (mode === "to") {
-            sceneIds = [...sceneTrail].reverse();
-            edgeKeys = [...edgeTrail]
+            sceneIds = [...state.sceneTrail].reverse();
+            edgeKeys = [...state.edgeTrail]
               .reverse()
               .map((edgeKey) => {
                 const [source, target] = edgeKey.split("<=");
@@ -8766,39 +9349,51 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
               });
           }
 
-          options.push({
-            key: `path-${options.length + 1}`,
-            mode,
-            anchorSceneId,
-            sceneIds,
-            edgeKeys,
-            isTruncated: nextIds.length > 0,
-          });
-          return;
+          const dedupeKey = `${mode}::${sceneIds.join(">>")}`;
+
+          if (!completedPathKeys.has(dedupeKey)) {
+            completedPathKeys.add(dedupeKey);
+            completedPaths.push({
+              key: `path-${completedPaths.length + 1}`,
+              mode,
+              anchorSceneId,
+              sceneIds,
+              edgeKeys,
+              isTruncated: nextIds.length > 0 || safetyTruncated,
+            });
+          }
+
+          continue;
         }
 
         freshNextIds.forEach((nextId) => {
-          if (options.length >= MAX_PATHS) return;
-
-          const nextVisited = new Set(visited);
+          const nextVisited = new Set(state.visited);
           nextVisited.add(nextId);
 
           const edgeKey = mode === "to"
-            ? `${nextId}<=${currentId}`
-            : `${currentId}=>${nextId}`;
+            ? `${nextId}<=${state.currentId}`
+            : `${state.currentId}=>${nextId}`;
 
-          visit(
-            nextId,
-            [...sceneTrail, nextId],
-            [...edgeTrail, edgeKey],
-            nextVisited,
-          );
+          queue.push({
+            currentId: nextId,
+            sceneTrail: [...state.sceneTrail, nextId],
+            edgeTrail: [...state.edgeTrail, edgeKey],
+            visited: nextVisited,
+          });
         });
       }
 
-      visit(anchorSceneId, [anchorSceneId], [], new Set([anchorSceneId]));
+      const enrichedPaths = computeGraphPathSignatureSceneIds(completedPaths);
+      const representativePaths = selectRepresentativeGraphPaths(enrichedPaths, 600);
 
-      return computeGraphPathSignatureSceneIds(options).map((path, index) => ({
+      graphPathComputationMeta = {
+        truncated: safetyTruncated,
+        exploredStates,
+        maxStates: MAX_STATES,
+        generatedPathCount: completedPaths.length,
+      };
+
+      return representativePaths.map((path, index) => ({
         ...path,
         label: formatGraphPathLabel(path, index),
       }));
@@ -8812,6 +9407,12 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       if (!data?.nodes?.length || !data?.edges?.length) {
         graphPathOptions = [];
         selectedGraphPathKey = "";
+        graphPathComputationMeta = {
+          truncated: false,
+          exploredStates: 0,
+          maxStates: 0,
+          generatedPathCount: 0,
+        };
         els.graphPathSelect.innerHTML = `<option value="">Aucun parcours disponible</option>`;
         els.graphPathSelect.disabled = true;
         return;
@@ -8820,6 +9421,12 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       if (!graphPathExplorerState?.anchorSceneId || !project.scenes[graphPathExplorerState.anchorSceneId]) {
         graphPathOptions = [];
         selectedGraphPathKey = "";
+        graphPathComputationMeta = {
+          truncated: false,
+          exploredStates: 0,
+          maxStates: 0,
+          generatedPathCount: 0,
+        };
         els.graphPathSelect.innerHTML = `<option value="">Cliquez droit sur une scène pour afficher ses parcours</option>`;
         els.graphPathSelect.disabled = true;
         return;
@@ -8833,7 +9440,13 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
 
       if (!graphPathOptions.length) {
         selectedGraphPathKey = "";
-        els.graphPathSelect.innerHTML = `<option value="">Aucun parcours trouvé pour cette scène</option>`;
+
+        if (graphPathComputationMeta?.truncated) {
+          els.graphPathSelect.innerHTML = `<option value="">Le nombre de parcours possibles est trop grand pour être affiché</option>`;
+        } else {
+          els.graphPathSelect.innerHTML = `<option value="">Aucun parcours trouvé pour cette scène</option>`;
+        }
+
         els.graphPathSelect.disabled = true;
         return;
       }
@@ -8841,9 +9454,15 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       const matchingPath = graphPathOptions.find((path) => path.key === selectedGraphPathKey);
       selectedGraphPathKey = matchingPath?.key || graphPathOptions[0].key;
 
-      els.graphPathSelect.innerHTML = graphPathOptions
+      const optionsHtml = graphPathOptions
         .map((path) => `<option value="${escapeAttr(path.key)}">${escapeHtml(path.label)}</option>`)
         .join("");
+
+      const infoOption = graphPathOptions.length >= 600
+        ? `<option value="" disabled>600 parcours représentatifs affichés, avec regroupement des variantes proches</option>`
+        : "";
+
+      els.graphPathSelect.innerHTML = `${infoOption}${optionsHtml}`;
 
       els.graphPathSelect.value = selectedGraphPathKey;
       els.graphPathSelect.disabled = false;
@@ -8925,9 +9544,6 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       let highlightedNodeIds = new Set();
 
       if (mode === "ancestors") {
-        highlightedNodeIds = collectReachableSceneIdsWithDepth(sceneId, reverseMap);
-        highlightedNodeIds.add(sceneId);
-      } else if (mode === "descendants") {
         highlightedNodeIds = collectReachableSceneIdsWithDepth(sceneId, reverseMap);
         highlightedNodeIds.add(sceneId);
       } else if (mode === "descendants") {
@@ -11711,6 +12327,10 @@ if (document.readyState === "loading") {
 
     els.actionFeedbackCloseBtn?.addEventListener("click", hideActionFeedback);
 
+    els.closeForceStructureAnalysisModalBtn?.addEventListener("click", closeForceStructureAnalysisModal);
+    els.cancelForceStructureAnalysisBtn?.addEventListener("click", closeForceStructureAnalysisModal);
+    els.confirmForceStructureAnalysisBtn?.addEventListener("click", runForcedStructureAnalysis);
+
     els.duplicateSceneBtnMobile?.addEventListener("click", () => {
       duplicateScene();
       if (isMobileSceneEditorMode()) {
@@ -11740,6 +12360,11 @@ if (document.readyState === "loading") {
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && els.sceneEditorModal?.classList.contains("open")) {
         closeSceneEditorModal();
+        return;
+      }
+
+      if (event.key === "Escape" && els.forceStructureAnalysisModal?.classList.contains("open")) {
+        closeForceStructureAnalysisModal();
       }
     });
 
@@ -11754,6 +12379,13 @@ if (document.readyState === "loading") {
 
     els.refreshJsonAnalysisBtn?.addEventListener("click", () => {
       invalidatePerformanceCaches();
+
+      if (hasTooManyScenesForStructureAnalysis()) {
+        renderStructureAnalysisLimitMessage();
+        openForceStructureAnalysisModal();
+        return;
+      }
+
       renderJsonPreview();
       renderValidationIfNeeded(true);
     });
@@ -11771,6 +12403,15 @@ if (document.readyState === "loading") {
     els.graphZoomInBtn?.addEventListener("click", () => zoomStructureGraph(1.12));
     els.graphZoomOutBtn?.addEventListener("click", () => zoomStructureGraph(1 / 1.12));
     els.graphResetViewBtn?.addEventListener("click", resetStructureGraphView);
+
+    els.forceStructureAnalysisModal?.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      if (target.dataset.action === "closeForceStructureAnalysisModal" || target.classList.contains("sceneEditorModalOverlay")) {
+        closeForceStructureAnalysisModal();
+      }
+    });
 
     els.validationBox?.addEventListener("click", (event) => {
       const addTaskBtn = event.target.closest("[data-add-validation-task]");
@@ -11810,7 +12451,7 @@ if (document.readyState === "loading") {
       openGraphScenePreviewModal(graphContextMenuState.sceneId);
     });
 
-        els.graphContextPathsFromBtn?.addEventListener("click", () => {
+    els.graphContextPathsFromBtn?.addEventListener("click", () => {
       if (!graphContextMenuState?.sceneId) return;
       activateGraphPathExplorer(graphContextMenuState.sceneId, "from");
     });
@@ -11850,7 +12491,7 @@ if (document.readyState === "loading") {
       renderStructureGraph();
     });
 
-       els.graphPathSelect?.addEventListener("change", () => {
+    els.graphPathSelect?.addEventListener("change", () => {
       selectedGraphPathKey = els.graphPathSelect.value || "";
       applySelectedGraphPathHighlight();
     });
@@ -12719,7 +13360,7 @@ if (document.readyState === "loading") {
           return;
         }
 
-               if (shouldResetHighlight) {
+        if (shouldResetHighlight) {
           graphHighlightState = null;
           graphPathExplorerState = null;
           graphPathOptions = [];
