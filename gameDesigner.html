@@ -2554,7 +2554,7 @@
                           <input id="uiRiskLabel" type="text" />
                         </div>
 
-                        <div data-simple-hide="advanced">
+                        <div data-simple-hide="advanced" id="uiInventoryLabelWrap">
                           <div class="fieldLabel">
                             <label for="uiInventoryLabel">Libellé de l'inventaire</label>
                             <button type="button" class="helpIcon" data-help-toggle="help-uiInventoryLabel"
@@ -2627,10 +2627,25 @@
                         </div>
                         <textarea id="helpContent"></textarea>
                       </div>
-                      <div>
+                      <div class="stack">
                         <label>
                           <input id="openHelpOnStart" type="checkbox" style="width: auto; margin-right: 8px" />
                           Ouvrir l’aide au démarrage
+                        </label>
+
+                        <label>
+                          <input id="showDecisionLog" type="checkbox" style="width: auto; margin-right: 8px" />
+                          Activer le journal des décisions
+                        </label>
+
+                        <label>
+                          <input id="showProgressLog" type="checkbox" style="width: auto; margin-right: 8px" />
+                          Activer le journal de progression
+                        </label>
+
+                        <label>
+                          <input id="showInventory" type="checkbox" style="width: auto; margin-right: 8px" />
+                          Activer l’inventaire
                         </label>
                       </div>
                     </div>
@@ -5033,6 +5048,9 @@
         },
         ui: {
           openHelpOnStart: true,
+          showDecisionLog: true,
+          showProgressLog: true,
+          showInventory: true,
           theme: {
             preset: "default",
             colors: {
@@ -5150,9 +5168,13 @@
       uiScoreLabel: document.getElementById("uiScoreLabel"),
       uiRiskLabel: document.getElementById("uiRiskLabel"),
       uiInventoryLabel: document.getElementById("uiInventoryLabel"),
+      uiInventoryLabelWrap: document.getElementById("uiInventoryLabelWrap"),
       helpTitle: document.getElementById("helpTitle"),
       helpContent: document.getElementById("helpContent"),
       openHelpOnStart: document.getElementById("openHelpOnStart"),
+      showDecisionLog: document.getElementById("showDecisionLog"),
+      showProgressLog: document.getElementById("showProgressLog"),
+      showInventory: document.getElementById("showInventory"),
       undoEditorBtn: document.getElementById("undoEditorBtn"),
       simpleModeToggleBtn: document.getElementById("simpleModeToggleBtn"),
       editorFullscreenBtn: document.getElementById("editorFullscreenBtn"),
@@ -5436,6 +5458,9 @@
       proj.ui.theme.colors.border ??= "#3a4466";
       proj.ui.mode ??= "advanced";
       proj.ui.openHelpOnStart ??= true;
+      proj.ui.showDecisionLog ??= true;
+      proj.ui.showProgressLog ??= true;
+      proj.ui.showInventory ??= true;
       proj.ui.labels.restart ??= "Rejouer";
       proj.ui.labels.undo ??= "Revenir d’un pas";
       proj.ui.labels.inventoryEmpty ??= "Aucun élément récolté";
@@ -6615,6 +6640,12 @@
       els.helpTitle.value = project.help.title || "";
       els.helpContent.value = joinParagraphs(project.help.content || []);
       els.openHelpOnStart.checked = !!project.ui.openHelpOnStart;
+      els.showDecisionLog.checked = !!project.ui.showDecisionLog;
+      els.showProgressLog.checked = !!project.ui.showProgressLog;
+      els.showInventory.checked = !!project.ui.showInventory;
+      if (els.uiInventoryLabelWrap) {
+        els.uiInventoryLabelWrap.style.display = project.ui.showInventory ? "" : "none";
+      }
       renderThemeEditor();
 
       const sceneIds = Object.keys(project.scenes);
@@ -7329,6 +7360,7 @@
   </div>
   <input data-action="choiceDesc" data-index="${idx}" value="${escapeAttr(choice.desc || "")}" />
 </div>
+${project.ui.showDecisionLog ? `
 <div>
   <div class="fieldLabel">
     <label>Log de décision</label>
@@ -7340,6 +7372,7 @@
   </div>
   <input data-action="choiceDecisionLog" data-index="${idx}" value="${escapeAttr(choice.decisionLog || "")}" />
 </div>
+` : ""}
              <div>
   <div class="fieldLabel">
     <label>Scène cible</label>
@@ -7425,6 +7458,7 @@
             </div>
 
             <div class="fieldGrid two">
+${project.ui.showProgressLog ? `
 <div>
   <div class="fieldLabel">
     <label>Logs ajoutés, un par ligne</label>
@@ -7436,6 +7470,8 @@
   </div>
   <textarea data-action="choiceLogs" data-index="${idx}">${escapeHtml((choice.effects?.logs || []).join("\n"))}</textarea>
 </div>
+` : ""}
+${project.ui.showInventory ? `
 <div data-simple-hide="advanced">
   <div class="fieldLabel">
     <label>Inventaire des éléments recueillis, un par ligne, format clé|libellé|true/false</label>
@@ -7490,6 +7526,11 @@ Cela permet au jeu de distinguer les informations réellement utiles des informa
 <strong>Conseil pratique</strong>
 
 Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le joueur considère comme importants dans son parcours.
+
+</div>
+  <textarea data-action="choiceInventory" data-index="${idx}">${escapeHtml((choice.effects?.inventory || []).map((item) => `${item.key}|${item.label}|${item.relevant}`).join("\n"))}</textarea>
+</div>
+` : ""}
 
 </div>
   <textarea data-action="choiceInventory" data-index="${idx}">${escapeHtml((choice.effects?.inventory || []).map((item) => `${item.key}|${item.label}|${item.relevant}`).join("\n"))}</textarea>
@@ -9316,7 +9357,7 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         visited: new Set([anchorSceneId]),
       }];
 
-      const MAX_STATES = 50000;
+      const MAX_STATES = 35000;
       let exploredStates = 0;
       let safetyTruncated = false;
 
@@ -10516,6 +10557,10 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
       const data = buildPlayableData(proj);
       const serialized = JSON.stringify(data).replace(/<\/script/gi, "<\\/script");
       const simpleMode = proj?.ui?.mode === "simple";
+      const hasSidebarContent =
+        (!simpleMode && !!proj.ui.showInventory) ||
+        !!proj.ui.showProgressLog ||
+        !!proj.ui.showDecisionLog;
       const theme = getThemeColors(proj);
       const fontPreset = getSelectedFontPreset(proj);
       const sceneTransitionPreset = proj?.ui?.transitions?.preset || "fade";
@@ -10787,10 +10832,14 @@ Utilisez l’inventaire pour matérialiser les éléments que vous voulez que le
         grid-template-rows:auto minmax(0, 1fr);
       }
 
-      .layout{
+            .layout{
         grid-template-columns:1.35fr .95fr;
         align-items:stretch;
         min-height:0;
+      }
+
+      .layout.layout-single{
+        grid-template-columns:minmax(0, 1fr);
       }
 
       .layout > .card,
@@ -10925,7 +10974,7 @@ font-style:italic;
   <div class="stat"><div class="stat-label">${project.ui.labels.progressLabel}</div><div class="stat-value" id="stepLabel">0 / 0</div></div>
   ${simpleMode ? "" : `<div class="stat"><div class="stat-label">${project.ui.labels.scoreLabel}</div><div class="stat-value" id="scoreLabel">0</div></div>`}
   ${simpleMode ? "" : `<div class="stat"><div class="stat-label">${project.ui.labels.riskLabel}</div><div class="stat-value" id="riskLabel">0</div></div>`}
-  ${simpleMode ? "" : `<div class="stat"><div class="stat-label">${project.ui.labels.inventoryLabel}</div><div class="stat-value" id="infoLabel">0</div></div>`}
+  ${simpleMode || !project.ui.showInventory ? "" : `<div class="stat"><div class="stat-label">${project.ui.labels.inventoryLabel}</div><div class="stat-value" id="infoLabel">0</div></div>`}
 </div>
 
       <div class="progress-wrap">
@@ -10933,7 +10982,7 @@ font-style:italic;
       </div>
     </section>
 
-    <section class="layout">
+        <section class="layout ${hasSidebarContent ? "" : "layout-single"}">
       <section class="card">
         <div class="scene" id="scene">Chargement du récit…</div>
         <div class="toolbar">
@@ -10942,10 +10991,11 @@ font-style:italic;
         </div>
       </section>
       
+               ${hasSidebarContent ? `
         <aside class="card" id="journalArea">
-  ${simpleMode
-          ? ""
-          : `
+    ${simpleMode || !project.ui.showInventory
+            ? ""
+            : `
   <div class="panel">
     <details open>
       <summary>${project.ui.labels.inventoryLabel}</summary>
@@ -10953,21 +11003,25 @@ font-style:italic;
     </details>
   </div>
   `
-        }
+          }
 
+               ${project.ui.showProgressLog ? `
         <div class="panel" style="border-top:none;">
           <details open>
             <summary>Journal de progression</summary>
             <div class="inner"><div class="log" id="log"></div></div>
           </details>
         </div>
+        ` : ""}
 
+                ${project.ui.showDecisionLog ? `
         <div class="panel" style="border-top:none;">
           <details open>
             <summary>Journal des décisions</summary>
             <div class="inner"><div class="log" id="decisionLog"></div></div>
           </details>
         </div>
+        ` : ""}
 
         <div class="panel" style="border-top:none; display:none;">
           <details>
@@ -10976,6 +11030,7 @@ font-style:italic;
           </details>
         </div>
       </aside>
+      ` : ""}
     </section>
 
     <div id="helpModal" class="modal-overlay" aria-hidden="true">
@@ -11525,6 +11580,7 @@ function renderInventory() {
 
 function renderLog() {
         const box = document.getElementById("log");
+        if (!box) return;
         if (state.log.length === 0) {
           box.innerHTML = \`<div class="log-item">\${project.ui?.labels?.logEmpty || "Aucun événement notable pour le moment."}</div>\`;
           return;
@@ -11541,6 +11597,7 @@ function renderLog() {
       
 function renderDecisionLog() {
         const box = document.getElementById("decisionLog");
+        if (!box) return;
         if (state.decisions.length === 0) {
           box.innerHTML = \`<div class="decision-item">\${project.ui?.labels?.decisionEmpty || "Aucune décision enregistrée pour le moment."}</div>\`;
           return;
@@ -12711,6 +12768,27 @@ if (document.readyState === "loading") {
     els.openHelpOnStart.addEventListener("change", () => {
       captureEditorSnapshot();
       project.ui.openHelpOnStart = els.openHelpOnStart.checked;
+      clearEditorUndoFocusTarget();
+      renderAll();
+    });
+
+    els.showDecisionLog.addEventListener("change", () => {
+      captureEditorSnapshot();
+      project.ui.showDecisionLog = els.showDecisionLog.checked;
+      clearEditorUndoFocusTarget();
+      renderAll();
+    });
+
+    els.showProgressLog.addEventListener("change", () => {
+      captureEditorSnapshot();
+      project.ui.showProgressLog = els.showProgressLog.checked;
+      clearEditorUndoFocusTarget();
+      renderAll();
+    });
+
+    els.showInventory.addEventListener("change", () => {
+      captureEditorSnapshot();
+      project.ui.showInventory = els.showInventory.checked;
       clearEditorUndoFocusTarget();
       renderAll();
     });
